@@ -57,6 +57,7 @@ argparser = argparse.ArgumentParser(
 argparser.add_argument(
     '-c',
     '--conf',
+    default="config.json",
     help='path to configuration file')
 
 def _main_(args):
