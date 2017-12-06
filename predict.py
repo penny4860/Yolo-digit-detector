@@ -5,10 +5,10 @@ import os
 import cv2
 import numpy as np
 from tqdm import tqdm
-from preprocessing import parse_annotation
-from utils import draw_boxes
-from frontend import YOLO
 import json
+from yolo.preprocessing import parse_annotation
+from yolo.utils import draw_boxes
+from yolo.frontend import YOLO
 
 
 DEFAULT_CONFIG_FILE = "config.json"
