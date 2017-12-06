@@ -8,9 +8,8 @@
     },
 
     "train": {
-        "train_image_folder":   "C://Users//penny//git//raccoon_dataset//train_image_folder/",
-        "train_annot_folder":   "C://Users//penny//git//raccoon_dataset//train_annot_folder/",     
-          
+        "train_image_folder":   "..//raccoon_dataset//images/",
+        "train_annot_folder":   "..//raccoon_dataset//annotations/",
         "train_times":          10,
         "pretrained_weights":   "mobilenet_raccoon.h5",
         "batch_size":           16,
@@ -23,7 +22,7 @@
         "coord_scale":          1.0,
         "class_scale":          1.0,
 
-        "saved_weights_name":   "mobilenet_raccoon.h5",
+        "saved_weights_name":   "mobilenet_raccoon2.h5",
         "debug":                true
     },
 
