@@ -46,9 +46,28 @@ Dataset => http://cvrr.ucsd.edu/vivachallenge/index.php/hands/hand-detection/
 
 ### 0. Requirement
 
-python 2.7
+* python 3.5
+* anaconda 4.4.0
+* tensorflow 1.2.1
+* keras 2.0.8
+* opencv 3.3.0
+* tqdm 
+* scikit-image
+* imgaug
+* Etc.
 
-keras >= 2.0.8
+I recommend that you create and use an anaconda env that is independent of your project. You can create anaconda env for this project by following these simple steps.
+
+```
+$ conda create -n yolo python=3.5 anaconda=4.4.0
+$ activate yolo
+$ pip install tensorflow==1.2.1
+$ pip install keras==2.0.8
+$ pip install opencv-python
+$ pip install tqdm
+$ pip install scikit-image
+$ pip install imgaug
+```
 
 ### 1. Data preparation
 Download the Raccoon dataset from from https://github.com/experiencor/raccoon_dataset.
