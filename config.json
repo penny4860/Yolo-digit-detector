@@ -1,6 +1,6 @@
 {
     "model" : {
-        "architecture":         "Full Yolo",
+        "architecture":         "MobileNet",
         "input_size":           416,
         "anchors":              [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828],
         "max_box_per_image":    10,        
@@ -12,7 +12,7 @@
         "train_annot_folder":   "C://Users//penny//git//raccoon_dataset//train_annot_folder/",     
           
         "train_times":          10,
-        "pretrained_weights":   "",
+        "pretrained_weights":   "mobilenet_raccoon.h5",
         "batch_size":           16,
         "learning_rate":        1e-4,
         "nb_epoch":             50,
@@ -23,7 +23,7 @@
         "coord_scale":          1.0,
         "class_scale":          1.0,
 
-        "saved_weights_name":   "yolo_raccoon.h5",
+        "saved_weights_name":   "mobilenet_raccoon.h5",
         "debug":                true
     },
 
