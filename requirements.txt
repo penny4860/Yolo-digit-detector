@@ -1,0 +1,10 @@
+* python 3.5 + anaconda 4.4.0
+	pip install tensorflow==1.2.1
+	pip install keras==2.0.8
+	pip install opencv-python	#3.3.0
+	pip install tqdm
+	pip install scikit-image
+	pip install imgaug
+
+	
+	

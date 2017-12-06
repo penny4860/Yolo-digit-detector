@@ -2,19 +2,6 @@
 
 This repo contains the implementation of YOLOv2 in Keras with Tensorflow backend. It supports training YOLOv2 network with various backends such as MobileNet and InceptionV3. Links to demo applications are shown below. Check out https://experiencor.github.io/yolo_demo/demo.html for a Raccoon Detector demo run entirely in brower with DeepLearn.js and MobileNet backend (it somehow breaks in Window). Source code of this demo is located at https://git.io/vF7vG.
 
-## Todo list:
-- [x] Warmup training
-- [x] Raccoon detection
-- [x] Self-driving car
-- [x] Kangaroo detection
-- [x] SqueezeNet backend
-- [x] MobileNet backend
-- [x] InceptionV3 backend
-- [x] VGG16 backend
-- [x] ResNet50 backend
-- [ ] Multiple-GPU training
-- [ ] Multiscale training
-
 ## Some example applications (click for videos):
 
 ### Raccon detection
@@ -46,9 +33,28 @@ Dataset => http://cvrr.ucsd.edu/vivachallenge/index.php/hands/hand-detection/
 
 ### 0. Requirement
 
-python 2.7
+* python 3.5
+* anaconda 4.4.0
+* tensorflow 1.2.1
+* keras 2.0.8
+* opencv 3.3.0
+* tqdm 
+* scikit-image
+* imgaug
+* Etc.
 
-keras >= 2.0.8
+I recommend that you create and use an anaconda env that is independent of your project. You can create anaconda env for this project by following these simple steps.
+
+```
+$ conda create -n yolo python=3.5 anaconda=4.4.0
+$ activate yolo # in linux "source activate yolo"
+(yolo) $ pip install tensorflow==1.2.1
+(yolo) $ pip install keras==2.0.8
+(yolo) $ pip install opencv-python
+(yolo) $ pip install tqdm
+(yolo) $ pip install scikit-image
+(yolo) $ pip install imgaug
+```
 
 ### 1. Data preparation
 Download the Raccoon dataset from from https://github.com/experiencor/raccoon_dataset.
@@ -156,4 +162,6 @@ The code to evaluate detection results can be found at https://github.com/experi
 
 ## Copyright
 
-See [LICENSE](LICENSE) for details.
+* See [LICENSE](LICENSE) for details.
+* The original repository for this project is [basic-yolo-keras](https://github.com/experiencor/basic-yolo-keras). I modified basic-yolo-keras, implemented in python 2.7, to python 3.5, and modified the structure of other source code. Thanks to the [Huynh Ngoc Anh](https://github.com/experiencor) for providing a good project as open source.
+
