@@ -60,13 +60,13 @@ I recommend that you create and use an anaconda env that is independent of your 
 
 ```
 $ conda create -n yolo python=3.5 anaconda=4.4.0
-$ activate yolo
-$ pip install tensorflow==1.2.1
-$ pip install keras==2.0.8
-$ pip install opencv-python
-$ pip install tqdm
-$ pip install scikit-image
-$ pip install imgaug
+$ activate yolo # in linux "source activate yolo"
+(yolo) $ pip install tensorflow==1.2.1
+(yolo) $ pip install keras==2.0.8
+(yolo) $ pip install opencv-python
+(yolo) $ pip install tqdm
+(yolo) $ pip install scikit-image
+(yolo) $ pip install imgaug
 ```
 
 ### 1. Data preparation
