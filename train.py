@@ -57,6 +57,7 @@ argparser = argparse.ArgumentParser(
 argparser.add_argument(
     '-c',
     '--conf',
+    default="config.json",
     help='path to configuration file')
 
 def _main_(args):
@@ -90,12 +91,12 @@ def _main_(args):
     
     overlap_labels = set(config['model']['labels']).intersection(set(train_labels.keys()))
 
-    print 'Seen labels:\t', train_labels
-    print 'Given labels:\t', config['model']['labels']
-    print 'Overlap labels:\t', overlap_labels    
+    print('Seen labels:\t', train_labels)
+    print('Given labels:\t', config['model']['labels'])
+    print('Overlap labels:\t', overlap_labels)    
 
     if len(overlap_labels) < len(config['model']['labels']):
-        print 'Some labels have no images! Please revise the list of labels in the config.json file!'
+        print('Some labels have no images! Please revise the list of labels in the config.json file!')
         return
         
     ###############################
@@ -113,7 +114,7 @@ def _main_(args):
     ###############################    
 
     if os.path.exists(config['train']['pretrained_weights']):
-        print "Loading pre-trained weights in", config['train']['pretrained_weights']
+        print("Loading pre-trained weights in", config['train']['pretrained_weights'])
         yolo.load_weights(config['train']['pretrained_weights'])
 
     ###############################
