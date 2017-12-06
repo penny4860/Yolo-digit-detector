@@ -11,7 +11,7 @@
         "train_image_folder":   "..//raccoon_dataset//images/",
         "train_annot_folder":   "..//raccoon_dataset//annotations/",
         "train_times":          10,
-        "pretrained_weights":   "mobilenet_raccoon.h5",
+        "pretrained_weights":   "",
         "batch_size":           16,
         "learning_rate":        1e-4,
         "nb_epoch":             50,
