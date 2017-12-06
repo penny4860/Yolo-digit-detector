@@ -39,7 +39,6 @@ Dataset => http://cvrr.ucsd.edu/vivachallenge/index.php/hands/hand-detection/
 * keras 2.0.8
 * opencv 3.3.0
 * tqdm 
-* scikit-image
 * imgaug
 * Etc.
 
@@ -52,7 +51,6 @@ $ activate yolo # in linux "source activate yolo"
 (yolo) $ pip install keras==2.0.8
 (yolo) $ pip install opencv-python
 (yolo) $ pip install tqdm
-(yolo) $ pip install scikit-image
 (yolo) $ pip install imgaug
 ```
 
