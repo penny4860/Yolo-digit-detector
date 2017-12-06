@@ -163,5 +163,5 @@ The code to evaluate detection results can be found at https://github.com/experi
 ## Copyright
 
 * See [LICENSE](LICENSE) for details.
-* The original repository for this project is [basic-yolo-keras](https://github.com/experiencor/basic-yolo-keras). I modified basic-yolo-keras, implemented in python 2.7, to python 3.5, and modified the structure of other source code. Thanks to the [Huynh Ngoc Anh](https://github.com/experiencor) for providing a good project as open source.
+* The original repository for this project is [basic-yolo-keras](https://github.com/experiencor/basic-yolo-keras). I modified [basic-yolo-keras](https://github.com/experiencor/basic-yolo-keras), implemented in python 2.7, to python 3.5, and modified the structure of other source code. Thanks to the [Huynh Ngoc Anh](https://github.com/experiencor) for providing a good project as open source.
 
