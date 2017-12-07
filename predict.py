@@ -5,10 +5,16 @@ import os
 import cv2
 import numpy as np
 from tqdm import tqdm
-from preprocessing import parse_annotation
-from utils import draw_boxes
-from frontend import YOLO
 import json
+from yolo.preprocessing import parse_annotation
+from yolo.utils import draw_boxes
+from yolo.frontend import YOLO
+
+
+DEFAULT_CONFIG_FILE = "config.json"
+DEFAULT_PRETRAINED_WEIGHTS = "mobilenet_raccoon.h5"
+DEFAULT_INPUT_IMAGE = "raccoon.jpg"
+
 
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"]=""
@@ -19,16 +25,19 @@ argparser = argparse.ArgumentParser(
 argparser.add_argument(
     '-c',
     '--conf',
+    default=DEFAULT_CONFIG_FILE,
     help='path to configuration file')
 
 argparser.add_argument(
     '-w',
     '--weights',
+    default=DEFAULT_PRETRAINED_WEIGHTS,
     help='path to pretrained weights')
 
 argparser.add_argument(
     '-i',
     '--input',
+    default=DEFAULT_INPUT_IMAGE,
     help='path to an image or an video (mp4 format)')
 
 def _main_(args):
