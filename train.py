@@ -44,8 +44,8 @@ The configuration file is a json file and looks like this:
 import argparse
 import os
 import numpy as np
-from preprocessing import parse_annotation
-from frontend import YOLO
+from yolo.preprocessing import parse_annotation
+from yolo.frontend import YOLO
 import json
 
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
