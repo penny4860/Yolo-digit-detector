@@ -54,7 +54,7 @@ if __name__ == '__main__':
         args.weights = "tests//mobilenet_raccoon.h5"
         args.input = "tests//raccoon.jpg"
 
-        predict(args.input, args.weights, args.input)
+        predict(args.input, args.weights, args.conf)
 
         # 3. Should 
         return is_equal_image_file(output_file, desired_file)
