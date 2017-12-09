@@ -13,7 +13,7 @@ from yolo.frontend import YOLO
 
 DEFAULT_CONFIG_FILE = "config.json"
 DEFAULT_PRETRAINED_WEIGHTS = "mobilenet_raccoon.h5"
-DEFAULT_INPUT_IMAGE = "raccoon.jpg"
+DEFAULT_INPUT_IMAGE = "tests//raccoon.jpg"
 
 
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
@@ -104,5 +104,32 @@ def _main_(args):
         cv2.imwrite(image_path[:-4] + '_detected' + image_path[-4:], image)
 
 if __name__ == '__main__':
-    args = argparser.parse_args()
-    _main_(args)
+    def test_predict():
+        def is_equal_image_file(output_file, desired_file):
+            output_img = cv2.imread(output_file)
+            desired_img = cv2.imread(desired_file)
+            return np.allclose(output_img, desired_img)
+
+        # 1. Given 
+        output_file = "tests//raccoon_detected.jpg"
+        desired_file = "tests//raccoon_detected_gt.jpg"
+        if os.path.exists(output_file):
+            os.remove(output_file)
+        # 2. When run main()
+        args = argparser.parse_args()
+        args.conf = "tests//config.json"
+        args.weights = "tests//mobilenet_raccoon.h5"
+        args.input = "tests//raccoon.jpg"
+
+        _main_(args)
+
+        # 3. Should 
+        return is_equal_image_file(output_file, desired_file)
+
+    if test_predict() == True:
+        print("predict passed")
+    else:
+        print("predict failed")
+
+
+    
