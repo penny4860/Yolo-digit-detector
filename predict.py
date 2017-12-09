@@ -2,8 +2,6 @@
 
 import argparse
 import os
-import cv2
-import numpy as np
 
 from yolo.predict import predict
 
@@ -37,7 +35,6 @@ argparser.add_argument(
     help='path to an image or an video (mp4 format)')
 
 if __name__ == '__main__':
-    from yolo.predict import predict
     args = argparser.parse_args()
     predict(args.input, args.weights, args.conf)
 
