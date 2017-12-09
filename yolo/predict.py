@@ -4,6 +4,7 @@ import json
 from yolo.preprocessing import parse_annotation
 from yolo.utils import draw_boxes
 from yolo.frontend import YOLO
+import cv2
 
 
 def predict(image_path, weights_path, config_path="config.json"):
