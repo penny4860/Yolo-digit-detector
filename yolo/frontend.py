@@ -27,45 +27,45 @@ class YOLO(object):
         self.nb_box   = 5
         self.class_wt = np.ones(self.nb_class, dtype='float32')
         self.anchors  = anchors
-
         self.max_box_per_image = max_box_per_image
 
-        ##########################
-        # Make the model
-        ##########################
-
-        # make the feature extractor layers
-        input_image     = Input(shape=(self.input_size, self.input_size, 3))
-        self.true_boxes = Input(shape=(1, 1, 1, max_box_per_image , 4))
-
+        # create feature extractor
         self.feature_extractor = create_feature_extractor(architecture, input_size)
-        print(self.feature_extractor.get_output_shape())    
         self.grid_h, self.grid_w = self.feature_extractor.get_output_shape()        
-        features = self.feature_extractor.extract(input_image)            
 
-        # make the object detection layer
-        output = Conv2D(self.nb_box * (4 + 1 + self.nb_class), 
-                        (1,1), strides=(1,1), 
-                        padding='same', 
-                        name='conv_23', 
-                        kernel_initializer='lecun_normal')(features)
-        output = Reshape((self.grid_h, self.grid_w, self.nb_box, 4 + 1 + self.nb_class))(output)
-        output = Lambda(lambda args: args[0])([output, self.true_boxes])
+        # truth tensor
+        self.true_boxes = Input(shape=(1, 1, 1, self.max_box_per_image , 4))
 
-        self.model = Model([input_image, self.true_boxes], output)
-        self._init_detection_layer(self.model.layers[-4])
+        self.model = self._create_network()
         
         # print a summary of the whole model
         self.model.summary()
 
-    def _init_detection_layer(self, layer):
-        # initialize the weights of the detection layer
-        weights = layer.get_weights()
+    def _create_network(self):
+        def _init_layer(layer):
+            weights = layer.get_weights()
+    
+            new_kernel = np.random.normal(size=weights[0].shape)/(self.grid_h*self.grid_w)
+            new_bias   = np.random.normal(size=weights[1].shape)/(self.grid_h*self.grid_w)
+    
+            layer.set_weights([new_kernel, new_bias])
+        
+        # make the feature extractor layers
+        input_tensor = Input(shape=(self.input_size, self.input_size, 3))
+        features = self.feature_extractor.extract(input_tensor)      
 
-        new_kernel = np.random.normal(size=weights[0].shape)/(self.grid_h*self.grid_w)
-        new_bias   = np.random.normal(size=weights[1].shape)/(self.grid_h*self.grid_w)
+        # make the object detection layer
+        output_tensor = Conv2D(self.nb_box * (4 + 1 + self.nb_class), 
+                        (1,1), strides=(1,1), 
+                        padding='same', 
+                        name='conv_23', 
+                        kernel_initializer='lecun_normal')(features)
+        output_tensor = Reshape((self.grid_h, self.grid_w, self.nb_box, 4 + 1 + self.nb_class))(output_tensor)
+        output_tensor = Lambda(lambda args: args[0])([output_tensor, self.true_boxes])
 
-        layer.set_weights([new_kernel, new_bias])
+        model = Model([input_tensor, self.true_boxes], output_tensor)
+        _init_layer(model.layers[-4])
+        return model
 
     def _custom_loss(self, y_true, y_pred):
         mask_shape = tf.shape(y_true)[:4]
