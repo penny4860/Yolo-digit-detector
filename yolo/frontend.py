@@ -281,7 +281,22 @@ class YOLO(object):
         ############################################
         # Make train and validation generators
         ############################################
+        train_batch, valid_batch = self._create_batch_generator(train_imgs, valid_imgs)
 
+        ############################################
+        # Start the training process
+        ############################################        
+        self.model.fit_generator(generator        = train_batch, 
+                                 steps_per_epoch  = len(train_batch) * train_times, 
+                                 epochs           = nb_epoch, 
+                                 verbose          = 1,
+                                 validation_data  = valid_batch,
+                                 validation_steps = len(valid_batch) * valid_times,
+                                 callbacks        = self._create_callbacks(saved_weights_name), 
+                                 workers          = 3,
+                                 max_queue_size   = 8)
+
+    def _create_batch_generator(self, train_imgs, valid_imgs):
         generator_config = {
             'IMAGE_H'         : self.input_size, 
             'IMAGE_W'         : self.input_size,
@@ -302,19 +317,7 @@ class YOLO(object):
                                      generator_config, 
                                      norm=self.feature_extractor.normalize,
                                      jitter=False)
-
-        ############################################
-        # Start the training process
-        ############################################        
-        self.model.fit_generator(generator        = train_batch, 
-                                 steps_per_epoch  = len(train_batch) * train_times, 
-                                 epochs           = nb_epoch, 
-                                 verbose          = 1,
-                                 validation_data  = valid_batch,
-                                 validation_steps = len(valid_batch) * valid_times,
-                                 callbacks        = self._create_callbacks(saved_weights_name), 
-                                 workers          = 3,
-                                 max_queue_size   = 8)
+        return train_batch, valid_batch
 
     def _create_callbacks(self, saved_weights_name):
         # Make a few callbacks
