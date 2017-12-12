@@ -17,7 +17,7 @@ VGG16_FEATURE_PATH      = "vgg16_features.h5"       # should be hosted on a serv
 RESNET50_FEATURE_PATH   = "resnet50_features.h5"    # should be hosted on a server
 
 
-def create_feature_extractor(self, architecture, input_size):
+def create_feature_extractor(architecture, input_size):
     """
     # Args
         architecture : str
