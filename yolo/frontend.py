@@ -10,8 +10,8 @@ from keras.layers.merge import concatenate
 from keras.optimizers import SGD, Adam, RMSprop
 from yolo.preprocessing import BatchGenerator
 from keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard
-from yolo.utils import BoundBox
 from yolo.backend import TinyYoloFeature, FullYoloFeature, MobileNetFeature, SqueezeNetFeature, Inception3Feature, VGG16Feature, ResNet50Feature
+from yolo.decoder import YoloDecoder
 
 class YOLO(object):
     def __init__(self, architecture,
@@ -239,116 +239,25 @@ class YOLO(object):
         self.model.load_weights(weight_path)
 
     def predict(self, image):
+        """
+        # Args
+            image : 3d-array
+        
+        # Returns
+            boxes : list of BoundBox instance
+        """
         image = cv2.resize(image, (self.input_size, self.input_size))
         image = self.feature_extractor.normalize(image)
 
         input_image = image[:,:,::-1]
         input_image = np.expand_dims(input_image, 0)
-        dummy_array = dummy_array = np.zeros((1,1,1,1,self.max_box_per_image,4))
+        dummy_array = np.zeros((1,1,1,1,self.max_box_per_image,4))
 
+        # (13,13,5,6)
         netout = self.model.predict([input_image, dummy_array])[0]
-        boxes  = self.decode_netout(netout)
-        
+        yolo_decoder = YoloDecoder(self.anchors)
+        boxes = yolo_decoder.run(netout)
         return boxes
-
-    def bbox_iou(self, box1, box2):
-        x1_min  = box1.x - box1.w/2
-        x1_max  = box1.x + box1.w/2
-        y1_min  = box1.y - box1.h/2
-        y1_max  = box1.y + box1.h/2
-        
-        x2_min  = box2.x - box2.w/2
-        x2_max  = box2.x + box2.w/2
-        y2_min  = box2.y - box2.h/2
-        y2_max  = box2.y + box2.h/2
-        
-        intersect_w = self.interval_overlap([x1_min, x1_max], [x2_min, x2_max])
-        intersect_h = self.interval_overlap([y1_min, y1_max], [y2_min, y2_max])
-        
-        intersect = intersect_w * intersect_h
-        
-        union = box1.w * box1.h + box2.w * box2.h - intersect
-        
-        return float(intersect) / union
-        
-    def interval_overlap(self, interval_a, interval_b):
-        x1, x2 = interval_a
-        x3, x4 = interval_b
-
-        if x3 < x1:
-            if x4 < x1:
-                return 0
-            else:
-                return min(x2,x4) - x1
-        else:
-            if x2 < x3:
-                return 0
-            else:
-                return min(x2,x4) - x3          
-
-    def decode_netout(self, netout, obj_threshold=0.3, nms_threshold=0.3):
-        grid_h, grid_w, nb_box = netout.shape[:3]
-
-        boxes = []
-        
-        # decode the output by the network
-        netout[..., 4]  = self.sigmoid(netout[..., 4])
-        netout[..., 5:] = netout[..., 4][..., np.newaxis] * self.softmax(netout[..., 5:])
-        netout[..., 5:] *= netout[..., 5:] > obj_threshold
-        
-        for row in range(grid_h):
-            for col in range(grid_w):
-                for b in range(nb_box):
-                    # from 4th element onwards are confidence and class classes
-                    classes = netout[row,col,b,5:]
-                    
-                    if np.sum(classes) > 0:
-                        # first 4 elements are x, y, w, and h
-                        x, y, w, h = netout[row,col,b,:4]
-
-                        x = (col + self.sigmoid(x)) / grid_w # center position, unit: image width
-                        y = (row + self.sigmoid(y)) / grid_h # center position, unit: image height
-                        w = self.anchors[2 * b + 0] * np.exp(w) / grid_w # unit: image width
-                        h = self.anchors[2 * b + 1] * np.exp(h) / grid_h # unit: image height
-                        confidence = netout[row,col,b,4]
-                        
-                        box = BoundBox(x, y, w, h, confidence, classes)
-                        
-                        boxes.append(box)
-
-        # suppress non-maximal boxes
-        for c in range(self.nb_class):
-            sorted_indices = list(reversed(np.argsort([box.classes[c] for box in boxes])))
-
-            for i in range(len(sorted_indices)):
-                index_i = sorted_indices[i]
-                
-                if boxes[index_i].classes[c] == 0: 
-                    continue
-                else:
-                    for j in range(i+1, len(sorted_indices)):
-                        index_j = sorted_indices[j]
-                        
-                        if self.bbox_iou(boxes[index_i], boxes[index_j]) >= nms_threshold:
-                            boxes[index_j].classes[c] = 0
-                            
-        # remove the boxes which are less likely than a obj_threshold
-        boxes = [box for box in boxes if box.get_score() > obj_threshold]
-        
-        return boxes
-
-    def sigmoid(self, x):
-        return 1. / (1. + np.exp(-x))
-
-    def softmax(self, x, axis=-1, t=-100.):
-        x = x - np.max(x)
-        
-        if np.min(x) < t:
-            x = x/np.min(x)*t
-            
-        e_x = np.exp(x)
-        
-        return e_x / e_x.sum(axis, keepdims=True)
 
     def train(self, train_imgs,     # the list of images to train the model
                     valid_imgs,     # the list of images used to validate the model
