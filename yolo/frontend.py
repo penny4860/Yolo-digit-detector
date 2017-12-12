@@ -82,7 +82,7 @@ class YOLO(object):
         # print a summary of the whole model
         self.model.summary()
 
-    def custom_loss(self, y_true, y_pred):
+    def _custom_loss(self, y_true, y_pred):
         mask_shape = tf.shape(y_true)[:4]
         
         cell_x = tf.to_float(tf.reshape(tf.tile(tf.range(self.grid_w), [self.grid_h]), (1, self.grid_h, self.grid_w, 1, 1)))
@@ -291,7 +291,7 @@ class YOLO(object):
         ############################################
 
         optimizer = Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
-        self.model.compile(loss=self.custom_loss, optimizer=optimizer)
+        self.model.compile(loss=self._custom_loss, optimizer=optimizer)
 
         ############################################
         # Make train and validation generators
