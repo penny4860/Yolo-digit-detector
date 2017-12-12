@@ -239,6 +239,13 @@ class YOLO(object):
         self.model.load_weights(weight_path)
 
     def predict(self, image):
+        """
+        # Args
+            image : 3d-array
+        
+        # Returns
+            boxes : list of BoundBox instance
+        """
         image = cv2.resize(image, (self.input_size, self.input_size))
         image = self.feature_extractor.normalize(image)
 
