@@ -1,5 +1,6 @@
 
 import numpy as np
+import cv2
 
 class BoundBox:
     def __init__(self, x, y, w, h, c = None, classes = None):
@@ -45,6 +46,26 @@ def bbox_iou(box1, box2):
     union = box1.w * box1.h + box2.w * box2.h - intersect
     
     return float(intersect) / union
+
+
+def draw_boxes(image, boxes, labels):
+    
+    for box in boxes:
+        xmin  = int((box.x - box.w/2) * image.shape[1])
+        xmax  = int((box.x + box.w/2) * image.shape[1])
+        ymin  = int((box.y - box.h/2) * image.shape[0])
+        ymax  = int((box.y + box.h/2) * image.shape[0])
+
+        cv2.rectangle(image, (xmin,ymin), (xmax,ymax), (0,255,0), 3)
+        cv2.putText(image, 
+                    labels[box.get_label()] + ' ' + str(box.get_score()), 
+                    (xmin, ymin - 13), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 
+                    1e-3 * image.shape[0], 
+                    (0,255,0), 2)
+        
+    return image        
+
 
 def _interval_overlap(interval_a, interval_b):
     x1, x2 = interval_a
