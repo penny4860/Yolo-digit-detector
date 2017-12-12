@@ -1,8 +1,6 @@
 
-from tqdm import tqdm
 import json
-from yolo.preprocessing import parse_annotation
-from yolo.utils import draw_boxes
+from yolo.box import draw_boxes
 from yolo.frontend import YOLO
 import cv2
 
