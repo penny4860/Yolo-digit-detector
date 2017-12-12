@@ -304,9 +304,21 @@ class YOLO(object):
                                      jitter=False)
 
         ############################################
-        # Make a few callbacks
-        ############################################
+        # Start the training process
+        ############################################        
 
+        self.model.fit_generator(generator        = train_batch, 
+                                 steps_per_epoch  = len(train_batch) * train_times, 
+                                 epochs           = nb_epoch, 
+                                 verbose          = 1,
+                                 validation_data  = valid_batch,
+                                 validation_steps = len(valid_batch) * valid_times,
+                                 callbacks        = self._create_callbacks(saved_weights_name), 
+                                 workers          = 3,
+                                 max_queue_size   = 8)
+
+    def _create_callbacks(self, saved_weights_name):
+        # Make a few callbacks
         early_stop = EarlyStopping(monitor='val_loss', 
                            min_delta=0.001, 
                            patience=3, 
@@ -323,16 +335,7 @@ class YOLO(object):
                                   histogram_freq=0, 
                                   write_graph=True, 
                                   write_images=False)
-        ############################################
-        # Start the training process
-        ############################################        
+        callbacks = [early_stop, checkpoint, tensorboard]
+        return callbacks
+        
 
-        self.model.fit_generator(generator        = train_batch, 
-                                 steps_per_epoch  = len(train_batch) * train_times, 
-                                 epochs           = nb_epoch, 
-                                 verbose          = 1,
-                                 validation_data  = valid_batch,
-                                 validation_steps = len(valid_batch) * valid_times,
-                                 callbacks        = [early_stop, checkpoint, tensorboard], 
-                                 workers          = 3,
-                                 max_queue_size   = 8)
