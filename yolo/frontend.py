@@ -10,7 +10,7 @@ from keras.layers.merge import concatenate
 from keras.optimizers import SGD, Adam, RMSprop
 from yolo.preprocessing import BatchGenerator
 from keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard
-from yolo.utils import BoundBox
+from yolo.utils import BoundBox, bbox_iou
 from yolo.backend import TinyYoloFeature, FullYoloFeature, MobileNetFeature, SqueezeNetFeature, Inception3Feature, VGG16Feature, ResNet50Feature
 
 class YOLO(object):
@@ -252,26 +252,6 @@ class YOLO(object):
         
         return boxes
 
-    def bbox_iou(self, box1, box2):
-        x1_min  = box1.x - box1.w/2
-        x1_max  = box1.x + box1.w/2
-        y1_min  = box1.y - box1.h/2
-        y1_max  = box1.y + box1.h/2
-        
-        x2_min  = box2.x - box2.w/2
-        x2_max  = box2.x + box2.w/2
-        y2_min  = box2.y - box2.h/2
-        y2_max  = box2.y + box2.h/2
-        
-        intersect_w = self.interval_overlap([x1_min, x1_max], [x2_min, x2_max])
-        intersect_h = self.interval_overlap([y1_min, y1_max], [y2_min, y2_max])
-        
-        intersect = intersect_w * intersect_h
-        
-        union = box1.w * box1.h + box2.w * box2.h - intersect
-        
-        return float(intersect) / union
-        
     def interval_overlap(self, interval_a, interval_b):
         x1, x2 = interval_a
         x3, x4 = interval_b
@@ -330,7 +310,7 @@ class YOLO(object):
                     for j in range(i+1, len(sorted_indices)):
                         index_j = sorted_indices[j]
                         
-                        if self.bbox_iou(boxes[index_i], boxes[index_j]) >= nms_threshold:
+                        if bbox_iou(boxes[index_i], boxes[index_j]) >= nms_threshold:
                             boxes[index_j].classes[c] = 0
                             
         # remove the boxes which are less likely than a obj_threshold
