@@ -246,6 +246,7 @@ class YOLO(object):
         input_image = np.expand_dims(input_image, 0)
         dummy_array = dummy_array = np.zeros((1,1,1,1,self.max_box_per_image,4))
 
+        # (13,13,5,6)
         netout = self.model.predict([input_image, dummy_array])[0]
         boxes  = self._decode_netout(netout)
         
@@ -293,7 +294,7 @@ class YOLO(object):
         
         # decode the output by the network
         netout[..., 4]  = self._sigmoid(netout[..., 4])
-        netout[..., 5:] = netout[..., 4][..., np.newaxis] * self.softmax(netout[..., 5:])
+        netout[..., 5:] = netout[..., 4][..., np.newaxis] * self._softmax(netout[..., 5:])
         netout[..., 5:] *= netout[..., 5:] > obj_threshold
         
         for row in range(grid_h):
@@ -337,10 +338,10 @@ class YOLO(object):
         
         return boxes
 
-    def sigmoid(self, x):
+    def _sigmoid(self, x):
         return 1. / (1. + np.exp(-x))
 
-    def softmax(self, x, axis=-1, t=-100.):
+    def _softmax(self, x, axis=-1, t=-100.):
         x = x - np.max(x)
         
         if np.min(x) < t:
