@@ -10,9 +10,11 @@ class YoloDecoder(object):
         self._nms_threshold = nms_threshold
 
     def run(self, netout):
-        """
+        """Convert Yolo network output to bounding box
+        
         # Args
             netout : 4d-array, shape of (grid_h, grid_w, num of boxes per grid, 5 + n_classes)
+                YOLO neural network output array
         
         # Returns
             boxes : list of BoundBox instance
