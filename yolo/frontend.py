@@ -247,7 +247,7 @@ class YOLO(object):
         dummy_array = dummy_array = np.zeros((1,1,1,1,self.max_box_per_image,4))
 
         netout = self.model.predict([input_image, dummy_array])[0]
-        boxes  = self.decode_netout(netout)
+        boxes  = self._decode_netout(netout)
         
         return boxes
 
@@ -286,7 +286,7 @@ class YOLO(object):
             else:
                 return min(x2,x4) - x3          
 
-    def decode_netout(self, netout, obj_threshold=0.3, nms_threshold=0.3):
+    def _decode_netout(self, netout, obj_threshold=0.3, nms_threshold=0.3):
         grid_h, grid_w, nb_box = netout.shape[:3]
 
         boxes = []
