@@ -53,18 +53,19 @@ class YOLO(object):
         output = Lambda(lambda args: args[0])([output, self.true_boxes])
 
         self.model = Model([input_image, self.true_boxes], output)
+        self._init_detection_layer(self.model.layers[-4])
         
+        # print a summary of the whole model
+        self.model.summary()
+
+    def _init_detection_layer(self, layer):
         # initialize the weights of the detection layer
-        layer = self.model.layers[-4]
         weights = layer.get_weights()
 
         new_kernel = np.random.normal(size=weights[0].shape)/(self.grid_h*self.grid_w)
         new_bias   = np.random.normal(size=weights[1].shape)/(self.grid_h*self.grid_w)
 
         layer.set_weights([new_kernel, new_bias])
-
-        # print a summary of the whole model
-        self.model.summary()
 
     def _custom_loss(self, y_true, y_pred):
         mask_shape = tf.shape(y_true)[:4]
