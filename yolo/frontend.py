@@ -306,7 +306,6 @@ class YOLO(object):
         ############################################
         # Start the training process
         ############################################        
-
         self.model.fit_generator(generator        = train_batch, 
                                  steps_per_epoch  = len(train_batch) * train_times, 
                                  epochs           = nb_epoch, 
