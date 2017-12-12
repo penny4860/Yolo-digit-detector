@@ -10,7 +10,8 @@ from keras.layers.merge import concatenate
 from keras.optimizers import SGD, Adam, RMSprop
 from yolo.preprocessing import BatchGenerator
 from keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard
-from yolo.backend import TinyYoloFeature, FullYoloFeature, MobileNetFeature, SqueezeNetFeature, Inception3Feature, VGG16Feature, ResNet50Feature
+from yolo.backend import TinyYoloFeature, FullYoloFeature, MobileNetFeature, SqueezeNetFeature, Inception3Feature, VGG16Feature, ResNet50Feature,\
+    create_feature_extractor
 from yolo.decoder import YoloDecoder
 
 class YOLO(object):
@@ -36,25 +37,9 @@ class YOLO(object):
 
         # make the feature extractor layers
         input_image     = Input(shape=(self.input_size, self.input_size, 3))
-        self.true_boxes = Input(shape=(1, 1, 1, max_box_per_image , 4))  
+        self.true_boxes = Input(shape=(1, 1, 1, max_box_per_image , 4))
 
-        if architecture == 'Inception3':
-            self.feature_extractor = Inception3Feature(self.input_size)  
-        elif architecture == 'SqueezeNet':
-            self.feature_extractor = SqueezeNetFeature(self.input_size)        
-        elif architecture == 'MobileNet':
-            self.feature_extractor = MobileNetFeature(self.input_size)
-        elif architecture == 'Full Yolo':
-            self.feature_extractor = FullYoloFeature(self.input_size)
-        elif architecture == 'Tiny Yolo':
-            self.feature_extractor = TinyYoloFeature(self.input_size)
-        elif architecture == 'VGG16':
-            self.feature_extractor = VGG16Feature(self.input_size)
-        elif architecture == 'ResNet50':
-            self.feature_extractor = ResNet50Feature(self.input_size)
-        else:
-            raise Exception('Architecture not supported! Only support Full Yolo, Tiny Yolo, MobileNet, SqueezeNet, VGG16, ResNet50, and Inception3 at the moment!')
-
+        self.feature_extractor = create_feature_extractor(architecture, input_size)
         print(self.feature_extractor.get_output_shape())    
         self.grid_h, self.grid_w = self.feature_extractor.get_output_shape()        
         features = self.feature_extractor.extract(input_image)            
