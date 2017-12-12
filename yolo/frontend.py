@@ -252,21 +252,6 @@ class YOLO(object):
         
         return boxes
 
-    def interval_overlap(self, interval_a, interval_b):
-        x1, x2 = interval_a
-        x3, x4 = interval_b
-
-        if x3 < x1:
-            if x4 < x1:
-                return 0
-            else:
-                return min(x2,x4) - x1
-        else:
-            if x2 < x3:
-                return 0
-            else:
-                return min(x2,x4) - x3          
-
     def _decode_netout(self, netout, obj_threshold=0.3, nms_threshold=0.3):
         grid_h, grid_w, nb_box = netout.shape[:3]
 
