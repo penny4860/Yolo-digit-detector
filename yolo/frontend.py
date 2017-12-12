@@ -292,7 +292,7 @@ class YOLO(object):
         boxes = []
         
         # decode the output by the network
-        netout[..., 4]  = self.sigmoid(netout[..., 4])
+        netout[..., 4]  = self._sigmoid(netout[..., 4])
         netout[..., 5:] = netout[..., 4][..., np.newaxis] * self.softmax(netout[..., 5:])
         netout[..., 5:] *= netout[..., 5:] > obj_threshold
         
@@ -306,8 +306,8 @@ class YOLO(object):
                         # first 4 elements are x, y, w, and h
                         x, y, w, h = netout[row,col,b,:4]
 
-                        x = (col + self.sigmoid(x)) / grid_w # center position, unit: image width
-                        y = (row + self.sigmoid(y)) / grid_h # center position, unit: image height
+                        x = (col + self._sigmoid(x)) / grid_w # center position, unit: image width
+                        y = (row + self._sigmoid(y)) / grid_h # center position, unit: image height
                         w = self.anchors[2 * b + 0] * np.exp(w) / grid_w # unit: image width
                         h = self.anchors[2 * b + 1] * np.exp(h) / grid_h # unit: image height
                         confidence = netout[row,col,b,4]
