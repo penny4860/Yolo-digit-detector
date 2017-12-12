@@ -10,7 +10,7 @@ from keras.layers.merge import concatenate
 from keras.optimizers import SGD, Adam, RMSprop
 from yolo.preprocessing import BatchGenerator
 from keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard
-from yolo.utils import BoundBox, bbox_iou
+from yolo.box import BoundBox, bbox_iou
 from yolo.backend import TinyYoloFeature, FullYoloFeature, MobileNetFeature, SqueezeNetFeature, Inception3Feature, VGG16Feature, ResNet50Feature
 
 class YOLO(object):
