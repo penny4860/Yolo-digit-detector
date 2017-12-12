@@ -16,6 +16,36 @@ INCEPTION3_FEATURE_PATH = "inception_features.h5"   # should be hosted on a serv
 VGG16_FEATURE_PATH      = "vgg16_features.h5"       # should be hosted on a server
 RESNET50_FEATURE_PATH   = "resnet50_features.h5"    # should be hosted on a server
 
+
+def create_feature_extractor(self, architecture, input_size):
+    """
+    # Args
+        architecture : str
+        input_size : int
+
+    # Returns
+        feature_extractor : BaseFeatureExtractor instance
+    """
+    if architecture == 'Inception3':
+        feature_extractor = Inception3Feature(input_size)  
+    elif architecture == 'SqueezeNet':
+        feature_extractor = SqueezeNetFeature(input_size)        
+    elif architecture == 'MobileNet':
+        feature_extractor = MobileNetFeature(input_size)
+    elif architecture == 'Full Yolo':
+        feature_extractor = FullYoloFeature(input_size)
+    elif architecture == 'Tiny Yolo':
+        feature_extractor = TinyYoloFeature(input_size)
+    elif architecture == 'VGG16':
+        feature_extractor = VGG16Feature(input_size)
+    elif architecture == 'ResNet50':
+        feature_extractor = ResNet50Feature(input_size)
+    else:
+        raise Exception('Architecture not supported! Only support Full Yolo, Tiny Yolo, MobileNet, SqueezeNet, VGG16, ResNet50, and Inception3 at the moment!')
+    return feature_extractor
+
+
+
 class BaseFeatureExtractor(object):
     """docstring for ClassName"""
 
