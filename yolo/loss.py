@@ -6,6 +6,17 @@ import numpy as np
 class YoloLoss(object):
     
     def __init__(self, grid_w, grid_h, batch_size, anchors, nb_box, nb_class, warmup_bs, true_boxes):
+        """
+        # Args
+            grid_w : int
+            grid_h : int
+            batch_size : int
+            anchors : list of floats
+            nb_box : int
+            nb_class : int
+            warmup_bs
+            true_boxes : Tensor instance
+        """
         self.grid_w = grid_w
         self.grid_h = grid_h
         self.batch_size = batch_size
