@@ -10,7 +10,7 @@ from keras.layers.merge import concatenate
 from keras.optimizers import SGD, Adam, RMSprop
 from yolo.preprocessing import BatchGenerator
 from keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard
-from yolo.backend import TinyYoloFeature, FullYoloFeature, MobileNetFeature, SqueezeNetFeature, Inception3Feature, VGG16Feature, ResNet50Feature
+from yolo.backend import create_feature_extractor
 from yolo.decoder import YoloDecoder
 
 class YOLO(object):
@@ -27,60 +27,45 @@ class YOLO(object):
         self.nb_box   = 5
         self.class_wt = np.ones(self.nb_class, dtype='float32')
         self.anchors  = anchors
-
         self.max_box_per_image = max_box_per_image
 
-        ##########################
-        # Make the model
-        ##########################
-
-        # make the feature extractor layers
-        input_image     = Input(shape=(self.input_size, self.input_size, 3))
-        self.true_boxes = Input(shape=(1, 1, 1, max_box_per_image , 4))  
-
-        if architecture == 'Inception3':
-            self.feature_extractor = Inception3Feature(self.input_size)  
-        elif architecture == 'SqueezeNet':
-            self.feature_extractor = SqueezeNetFeature(self.input_size)        
-        elif architecture == 'MobileNet':
-            self.feature_extractor = MobileNetFeature(self.input_size)
-        elif architecture == 'Full Yolo':
-            self.feature_extractor = FullYoloFeature(self.input_size)
-        elif architecture == 'Tiny Yolo':
-            self.feature_extractor = TinyYoloFeature(self.input_size)
-        elif architecture == 'VGG16':
-            self.feature_extractor = VGG16Feature(self.input_size)
-        elif architecture == 'ResNet50':
-            self.feature_extractor = ResNet50Feature(self.input_size)
-        else:
-            raise Exception('Architecture not supported! Only support Full Yolo, Tiny Yolo, MobileNet, SqueezeNet, VGG16, ResNet50, and Inception3 at the moment!')
-
-        print(self.feature_extractor.get_output_shape())    
+        # create feature extractor
+        self.feature_extractor = create_feature_extractor(architecture, input_size)
         self.grid_h, self.grid_w = self.feature_extractor.get_output_shape()        
-        features = self.feature_extractor.extract(input_image)            
+
+        # truth tensor
+        self.true_boxes = Input(shape=(1, 1, 1, self.max_box_per_image , 4))
+
+        self.model = self._create_network()
+        
+        # print a summary of the whole model
+        self.model.summary()
+
+    def _create_network(self):
+        def _init_layer(layer):
+            weights = layer.get_weights()
+    
+            new_kernel = np.random.normal(size=weights[0].shape)/(self.grid_h*self.grid_w)
+            new_bias   = np.random.normal(size=weights[1].shape)/(self.grid_h*self.grid_w)
+    
+            layer.set_weights([new_kernel, new_bias])
+        
+        # make the feature extractor layers
+        input_tensor = Input(shape=(self.input_size, self.input_size, 3))
+        features = self.feature_extractor.extract(input_tensor)      
 
         # make the object detection layer
-        output = Conv2D(self.nb_box * (4 + 1 + self.nb_class), 
+        output_tensor = Conv2D(self.nb_box * (4 + 1 + self.nb_class), 
                         (1,1), strides=(1,1), 
                         padding='same', 
                         name='conv_23', 
                         kernel_initializer='lecun_normal')(features)
-        output = Reshape((self.grid_h, self.grid_w, self.nb_box, 4 + 1 + self.nb_class))(output)
-        output = Lambda(lambda args: args[0])([output, self.true_boxes])
+        output_tensor = Reshape((self.grid_h, self.grid_w, self.nb_box, 4 + 1 + self.nb_class))(output_tensor)
+        output_tensor = Lambda(lambda args: args[0])([output_tensor, self.true_boxes])
 
-        self.model = Model([input_image, self.true_boxes], output)
-        
-        # initialize the weights of the detection layer
-        layer = self.model.layers[-4]
-        weights = layer.get_weights()
-
-        new_kernel = np.random.normal(size=weights[0].shape)/(self.grid_h*self.grid_w)
-        new_bias   = np.random.normal(size=weights[1].shape)/(self.grid_h*self.grid_w)
-
-        layer.set_weights([new_kernel, new_bias])
-
-        # print a summary of the whole model
-        self.model.summary()
+        model = Model([input_tensor, self.true_boxes], output_tensor)
+        _init_layer(model.layers[-4])
+        return model
 
     def _custom_loss(self, y_true, y_pred):
         mask_shape = tf.shape(y_true)[:4]
@@ -296,7 +281,22 @@ class YOLO(object):
         ############################################
         # Make train and validation generators
         ############################################
+        train_batch, valid_batch = self._create_batch_generator(train_imgs, valid_imgs)
 
+        ############################################
+        # Start the training process
+        ############################################        
+        self.model.fit_generator(generator        = train_batch, 
+                                 steps_per_epoch  = len(train_batch) * train_times, 
+                                 epochs           = nb_epoch, 
+                                 verbose          = 1,
+                                 validation_data  = valid_batch,
+                                 validation_steps = len(valid_batch) * valid_times,
+                                 callbacks        = self._create_callbacks(saved_weights_name), 
+                                 workers          = 3,
+                                 max_queue_size   = 8)
+
+    def _create_batch_generator(self, train_imgs, valid_imgs):
         generator_config = {
             'IMAGE_H'         : self.input_size, 
             'IMAGE_W'         : self.input_size,
@@ -317,11 +317,10 @@ class YOLO(object):
                                      generator_config, 
                                      norm=self.feature_extractor.normalize,
                                      jitter=False)
+        return train_batch, valid_batch
 
-        ############################################
+    def _create_callbacks(self, saved_weights_name):
         # Make a few callbacks
-        ############################################
-
         early_stop = EarlyStopping(monitor='val_loss', 
                            min_delta=0.001, 
                            patience=3, 
@@ -338,16 +337,7 @@ class YOLO(object):
                                   histogram_freq=0, 
                                   write_graph=True, 
                                   write_images=False)
-        ############################################
-        # Start the training process
-        ############################################        
+        callbacks = [early_stop, checkpoint, tensorboard]
+        return callbacks
+        
 
-        self.model.fit_generator(generator        = train_batch, 
-                                 steps_per_epoch  = len(train_batch) * train_times, 
-                                 epochs           = nb_epoch, 
-                                 verbose          = 1,
-                                 validation_data  = valid_batch,
-                                 validation_steps = len(valid_batch) * valid_times,
-                                 callbacks        = [early_stop, checkpoint, tensorboard], 
-                                 workers          = 3,
-                                 max_queue_size   = 8)
