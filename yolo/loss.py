@@ -29,14 +29,45 @@ class YoloLoss(object):
         self.no_object_scale = 1.0
         self.coord_scale     = 1.0
         self.class_scale     = 1.0
-    
-    def custom_loss(self, y_true, y_pred):
-        mask_shape = tf.shape(y_true)[:4]
         
+        
+    def _create_cell_grid(self):
         cell_x = tf.to_float(tf.reshape(tf.tile(tf.range(self.grid_w), [self.grid_h]), (1, self.grid_h, self.grid_w, 1, 1)))
         cell_y = tf.transpose(cell_x, (0,2,1,3,4))
-
         cell_grid = tf.tile(tf.concat([cell_x,cell_y], -1), [self.batch_size, 1, 1, 5, 1])
+        return cell_grid
+
+    def _adjust_pred(self, y_pred, cell_grid):
+        """
+        # Args
+            y_pred : (N, 13, 13, 5, 6)
+            cell_grid : (N, 13, 13, 5, 2)
+        
+        # Returns
+            box_xy : (N, 13, 13, 5, 2)
+            box_wh : (N, 13, 13, 5, 2)
+            box_conf : (N, 13, 13, 5, 1)
+            box_classes : (N, 13, 13, 5, nb_class)
+        """
+        
+        pred_box_xy = tf.sigmoid(y_pred[..., :2]) + cell_grid
+        pred_box_wh = tf.exp(y_pred[..., 2:4]) * np.reshape(self.anchors, [1,1,1,self.nb_box,2])
+        pred_box_conf = tf.sigmoid(y_pred[..., 4])
+        pred_box_class = y_pred[..., 5:]
+        return pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class
+    
+    def custom_loss(self, y_true, y_pred):
+        """
+        # Args
+            y_true : (N, 13, 13, 5, 6)
+            y_pred : (N, 13, 13, 5, 6)
+        
+        """
+        mask_shape = tf.shape(y_true)[:4]
+        
+        # (batch_size, 13, 13, 5, 2)
+        cell_grid = self._create_cell_grid()
+        cell_grid = tf.Print(cell_grid, [tf.shape(cell_grid)], message='\ncell_grid shape', summarize=1000)
         
         coord_mask = tf.zeros(mask_shape)
         conf_mask  = tf.zeros(mask_shape)
@@ -45,20 +76,8 @@ class YoloLoss(object):
         seen = tf.Variable(0.)
         total_recall = tf.Variable(0.)
         
-        """
-        Adjust prediction
-        """
-        ### adjust x and y      
-        pred_box_xy = tf.sigmoid(y_pred[..., :2]) + cell_grid
-        
-        ### adjust w and h
-        pred_box_wh = tf.exp(y_pred[..., 2:4]) * np.reshape(self.anchors, [1,1,1,self.nb_box,2])
-        
-        ### adjust confidence
-        pred_box_conf = tf.sigmoid(y_pred[..., 4])
-        
-        ### adjust class probabilities
-        pred_box_class = y_pred[..., 5:]
+        # Adjust prediction
+        pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = self._adjust_pred(y_pred, cell_grid)
         
         """
         Adjust ground truth
