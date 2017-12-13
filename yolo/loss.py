@@ -86,6 +86,7 @@ class YoloLoss(object):
         """
         cell_grid = self._create_cell_grid()
         
+        # bx = sigmoid(tx) + cx, by = sigmoid(ty) + cy
         pred_box_xy = tf.sigmoid(y_pred[..., :2]) + cell_grid
         pred_box_wh = tf.exp(y_pred[..., 2:4]) * np.reshape(self.anchors, [1,1,1,self.nb_box,2])
         pred_box_conf = tf.sigmoid(y_pred[..., 4])
