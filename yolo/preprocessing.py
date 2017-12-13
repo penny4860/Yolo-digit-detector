@@ -2,6 +2,7 @@ import os
 import cv2
 import copy
 import numpy as np
+np.random.seed(1337)
 from imgaug import augmenters as iaa
 from keras.utils import Sequence
 import xml.etree.ElementTree as ET
