@@ -37,51 +37,7 @@ class YoloLoss(object):
         cell_grid = tf.tile(tf.concat([cell_x,cell_y], -1), [self.batch_size, 1, 1, 5, 1])
         return cell_grid
 
-    def _adjust_pred(self, y_pred, cell_grid):
-        """
-        # Args
-            y_pred : (N, 13, 13, 5, 6)
-            cell_grid : (N, 13, 13, 5, 2)
-        
-        # Returns
-            box_xy : (N, 13, 13, 5, 2)
-            box_wh : (N, 13, 13, 5, 2)
-            box_conf : (N, 13, 13, 5, 1)
-            box_classes : (N, 13, 13, 5, nb_class)
-        """
-        
-        pred_box_xy = tf.sigmoid(y_pred[..., :2]) + cell_grid
-        pred_box_wh = tf.exp(y_pred[..., 2:4]) * np.reshape(self.anchors, [1,1,1,self.nb_box,2])
-        pred_box_conf = tf.sigmoid(y_pred[..., 4])
-        pred_box_class = y_pred[..., 5:]
-        return pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class
-    
-    def custom_loss(self, y_true, y_pred):
-        """
-        # Args
-            y_true : (N, 13, 13, 5, 6)
-            y_pred : (N, 13, 13, 5, 6)
-        
-        """
-        mask_shape = tf.shape(y_true)[:4]
-        
-        # (batch_size, 13, 13, 5, 2)
-        cell_grid = self._create_cell_grid()
-        cell_grid = tf.Print(cell_grid, [tf.shape(cell_grid)], message='\ncell_grid shape', summarize=1000)
-        
-        coord_mask = tf.zeros(mask_shape)
-        conf_mask  = tf.zeros(mask_shape)
-        class_mask = tf.zeros(mask_shape)
-        
-        seen = tf.Variable(0.)
-        total_recall = tf.Variable(0.)
-        
-        # Adjust prediction
-        pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = self._adjust_pred(y_pred, cell_grid)
-        
-        """
-        Adjust ground truth
-        """
+    def _adjust_true(self, y_true, pred_box_xy, pred_box_wh):
         ### adjust x and y
         true_box_xy = y_true[..., 0:2] # relative position to the containing cell
         
@@ -112,6 +68,54 @@ class YoloLoss(object):
         
         ### adjust class probabilities
         true_box_class = tf.argmax(y_true[..., 5:], -1)
+        
+        return true_box_xy, true_box_wh, true_box_conf, true_box_class
+
+
+    def _adjust_pred(self, y_pred):
+        """
+        # Args
+            y_pred : (N, 13, 13, 5, 6)
+            cell_grid : (N, 13, 13, 5, 2)
+        
+        # Returns
+            box_xy : (N, 13, 13, 5, 2)
+            box_wh : (N, 13, 13, 5, 2)
+            box_conf : (N, 13, 13, 5, 1)
+            box_classes : (N, 13, 13, 5, nb_class)
+        """
+        cell_grid = self._create_cell_grid()
+        
+        pred_box_xy = tf.sigmoid(y_pred[..., :2]) + cell_grid
+        pred_box_wh = tf.exp(y_pred[..., 2:4]) * np.reshape(self.anchors, [1,1,1,self.nb_box,2])
+        pred_box_conf = tf.sigmoid(y_pred[..., 4])
+        pred_box_class = y_pred[..., 5:]
+        return pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class
+    
+    def custom_loss(self, y_true, y_pred):
+        """
+        # Args
+            y_true : (N, 13, 13, 5, 6)
+            y_pred : (N, 13, 13, 5, 6)
+        
+        """
+        mask_shape = tf.shape(y_true)[:4]
+        
+        # (batch_size, 13, 13, 5, 2)
+        cell_grid = self._create_cell_grid()
+        
+        coord_mask = tf.zeros(mask_shape)
+        conf_mask  = tf.zeros(mask_shape)
+        class_mask = tf.zeros(mask_shape)
+        
+        seen = tf.Variable(0.)
+        total_recall = tf.Variable(0.)
+        
+        # Adjust prediction
+        pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = self._adjust_pred(y_pred)
+        
+        # Adjust ground truth
+        true_box_xy, true_box_wh, true_box_conf, true_box_class = self._adjust_true(y_true, pred_box_xy, pred_box_wh)
         
         """
         Determine the masks
