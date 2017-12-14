@@ -21,4 +21,5 @@ argparser.add_argument(
 if __name__ == '__main__':
     args = argparser.parse_args()
     train(args.conf)
+    # loss: 2.1691, train batch jitter=False
 
