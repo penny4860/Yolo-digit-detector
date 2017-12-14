@@ -177,8 +177,7 @@ class YoloTrainer(object):
     def _create_batch_generator(self, train_imgs, valid_imgs):
         train_batch = BatchGenerator(train_imgs, 
                                      self.generator_config, 
-                                     norm=self.normalize_func,
-                                     jitter=False)
+                                     norm=self.normalize_func)
         valid_batch = BatchGenerator(valid_imgs, 
                                      self.generator_config, 
                                      norm=self.normalize_func,
