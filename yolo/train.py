@@ -3,7 +3,7 @@ import json
 import os
 import numpy as np
 from yolo.preprocessing import parse_annotation
-from yolo.frontend import YOLO
+from yolo.yolo import YOLO
 
 
 def train(conf):
