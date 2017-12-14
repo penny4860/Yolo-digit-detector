@@ -13,9 +13,9 @@
         "train_times":          1,
         "pretrained_weights":   "",
         "batch_size":           1,
-        "learning_rate":        1e-4,
-        "nb_epoch":             3,
-        "warmup_epochs":        3,
+        "learning_rate":        1e-3,
+        "nb_epoch":             1,
+        "warmup_epochs":        1,
 
         "object_scale":         5.0 ,
         "no_object_scale":      1.0,
