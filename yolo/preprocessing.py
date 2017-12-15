@@ -89,21 +89,28 @@ class BatchGenerator(Sequence):
     def __len__(self):
         return int(np.ceil(float(len(self.images))/self.config['BATCH_SIZE']))   
 
-    def __getitem__(self, idx):
+    def _get_img_batch(self, idx):
         l_bound = idx*self.config['BATCH_SIZE']
         r_bound = (idx+1)*self.config['BATCH_SIZE']
 
         if r_bound > len(self.images):
             r_bound = len(self.images)
             l_bound = r_bound - self.config['BATCH_SIZE']
+            
+        return self.images[l_bound:r_bound]
+
+    def __getitem__(self, idx):
+        
+        img_batch = self._get_img_batch(idx)
+        n_batch = len(img_batch)
 
         instance_count = 0
 
-        x_batch = np.zeros((r_bound - l_bound, self.config['IMAGE_H'], self.config['IMAGE_W'], 3))                         # input images
-        b_batch = np.zeros((r_bound - l_bound, 1     , 1     , 1    ,  self.config['TRUE_BOX_BUFFER'], 4))   # list of self.config['TRUE_self.config['BOX']_BUFFER'] GT boxes
-        y_batch = np.zeros((r_bound - l_bound, self.config['GRID_H'],  self.config['GRID_W'], self.config['BOX'], 4+1+self.config['CLASS']))                # desired network output
+        x_batch = np.zeros((n_batch, self.config['IMAGE_H'], self.config['IMAGE_W'], 3))                         # input images
+        b_batch = np.zeros((n_batch, 1     , 1     , 1    ,  self.config['TRUE_BOX_BUFFER'], 4))   # list of self.config['TRUE_self.config['BOX']_BUFFER'] GT boxes
+        y_batch = np.zeros((n_batch, self.config['GRID_H'],  self.config['GRID_W'], self.config['BOX'], 4+1+self.config['CLASS']))                # desired network output
 
-        for train_instance in self.images[l_bound:r_bound]:
+        for train_instance in img_batch:
             # augment input image and fix object's position and size
             img, all_objs = self.aug_image(train_instance, jitter=self.jitter)
             
@@ -176,6 +183,10 @@ class BatchGenerator(Sequence):
 
         self.counter += 1
         #print ' new batch created', self.counter
+        
+        print(x_batch.shape)
+        print(b_batch.shape)
+        print(y_batch.shape)
 
         return [x_batch, b_batch], y_batch
 
