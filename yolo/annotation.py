@@ -9,36 +9,61 @@ from xml.etree.ElementTree import parse
 
 
 class PascalVocXmlParser(object):
+    """Parse annotation for 1-annotation file """
     
     def __init__(self):
         pass
-    
-    def _root_tag(self, fname):
-        tree = parse(fname)
-        root = tree.getroot()
-        return root
 
-    def _tree(self, fname):
-        tree = parse(fname)
-        return tree
-    
     def get_fname(self, annotation_file):
+        """
+        # Args
+            annotation_file : str
+                annotation file including directory path
+        
+        # Returns
+            filename : str
+        """
         root = self._root_tag(annotation_file)
         return root.find("filename").text
 
     def get_width(self, annotation_file):
+        """
+        # Args
+            annotation_file : str
+                annotation file including directory path
+        
+        # Returns
+            width : int
+        """
         tree = self._tree(annotation_file)
         for elem in tree.iter():
             if 'width' in elem.tag:
                 return int(elem.text)
 
     def get_height(self, annotation_file):
+        """
+        # Args
+            annotation_file : str
+                annotation file including directory path
+        
+        # Returns
+            height : int
+        """
         tree = self._tree(annotation_file)
         for elem in tree.iter():
             if 'height' in elem.tag:
                 return int(elem.text)
 
     def get_labels(self, annotation_file):
+        """
+        # Args
+            annotation_file : str
+                annotation file including directory path
+        
+        # Returns
+            labels : list of strs
+        """
+
         root = self._root_tag(annotation_file)
         labels = []
         obj_tags = root.findall("object")
@@ -47,6 +72,15 @@ class PascalVocXmlParser(object):
         return labels
     
     def get_boxes(self, annotation_file):
+        """
+        # Args
+            annotation_file : str
+                annotation file including directory path
+        
+        # Returns
+            bbs : 2d-array, shape of (N, 4)
+                (x1, y1, x2, y2)-ordered
+        """
         root = self._root_tag(annotation_file)
         bbs = []
         obj_tags = root.findall("object")
@@ -61,23 +95,27 @@ class PascalVocXmlParser(object):
         bbs = np.array(bbs)
         return bbs
 
+    def _root_tag(self, fname):
+        tree = parse(fname)
+        root = tree.getroot()
+        return root
+
+    def _tree(self, fname):
+        tree = parse(fname)
+        return tree
+    
+
 
 def parse_annotation(ann_dir, img_dir, labels=[]):
     """
     # Args
         ann_dir : str
         img_dir : str
-        labels : list of strs
     
     # Returns
         all_imgs : list of dict
-            [{'object': [{'name': 'raccoon', 'xmin': 81, 'ymin': 88, 'xmax': 522, 'ymax': 408}],
-      '       filename': 'sample//raccoon_train_imgs/raccoon-1.jpg',
-              'width': 650,
-              'height': 417}]
-
         seen_labels : dict
-            {'raccoon': 1}
+            {'raccoon': 1, ...}
     """
     all_imgs = []
     seen_labels = {}
@@ -87,41 +125,27 @@ def parse_annotation(ann_dir, img_dir, labels=[]):
     for ann in sorted(os.listdir(ann_dir)):
         img = {'object':[]}
         
-        tree = ET.parse(ann_dir + ann)
+        annotation_file = os.path.join(ann_dir, ann)
         
-        img['filename'] = os.path.join(img_dir, parser.get_fname(ann_dir + ann))
-        img['width'] = parser.get_width(ann_dir + ann)
-        img['height'] = parser.get_height(ann_dir + ann)
+        fname = parser.get_fname(annotation_file)
+        img['filename'] = os.path.join(img_dir, fname)
+        img['width'] = parser.get_width(annotation_file)
+        img['height'] = parser.get_height(annotation_file)
+
+        labels = parser.get_labels(annotation_file)
+        boxes = parser.get_boxes(annotation_file)
         
-        for elem in tree.iter():
-            if 'object' in elem.tag or 'part' in elem.tag:
-                obj = {}
-                
-                for attr in list(elem):
-                    if 'name' in attr.tag:
-                        obj['name'] = attr.text
-
-                        if obj['name'] in seen_labels:
-                            seen_labels[obj['name']] += 1
-                        else:
-                            seen_labels[obj['name']] = 1
-                        
-                        if len(labels) > 0 and obj['name'] not in labels:
-                            break
-                        else:
-                            img['object'] += [obj]
-                            
-                    if 'bndbox' in attr.tag:
-                        for dim in list(attr):
-                            if 'xmin' in dim.tag:
-                                obj['xmin'] = int(round(float(dim.text)))
-                            if 'ymin' in dim.tag:
-                                obj['ymin'] = int(round(float(dim.text)))
-                            if 'xmax' in dim.tag:
-                                obj['xmax'] = int(round(float(dim.text)))
-                            if 'ymax' in dim.tag:
-                                obj['ymax'] = int(round(float(dim.text)))
-
+        objects = []
+        for label, box in zip(labels, boxes):
+            x1, y1, x2, y2 = box
+            objects.append({'name': label, 'xmin': x1, 'ymin': y1, 'xmax': x2, 'ymax': y2})
+            
+            if label in seen_labels:
+                seen_labels[label] += 1
+            else:
+                seen_labels[label] = 1
+        img['object'] = objects
+        
         if len(img['object']) > 0:
             all_imgs += [img]
                         
