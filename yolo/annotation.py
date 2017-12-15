@@ -4,6 +4,48 @@ import os
 import xml.etree.ElementTree as ET
 
 
+import numpy as np
+from xml.etree.ElementTree import parse
+
+
+class PascalVocXmlParser(object):
+    
+    def __init__(self):
+        pass
+    
+    def _root_tag(self, fname):
+        tree = parse(fname)
+        root = tree.getroot()
+        return root
+    
+    def get_fname(self, annotation_file):
+        root = self._root_tag(annotation_file)
+        return root.find("filename").text
+
+    def get_labels(self, annotation_file):
+        root = self._root_tag(annotation_file)
+        labels = []
+        obj_tags = root.findall("object")
+        for t in obj_tags:
+            labels.append(t.find("name").text)
+        return labels
+    
+    def get_boxes(self, annotation_file):
+        root = self._root_tag(annotation_file)
+        bbs = []
+        obj_tags = root.findall("object")
+        for t in obj_tags:
+            box_tag = t.find("bndbox")
+            x1 = box_tag.find("xmin").text
+            y1 = box_tag.find("ymin").text
+            x2 = box_tag.find("xmax").text
+            y2 = box_tag.find("ymax").text
+            box = np.array([int(x1), int(y1), int(x2), int(y2)])
+            bbs.append(box)
+        bbs = np.array(bbs)
+        return bbs
+
+
 def parse_annotation(ann_dir, img_dir, labels=[]):
     """
     # Args
@@ -24,14 +66,16 @@ def parse_annotation(ann_dir, img_dir, labels=[]):
     all_imgs = []
     seen_labels = {}
     
+    parser = PascalVocXmlParser()
+    
     for ann in sorted(os.listdir(ann_dir)):
         img = {'object':[]}
         
         tree = ET.parse(ann_dir + ann)
         
+        img['filename'] = os.path.join(img_dir, parser.get_fname(ann_dir + ann))
+        
         for elem in tree.iter():
-            if 'filename' in elem.tag:
-                img['filename'] = img_dir + elem.text
             if 'width' in elem.tag:
                 img['width'] = int(elem.text)
             if 'height' in elem.tag:
