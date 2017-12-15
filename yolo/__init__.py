@@ -1,1 +1,1 @@
-from yolo.yolo import YOLO
+from yolo.frontend import YOLO
