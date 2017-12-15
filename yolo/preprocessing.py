@@ -102,13 +102,13 @@ class BatchGenerator(Sequence):
     def __getitem__(self, idx):
         
         img_batch = self._get_img_batch(idx)
-        n_batch = len(img_batch)
+        batch_size = len(img_batch)
 
         instance_count = 0
 
-        x_batch = np.zeros((n_batch, self.config['IMAGE_H'], self.config['IMAGE_W'], 3))                         # input images
-        b_batch = np.zeros((n_batch, 1     , 1     , 1    ,  self.config['TRUE_BOX_BUFFER'], 4))   # list of self.config['TRUE_self.config['BOX']_BUFFER'] GT boxes
-        y_batch = np.zeros((n_batch, self.config['GRID_H'],  self.config['GRID_W'], self.config['BOX'], 4+1+self.config['CLASS']))                # desired network output
+        x_batch = np.zeros((batch_size, self.config['IMAGE_H'], self.config['IMAGE_W'], 3))                         # input images
+        b_batch = np.zeros((batch_size, 1     , 1     , 1    ,  self.config['TRUE_BOX_BUFFER'], 4))   # list of self.config['TRUE_self.config['BOX']_BUFFER'] GT boxes
+        y_batch = np.zeros((batch_size, self.config['GRID_H'],  self.config['GRID_W'], self.config['BOX'], 4+1+self.config['CLASS']))                # desired network output
 
         for train_instance in img_batch:
             # augment input image and fix object's position and size
