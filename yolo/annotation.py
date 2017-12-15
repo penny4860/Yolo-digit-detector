@@ -3,7 +3,24 @@
 import os
 import xml.etree.ElementTree as ET
 
+
 def parse_annotation(ann_dir, img_dir, labels=[]):
+    """
+    # Args
+        ann_dir : str
+        img_dir : str
+        labels : list of strs
+    
+    # Returns
+        all_imgs : list of dict
+            [{'object': [{'name': 'raccoon', 'xmin': 81, 'ymin': 88, 'xmax': 522, 'ymax': 408}],
+      '       filename': 'sample//raccoon_train_imgs/raccoon-1.jpg',
+              'width': 650,
+              'height': 417}]
+
+        seen_labels : dict
+            {'raccoon': 1}
+    """
     all_imgs = []
     seen_labels = {}
     
