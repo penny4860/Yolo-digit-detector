@@ -17,10 +17,26 @@ class PascalVocXmlParser(object):
         tree = parse(fname)
         root = tree.getroot()
         return root
+
+    def _tree(self, fname):
+        tree = parse(fname)
+        return tree
     
     def get_fname(self, annotation_file):
         root = self._root_tag(annotation_file)
         return root.find("filename").text
+
+    def get_width(self, annotation_file):
+        tree = self._tree(annotation_file)
+        for elem in tree.iter():
+            if 'width' in elem.tag:
+                return int(elem.text)
+
+    def get_height(self, annotation_file):
+        tree = self._tree(annotation_file)
+        for elem in tree.iter():
+            if 'height' in elem.tag:
+                return int(elem.text)
 
     def get_labels(self, annotation_file):
         root = self._root_tag(annotation_file)
@@ -74,12 +90,10 @@ def parse_annotation(ann_dir, img_dir, labels=[]):
         tree = ET.parse(ann_dir + ann)
         
         img['filename'] = os.path.join(img_dir, parser.get_fname(ann_dir + ann))
+        img['width'] = parser.get_width(ann_dir + ann)
+        img['height'] = parser.get_height(ann_dir + ann)
         
         for elem in tree.iter():
-            if 'width' in elem.tag:
-                img['width'] = int(elem.text)
-            if 'height' in elem.tag:
-                img['height'] = int(elem.text)
             if 'object' in elem.tag or 'part' in elem.tag:
                 obj = {}
                 
