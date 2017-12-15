@@ -120,6 +120,8 @@ class BatchGenerator(Sequence):
 
     def __getitem__(self, idx):
         
+        print(idx)
+        
         anns = self._get_annotations_batch(idx)
         batch_size = len(anns)
 
@@ -282,9 +284,38 @@ class BatchGenerator(Sequence):
         return image, all_objs
 
 
-# batch_gen = BatchGenerator()
-# x_batch, y_batch = batch_gen[:10]
-# x_batch, b_batch = x_batch
+if __name__ == '__main__':
+    
+    def setup():
+        import json
+        from yolo.annotation import parse_annotation
+        with open("config.json") as config_buffer:    
+            config = json.loads(config_buffer.read())
+        generator_config = {
+                'IMAGE_H'         : config["model"]["input_size"], 
+                'IMAGE_W'         : config["model"]["input_size"],
+                'GRID_H'          : int(config["model"]["input_size"]/32),  
+                'GRID_W'          : int(config["model"]["input_size"]/32),
+                'BOX'             : 5,
+                'LABELS'          : config["model"]["labels"],
+                'CLASS'           : len(config["model"]["labels"]),
+                'ANCHORS'         : config["model"]["anchors"],
+                'BATCH_SIZE'      : 8,
+                'TRUE_BOX_BUFFER' : config["model"]["max_box_per_image"],
+        }
+        train_imgs, train_labels = parse_annotation(config['train']['train_annot_folder'], 
+                                                    config['train']['train_image_folder'], 
+                                                    config['model']['labels'])
+        return train_imgs, generator_config
+        
+    images, config = setup()
+    batch_gen = BatchGenerator(images, config, False, False)
+    x_batch, y_batch = batch_gen[0]
+    x_batch, b_batch = x_batch
+    print(x_batch.shape, b_batch.shape, y_batch.shape)
+    
+    
+    
 
 
 
