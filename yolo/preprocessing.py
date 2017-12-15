@@ -102,7 +102,7 @@ class BatchGenerator(Sequence):
     def __len__(self):
         return int(np.ceil(float(len(self.images))/self.config['BATCH_SIZE']))   
 
-    def _get_img_files_batch(self, idx):
+    def _get_annotations_batch(self, idx):
         l_bound = idx*self.config['BATCH_SIZE']
         r_bound = (idx+1)*self.config['BATCH_SIZE']
 
@@ -112,10 +112,16 @@ class BatchGenerator(Sequence):
             
         return self.images[l_bound:r_bound]
 
+    def _is_valid_obj(self, x1, y1, x2, y2, label):
+        if x2 > x1 and y2 > y1 and label in self.config['LABELS']:
+            return True
+        else:
+            return False
+
     def __getitem__(self, idx):
         
-        img_files_batch = self._get_img_files_batch(idx)
-        batch_size = len(img_files_batch)
+        anns = self._get_annotations_batch(idx)
+        batch_size = len(anns)
 
         instance_count = 0
 
@@ -123,15 +129,17 @@ class BatchGenerator(Sequence):
         b_batch = np.zeros((batch_size, 1     , 1     , 1    ,  self.config['TRUE_BOX_BUFFER'], 4))   # list of self.config['TRUE_self.config['BOX']_BUFFER'] GT boxes
         y_batch = np.zeros((batch_size, self.config['GRID_H'],  self.config['GRID_W'], self.config['BOX'], 4+1+self.config['CLASS']))                # desired network output
 
-        for train_instance in img_files_batch:
+        # loop over batch
+        for annotation in anns:
             # augment input image and fix object's position and size
-            img, all_objs = self.aug_image(train_instance, jitter=self.jitter)
+            img, all_objs = self.aug_image(annotation, jitter=self.jitter)
             
             # construct output from object's x, y, w, h
             true_box_index = 0
             
+            # loop over objects in one image
             for obj in all_objs:
-                if obj['xmax'] > obj['xmin'] and obj['ymax'] > obj['ymin'] and obj['name'] in self.config['LABELS']:
+                if self._is_valid_obj(obj['xmin'], obj['ymin'], obj['xmax'], obj['ymax'], obj['name']):
                     center_x = .5*(obj['xmin'] + obj['xmax'])
                     center_x = center_x / (float(self.config['IMAGE_W']) / self.config['GRID_W'])
                     center_y = .5*(obj['ymin'] + obj['ymax'])
@@ -208,6 +216,21 @@ class BatchGenerator(Sequence):
         self.counter = 0
 
     def aug_image(self, train_instance, jitter):
+        """
+        # Args
+            train_instance : dict
+            jitter : bool
+        
+        # Returns
+            image : 3d-array
+            all_objs : list of dicts
+                "name"
+                "xmin"
+                "xmax"
+                "ymin"
+                "ymax"
+        """
+        
         image_name = train_instance['filename']
         image = cv2.imread(image_name)
         h, w, c = image.shape
