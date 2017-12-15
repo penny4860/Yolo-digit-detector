@@ -14,6 +14,19 @@ class BatchGenerator(Sequence):
                        shuffle=True, 
                        jitter=True, 
                        norm=None):
+        """
+        # Args
+            images : list of dictionary including following keys
+                "filename"  : str
+                "width"     : int
+                "height"    : int
+                "object"    : list of dictionary
+                    'name' : str
+                    'xmin' : int
+                    'ymin' : int
+                    'xmax' : int
+                    'ymax' : int
+        """
         self.generator = None
 
         self.images = images
@@ -89,7 +102,7 @@ class BatchGenerator(Sequence):
     def __len__(self):
         return int(np.ceil(float(len(self.images))/self.config['BATCH_SIZE']))   
 
-    def _get_img_batch(self, idx):
+    def _get_img_files_batch(self, idx):
         l_bound = idx*self.config['BATCH_SIZE']
         r_bound = (idx+1)*self.config['BATCH_SIZE']
 
@@ -101,8 +114,8 @@ class BatchGenerator(Sequence):
 
     def __getitem__(self, idx):
         
-        img_batch = self._get_img_batch(idx)
-        batch_size = len(img_batch)
+        img_files_batch = self._get_img_files_batch(idx)
+        batch_size = len(img_files_batch)
 
         instance_count = 0
 
@@ -110,7 +123,7 @@ class BatchGenerator(Sequence):
         b_batch = np.zeros((batch_size, 1     , 1     , 1    ,  self.config['TRUE_BOX_BUFFER'], 4))   # list of self.config['TRUE_self.config['BOX']_BUFFER'] GT boxes
         y_batch = np.zeros((batch_size, self.config['GRID_H'],  self.config['GRID_W'], self.config['BOX'], 4+1+self.config['CLASS']))                # desired network output
 
-        for train_instance in img_batch:
+        for train_instance in img_files_batch:
             # augment input image and fix object's position and size
             img, all_objs = self.aug_image(train_instance, jitter=self.jitter)
             
@@ -244,3 +257,11 @@ class BatchGenerator(Sequence):
                 obj['xmax'] = self.config['IMAGE_W'] - xmin
                 
         return image, all_objs
+
+
+# batch_gen = BatchGenerator()
+# x_batch, y_batch = batch_gen[:10]
+# x_batch, b_batch = x_batch
+
+
+
