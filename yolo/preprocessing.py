@@ -120,8 +120,6 @@ class BatchGenerator(Sequence):
 
     def __getitem__(self, idx):
         
-        print(idx)
-        
         anns = self._get_annotations_batch(idx)
         batch_size = len(anns)
 
@@ -207,10 +205,6 @@ class BatchGenerator(Sequence):
         self.counter += 1
         #print ' new batch created', self.counter
         
-        print(x_batch.shape)
-        print(b_batch.shape)
-        print(y_batch.shape)
-
         return [x_batch, b_batch], y_batch
 
     def on_epoch_end(self):
@@ -310,8 +304,7 @@ if __name__ == '__main__':
         
     images, config = setup()
     batch_gen = BatchGenerator(images, config, False, False)
-    x_batch, y_batch = batch_gen[0]
-    x_batch, b_batch = x_batch
+    (x_batch, b_batch), y_batch = batch_gen[0]
     print(x_batch.shape, b_batch.shape, y_batch.shape)
     
     
