@@ -130,7 +130,7 @@ class BatchGenerator(Sequence):
                 best_anchor = self._get_anchor_idx(norm_box)
 
                 # assign ground truth x, y, w, h, confidence and class probs to y_batch
-                y = self._generate_y(grid_x, grid_y, best_anchor, obj_indx, norm_box)
+                y += self._generate_y(grid_x, grid_y, best_anchor, obj_indx, norm_box)
                 
                 # assign the true box to b_batch
                 b_[0, 0, 0, true_box_index] = norm_box
