@@ -10,17 +10,30 @@ def imread(img_file,
            desired_w,
            desired_h,
            jitter):
+    """
+    # Args
+        img_file : str
+        boxes : array, shape of (N, 4)
+        desired_w : int
+        desired_h : int
+        jitter : bool
+    
+    # Returns
+        image : 3d-array, shape of (h, w, 3)
+        boxes_ : array, same shape of boxes
+            jittered & resized bounding box
+    """
 
     # 1. read image file
     image = cv2.imread(img_file)
 
     # 2. make jitter on image        
     if jitter:
-        image, boxes = make_jitter_on_image(image, boxes)
+        image, boxes_ = make_jitter_on_image(image, boxes)
 
     # 3. resize image            
-    image, boxes = resize_image(image, boxes, desired_w, desired_h)
-    return image, boxes
+    image, boxes_ = resize_image(image, boxes_, desired_w, desired_h)
+    return image, boxes_
 
 
 def make_jitter_on_image(image, boxes):
