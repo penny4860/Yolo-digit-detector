@@ -24,7 +24,7 @@ if __name__ == '__main__':
 #     train(args.conf)
 #     # loss: 2.1691, train batch jitter=False
     
-    predict("sample//raccoon_train_imgs//raccoon-1.jpg",
+    predict("sample//raccoon_train_imgs//raccoon-72.jpg",
             "test_raccoon_weight.h5",
             config_path="config.json")
 
