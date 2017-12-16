@@ -28,6 +28,15 @@ class AnnHandler(object):
 
         if shuffle:
             np.random.shuffle(self.image_anns)
+
+    def _get_batch(self, batch_idx):
+        l_bound = batch_idx * self.batch_size
+        r_bound = (batch_idx+1) * self.batch_size
+
+        if r_bound > len(self.image_anns):
+            r_bound = len(self.image_anns)
+            l_bound = r_bound - self.batch_size
+        return self.image_anns[l_bound:r_bound]
             
     def end_epoch(self):
         if self.shuffle:
@@ -36,32 +45,26 @@ class AnnHandler(object):
     def len_batches(self):
         return int(np.ceil(float(len(self.image_anns))/self.batch_size))
 
-    def get_batch(self, batch_idx):
-        l_bound = batch_idx * self.batch_size
-        r_bound = (batch_idx+1) * self.batch_size
+    def get_batch_size(self, batch_idx):
+        batch_anns = self._get_batch(batch_idx)
+        return len(batch_anns)
 
-        if r_bound > len(self.image_anns):
-            r_bound = len(self.image_anns)
-            l_bound = r_bound - self.batch_size
-            
-        return self.image_anns[l_bound:r_bound]
-
-    def get_filename(self, image_anns, index):
-        aimage_ann = image_anns[index]
-        return aimage_ann["filename"]
+    def get_filename(self, batch_idx, index):
+        batch_anns = self._get_batch(batch_idx)
+        return batch_anns[index]["filename"]
     
-    def get_bboxes(self, image_anns, index):
-        aimage_ann = image_anns[index]
+    def get_bboxes(self, batch_idx, index):
+        batch_anns = self._get_batch(batch_idx)
         boxes = []
-        for obj in aimage_ann["object"]:
+        for obj in batch_anns[index]["object"]:
             x1, y1, x2, y2 = obj["xmin"], obj["ymin"], obj["xmax"], obj["ymax"]
             boxes.append([x1, y1, x2, y2])
         return np.array(boxes)
 
-    def get_labels(self, image_anns, index):
-        aimage_ann = image_anns[index]
+    def get_labels(self, batch_idx, index):
+        batch_anns = self._get_batch(batch_idx)
         labels = []
-        for obj in aimage_ann["object"]:
+        for obj in batch_anns[index]["object"]:
             labels.append(obj["name"])
         return labels
 
@@ -201,9 +204,12 @@ class BatchGenerator(Sequence):
         return y, b_
 
     def __getitem__(self, idx):
-        
-        anns = self._ann_handler.get_batch(idx)
-        batch_size = len(anns)
+        """
+        # Args
+            idx : int
+                batch index
+        """
+        batch_size = self._ann_handler.get_batch_size(idx)
         instance_count = 0
 
         x_batch = np.zeros((batch_size, self.config['IMAGE_H'], self.config['IMAGE_W'], 3))                         # input images
@@ -211,12 +217,13 @@ class BatchGenerator(Sequence):
         y_batch = np.zeros((batch_size, self.config['GRID_H'],  self.config['GRID_W'], self.config['BOX'], 4+1+self.config['CLASS']))                # desired network output
 
         # loop over batch
-        for i, annotation in enumerate(anns):
-            boxes = self._ann_handler.get_bboxes(anns, i)
-            labels = self._ann_handler.get_labels(anns, i)
+        for i in range(batch_size):
+            boxes = self._ann_handler.get_bboxes(idx, i)
+            labels = self._ann_handler.get_labels(idx, i)
+            fname = self._ann_handler.get_filename(idx, i)
             
             # augment input image and fix object's position and size
-            img, boxes = augment.imread(annotation["filename"],
+            img, boxes = augment.imread(fname,
                                           boxes,
                                           self.config["IMAGE_W"],
                                           self.config["IMAGE_H"],
