@@ -304,6 +304,8 @@ if __name__ == '__main__':
         
     images, config = setup()
     batch_gen = BatchGenerator(images, config, False, False)
+    
+    # (8, 416, 416, 3) (8, 1, 1, 1, 10, 4) (8, 13, 13, 5, 6)
     (x_batch, b_batch), y_batch = batch_gen[0]
     print(x_batch.shape, b_batch.shape, y_batch.shape)
     
