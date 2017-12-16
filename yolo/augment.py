@@ -140,9 +140,16 @@ class ImgAugment(object):
             jitter):
         """
         # Args
+            img_file : str
             boxes : array, shape of (N, 4)
                 (x1,y1,x2,y2)-ordered
+            desired_w, desired_h: int
+            jitter : bool
         
+        # Returns
+            image : ndarray, shape of (h, w, 3)
+                BRG-ordered image array
+            boxes : ndarray, shape of (N, 4)
         """
         # 1. read image file
         image = cv2.imread(img_file)
