@@ -114,10 +114,17 @@ class BatchGenerator(Sequence):
         return self.images[l_bound:r_bound]
 
     def _is_valid_obj(self, x1, y1, x2, y2, label, grid_x, grid_y):
+        """
+        # Args
+            x1, y1, x2, y2 : int
+            label : str
+            grid_x, grid_y : float
+        """
         is_valid = False
-        if x2 > x1 and y2 > y1 and label in self.config['LABELS']:
-            if grid_x < self.config['GRID_W'] and grid_y < self.config['GRID_H']:
-                is_valid = True
+        if x2 > x1 and y2 > y1:
+            if label in self.config['LABELS']:
+                if grid_x < self.config['GRID_W'] and grid_y < self.config['GRID_H']:
+                    is_valid = True
         return is_valid
 
     def _generate_x(self, img, all_objs):
