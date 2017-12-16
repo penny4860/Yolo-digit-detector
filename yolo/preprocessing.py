@@ -29,6 +29,41 @@ class AnnHandler(object):
         if shuffle:
             np.random.shuffle(self.image_anns)
 
+    def get_ann(self, batch_idx, index):
+        batch_anns = self._get_batch(batch_idx)
+        fname = self._get_fname(batch_anns, index)        
+        labels = self._get_labels(batch_anns, index)        
+        boxes = self._get_boxes(batch_anns, index)        
+        return fname, boxes, labels
+
+    def get_batch_size(self, batch_idx):
+        batch_anns = self._get_batch(batch_idx)
+        return len(batch_anns)
+
+    def len_batches(self):
+        return int(np.ceil(float(len(self.image_anns))/self.batch_size))
+
+    def end_epoch(self):
+        if self.shuffle:
+            np.random.shuffle(self.image_anns)
+
+    def _get_fname(self, batch_anns, index):
+        return batch_anns[index]["filename"]
+
+    def _get_labels(self, batch_anns, index):
+        labels = []
+        for obj in batch_anns[index]["object"]:
+            labels.append(obj["name"])
+        return labels
+
+    def _get_boxes(self, batch_anns, index):
+        boxes = []
+        for obj in batch_anns[index]["object"]:
+            x1, y1, x2, y2 = obj["xmin"], obj["ymin"], obj["xmax"], obj["ymax"]
+            boxes.append([x1, y1, x2, y2])
+        boxes = np.array(boxes)
+        return boxes
+
     def _get_batch(self, batch_idx):
         l_bound = batch_idx * self.batch_size
         r_bound = (batch_idx+1) * self.batch_size
@@ -37,36 +72,6 @@ class AnnHandler(object):
             r_bound = len(self.image_anns)
             l_bound = r_bound - self.batch_size
         return self.image_anns[l_bound:r_bound]
-            
-    def end_epoch(self):
-        if self.shuffle:
-            np.random.shuffle(self.image_anns)
-            
-    def len_batches(self):
-        return int(np.ceil(float(len(self.image_anns))/self.batch_size))
-
-    def get_batch_size(self, batch_idx):
-        batch_anns = self._get_batch(batch_idx)
-        return len(batch_anns)
-
-    def get_filename(self, batch_idx, index):
-        batch_anns = self._get_batch(batch_idx)
-        return batch_anns[index]["filename"]
-    
-    def get_bboxes(self, batch_idx, index):
-        batch_anns = self._get_batch(batch_idx)
-        boxes = []
-        for obj in batch_anns[index]["object"]:
-            x1, y1, x2, y2 = obj["xmin"], obj["ymin"], obj["xmax"], obj["ymax"]
-            boxes.append([x1, y1, x2, y2])
-        return np.array(boxes)
-
-    def get_labels(self, batch_idx, index):
-        batch_anns = self._get_batch(batch_idx)
-        labels = []
-        for obj in batch_anns[index]["object"]:
-            labels.append(obj["name"])
-        return labels
 
 
 class BatchGenerator(Sequence):
@@ -218,9 +223,7 @@ class BatchGenerator(Sequence):
 
         # loop over batch
         for i in range(batch_size):
-            boxes = self._ann_handler.get_bboxes(idx, i)
-            labels = self._ann_handler.get_labels(idx, i)
-            fname = self._ann_handler.get_filename(idx, i)
+            fname, boxes, labels = self._ann_handler.get_ann(idx, i)
             
             # augment input image and fix object's position and size
             img, boxes = augment.imread(fname,
