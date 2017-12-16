@@ -60,7 +60,7 @@ class YoloTrainer(object):
         # Make a few callbacks
         early_stop = EarlyStopping(monitor='val_loss', 
                            min_delta=0.001, 
-                           patience=30, 
+                           patience=3, 
                            mode='min', 
                            verbose=1)
         checkpoint = ModelCheckpoint(saved_weights_name, 
