@@ -118,6 +118,23 @@ class BatchGenerator(Sequence):
         else:
             return False
 
+    def _generate_x(self, img, all_objs):
+        # assign input image to x_batch
+        if self.norm != None: 
+            x = self.norm(img)
+        else:
+            # plot image and bounding boxes for sanity check
+            for obj in all_objs:
+                if obj['xmax'] > obj['xmin'] and obj['ymax'] > obj['ymin']:
+                    cv2.rectangle(img[:,:,::-1], (obj['xmin'],obj['ymin']), (obj['xmax'],obj['ymax']), (255,0,0), 3)
+                    cv2.putText(img[:,:,::-1], obj['name'], 
+                                (obj['xmin']+2, obj['ymin']+12), 
+                                0, 1.2e-3 * img.shape[0], 
+                                (0,255,0), 2)
+                    
+            x = img
+        return x
+
     def __getitem__(self, idx):
         
         anns = self._get_annotations_batch(idx)
@@ -133,6 +150,9 @@ class BatchGenerator(Sequence):
         for annotation in anns:
             # augment input image and fix object's position and size
             img, all_objs = self.aug_image(annotation, jitter=self.jitter)
+            
+            # assign input image to x_batch
+            x_batch[instance_count] = self._generate_x(img, all_objs)
             
             # construct output from object's x, y, w, h
             true_box_index = 0
@@ -184,21 +204,6 @@ class BatchGenerator(Sequence):
                         true_box_index += 1
                         true_box_index = true_box_index % self.config['TRUE_BOX_BUFFER']
                             
-            # assign input image to x_batch
-            if self.norm != None: 
-                x_batch[instance_count] = self.norm(img)
-            else:
-                # plot image and bounding boxes for sanity check
-                for obj in all_objs:
-                    if obj['xmax'] > obj['xmin'] and obj['ymax'] > obj['ymin']:
-                        cv2.rectangle(img[:,:,::-1], (obj['xmin'],obj['ymin']), (obj['xmax'],obj['ymax']), (255,0,0), 3)
-                        cv2.putText(img[:,:,::-1], obj['name'], 
-                                    (obj['xmin']+2, obj['ymin']+12), 
-                                    0, 1.2e-3 * img.shape[0], 
-                                    (0,255,0), 2)
-                        
-                x_batch[instance_count] = img
-
             # increase instance counter in current batch
             instance_count += 1  
 
