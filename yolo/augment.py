@@ -66,7 +66,11 @@ class ImgAugment(object):
             random_order=True
         )
     
-    def run(self, img_file, objects, jitter, desired_w, desired_h):
+    def run(self, img_file,
+            objects,
+            desired_w,
+            desired_h,
+            jitter):
         image = cv2.imread(img_file)
         h, w, c = image.shape
         
