@@ -119,6 +119,37 @@ class BatchGenerator(Sequence):
         norm_h = h / (float(self.config['IMAGE_H']) / self.config['GRID_H']) # unit: grid cell
         return norm_cx, norm_cy, norm_w, norm_h
 
+    
+    def _generate_ann_batch(self, boxes, labels):
+        
+        # construct output from object's x, y, w, h
+        true_box_index = 0
+        y = np.zeros((13,13,5,6))
+        b_ = np.zeros((1,1,1,10,4))
+        
+        # loop over objects in one image
+        for box, label in zip(boxes, labels):
+            x1, y1, x2, y2 = box
+            cx, cy, w, h = to_cxcy_wh(x1, y1, x2, y2)
+            norm_box = self._normalize_box(cx, cy, w, h)
+            
+            grid_x = int(np.floor(norm_box[0]))
+            grid_y = int(np.floor(norm_box[1]))
+
+            if self._is_valid_obj(x1, y1, x2, y2, label, grid_x, grid_y):
+                obj_indx  = self.config['LABELS'].index(label)
+                best_anchor = self._get_anchor_idx(norm_box)
+
+                # assign ground truth x, y, w, h, confidence and class probs to y_batch
+                y = self._generate_y(grid_x, grid_y, best_anchor, obj_indx, norm_box)
+                
+                # assign the true box to b_batch
+                b_[0, 0, 0, true_box_index] = norm_box
+                
+                true_box_index += 1
+                true_box_index = true_box_index % self.config['TRUE_BOX_BUFFER']
+        return y, b_
+
     def __getitem__(self, idx):
         
         anns = self._get_annotations_batch(idx)
@@ -150,36 +181,8 @@ class BatchGenerator(Sequence):
                                           self.config["IMAGE_H"],
                                           self.jitter)
             
-            # assign input image to x_batch
             x_batch[instance_count] = self._generate_x(img, boxes, labels)
-            
-            # construct output from object's x, y, w, h
-            true_box_index = 0
-            
-            # loop over objects in one image
-            for box, label in zip(boxes, labels):
-                x1, y1, x2, y2 = box
-                cx, cy, w, h = to_cxcy_wh(x1, y1, x2, y2)
-                norm_box = self._normalize_box(cx, cy, w, h)
-                
-                grid_x = int(np.floor(norm_box[0]))
-                grid_y = int(np.floor(norm_box[1]))
-
-                if self._is_valid_obj(x1, y1, x2, y2, label, grid_x, grid_y):
-                    obj_indx  = self.config['LABELS'].index(label)
-                    best_anchor = self._get_anchor_idx(norm_box)
-
-                    # assign ground truth x, y, w, h, confidence and class probs to y_batch
-                    y_batch[instance_count] = self._generate_y(grid_x, grid_y, best_anchor, obj_indx, norm_box)
-                    
-                    # assign the true box to b_batch
-                    b_batch[instance_count, 0, 0, 0, true_box_index] = norm_box
-                    
-                    true_box_index += 1
-                    true_box_index = true_box_index % self.config['TRUE_BOX_BUFFER']
-                            
-            # increase instance counter in current batch
-            instance_count += 1  
+            y_batch[instance_count], b_batch[instance_count] = self._generate_ann_batch(boxes, labels)
 
         self.counter += 1
         #print ' new batch created', self.counter
