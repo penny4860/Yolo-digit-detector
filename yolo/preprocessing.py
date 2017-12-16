@@ -6,6 +6,66 @@ import yolo.augment as augment
 from keras.utils import Sequence
 from yolo.box import BoundBox, bbox_iou, to_cxcy_wh
 
+# Todo : annotataion module
+class AnnHandler(object):
+    def __init__(self, image_anns, batch_size, shuffle):
+        """
+        # Args
+            image_anns : list of dictionary including following keys
+                "filename"  : str
+                "width"     : int
+                "height"    : int
+                "object"    : list of dictionary
+                    'name' : str
+                    'xmin' : int
+                    'ymin' : int
+                    'xmax' : int
+                    'ymax' : int
+        """
+        self.image_anns = image_anns
+        self.batch_size = batch_size
+        self.shuffle = shuffle
+
+        if shuffle:
+            np.random.shuffle(self.image_anns)
+            
+    def end_epoch(self):
+        if self.shuffle:
+            np.random.shuffle(self.image_anns)
+            
+    def len_batches(self):
+        return int(np.ceil(float(len(self.image_anns))/self.batch_size))
+
+    def get_batch(self, batch_idx):
+        l_bound = batch_idx * self.batch_size
+        r_bound = (batch_idx+1) * self.batch_size
+
+        if r_bound > len(self.image_anns):
+            r_bound = len(self.image_anns)
+            l_bound = r_bound - self.batch_size
+            
+        return self.image_anns[l_bound:r_bound]
+
+    def get_filename(self, image_anns, index):
+        aimage_ann = image_anns[index]
+        return aimage_ann["filename"]
+    
+    def get_bboxes(self, image_anns, index):
+        aimage_ann = image_anns[index]
+        boxes = []
+        for obj in aimage_ann["object"]:
+            x1, y1, x2, y2 = obj["xmin"], obj["ymin"], obj["xmax"], obj["ymax"]
+            boxes.append([x1, y1, x2, y2])
+        return np.array(boxes)
+
+    def get_labels(self, image_anns, index):
+        aimage_ann = image_anns[index]
+        labels = []
+        for obj in aimage_ann["object"]:
+            labels.append(obj["name"])
+        return labels
+
+
 class BatchGenerator(Sequence):
     def __init__(self, images, 
                        config, 
@@ -26,10 +86,12 @@ class BatchGenerator(Sequence):
                     'ymax' : int
         """
         self.generator = None
+        self._ann_handler = AnnHandler(images, config['BATCH_SIZE'], shuffle)
 
-        self.images = images
+        # self.images = images
         self.config = config
 
+        # Todo : AnnHandler
         self.shuffle = shuffle
         self.jitter  = jitter
         self.norm    = norm
@@ -37,20 +99,8 @@ class BatchGenerator(Sequence):
         self.counter = 0        
         self.anchors = [BoundBox(0, 0, config['ANCHORS'][2*i], config['ANCHORS'][2*i+1]) for i in range(int(len(config['ANCHORS'])/2))]
 
-        if shuffle: np.random.shuffle(self.images)
-
     def __len__(self):
-        return int(np.ceil(float(len(self.images))/self.config['BATCH_SIZE']))   
-
-    def _get_annotations_batch(self, idx):
-        l_bound = idx*self.config['BATCH_SIZE']
-        r_bound = (idx+1)*self.config['BATCH_SIZE']
-
-        if r_bound > len(self.images):
-            r_bound = len(self.images)
-            l_bound = r_bound - self.config['BATCH_SIZE']
-            
-        return self.images[l_bound:r_bound]
+        return self._ann_handler.len_batches()
 
     def _is_valid_obj(self, x1, y1, x2, y2, label, grid_x, grid_y):
         """
@@ -152,9 +202,8 @@ class BatchGenerator(Sequence):
 
     def __getitem__(self, idx):
         
-        anns = self._get_annotations_batch(idx)
+        anns = self._ann_handler.get_batch(idx)
         batch_size = len(anns)
-
         instance_count = 0
 
         x_batch = np.zeros((batch_size, self.config['IMAGE_H'], self.config['IMAGE_W'], 3))                         # input images
@@ -162,17 +211,9 @@ class BatchGenerator(Sequence):
         y_batch = np.zeros((batch_size, self.config['GRID_H'],  self.config['GRID_W'], self.config['BOX'], 4+1+self.config['CLASS']))                # desired network output
 
         # loop over batch
-        for annotation in anns:
-            
-            # Todo : annotation handling logic 
-            boxes = []
-            labels = []
-            for obj in annotation["object"]:
-                x1, y1, x2, y2 = obj["xmin"], obj["ymin"], obj["xmax"], obj["ymax"]
-                label = obj["name"]
-                boxes.append([x1, y1, x2, y2])
-                labels.append(label)
-            boxes = np.array(boxes)
+        for i, annotation in enumerate(anns):
+            boxes = self._ann_handler.get_bboxes(anns, i)
+            labels = self._ann_handler.get_labels(anns, i)
             
             # augment input image and fix object's position and size
             img, boxes = augment.imread(annotation["filename"],
@@ -191,7 +232,7 @@ class BatchGenerator(Sequence):
         return [x_batch, b_batch], y_batch
 
     def on_epoch_end(self):
-        if self.shuffle: np.random.shuffle(self.images)
+        self._ann_handler.end_epoch()
         self.counter = 0
 
 
