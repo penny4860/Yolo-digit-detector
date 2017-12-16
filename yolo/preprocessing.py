@@ -278,49 +278,50 @@ class BatchGenerator(Sequence):
         return image, all_objs
 
 
-if __name__ == '__main__':
-    
-    def setup():
-        import json
-        from yolo.annotation import parse_annotation
-        with open("config.json") as config_buffer:    
-            config = json.loads(config_buffer.read())
-        generator_config = {
-                'IMAGE_H'         : config["model"]["input_size"], 
-                'IMAGE_W'         : config["model"]["input_size"],
-                'GRID_H'          : int(config["model"]["input_size"]/32),  
-                'GRID_W'          : int(config["model"]["input_size"]/32),
-                'BOX'             : 5,
-                'LABELS'          : config["model"]["labels"],
-                'CLASS'           : len(config["model"]["labels"]),
-                'ANCHORS'         : config["model"]["anchors"],
-                'BATCH_SIZE'      : 8,
-                'TRUE_BOX_BUFFER' : config["model"]["max_box_per_image"],
-        }
-        train_imgs, train_labels = parse_annotation(config['train']['train_annot_folder'], 
-                                                    config['train']['train_image_folder'], 
-                                                    config['model']['labels'])
-        return train_imgs, generator_config
-        
+def setup():
+    import json
+    from yolo.annotation import parse_annotation
+    with open("config.json") as config_buffer:    
+        config = json.loads(config_buffer.read())
+    generator_config = {
+            'IMAGE_H'         : config["model"]["input_size"], 
+            'IMAGE_W'         : config["model"]["input_size"],
+            'GRID_H'          : int(config["model"]["input_size"]/32),  
+            'GRID_W'          : int(config["model"]["input_size"]/32),
+            'BOX'             : 5,
+            'LABELS'          : config["model"]["labels"],
+            'CLASS'           : len(config["model"]["labels"]),
+            'ANCHORS'         : config["model"]["anchors"],
+            'BATCH_SIZE'      : 8,
+            'TRUE_BOX_BUFFER' : config["model"]["max_box_per_image"],
+    }
+    train_imgs, train_labels = parse_annotation(config['train']['train_annot_folder'], 
+                                                config['train']['train_image_folder'], 
+                                                config['model']['labels'])
+    return train_imgs, generator_config
+
+def expected():
+    x_batch_gt = np.load("x_batch_gt.npy")
+    b_batch_gt = np.load("b_batch_gt.npy")
+    y_batch_gt = np.load("y_batch_gt.npy")
+    return x_batch_gt, b_batch_gt, y_batch_gt
+
+def test_generate_batch():
     images, config = setup()
+    x_batch_gt, b_batch_gt, y_batch_gt = expected()
+
     batch_gen = BatchGenerator(images, config, False, False)
     
     # (8, 416, 416, 3) (8, 1, 1, 1, 10, 4) (8, 13, 13, 5, 6)
     (x_batch, b_batch), y_batch = batch_gen[0]
-    print(x_batch.shape, b_batch.shape, y_batch.shape)
     
-    x_batch_gt = np.load("x_batch_gt.npy")
-    b_batch_gt = np.load("b_batch_gt.npy")
-    y_batch_gt = np.load("y_batch_gt.npy")
-    
-    print(np.array_equal(x_batch, x_batch_gt))
-    print(np.array_equal(b_batch, b_batch_gt))
-    print(np.array_equal(y_batch, y_batch_gt))
-    
-    
-    
-    
-    
+    assert np.array_equal(x_batch, x_batch_gt) == True 
+    assert np.array_equal(b_batch, b_batch_gt) == True 
+    assert np.array_equal(y_batch, y_batch_gt) == True 
 
 
+if __name__ == '__main__':
+    import pytest
+    pytest.main([__file__, "-v", "-s"])
 
+        
