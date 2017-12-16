@@ -106,9 +106,11 @@ class ImgAugment(object):
         
         """
         
+        # 1. read image file
         image = cv2.imread(img_file)
         h, w, _ = image.shape
-        
+
+        # 2. make jitter on image        
         if jitter:
             image, scale, offx, offy, is_flip = self._jitter_on_img(image)
         else:
