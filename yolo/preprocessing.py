@@ -5,6 +5,7 @@ np.random.seed(1337)
 import yolo.augment as augment
 from keras.utils import Sequence
 from yolo.box import BoundBox, bbox_iou, to_cxcy_wh
+from yolo.annotation import AnnHandler
 
 class BatchGenerator(Sequence):
     def __init__(self, images, 
@@ -26,31 +27,19 @@ class BatchGenerator(Sequence):
                     'ymax' : int
         """
         self.generator = None
+        self._ann_handler = AnnHandler(images, config['BATCH_SIZE'], shuffle)
 
-        self.images = images
+        # self.images = images
         self.config = config
 
-        self.shuffle = shuffle
         self.jitter  = jitter
         self.norm    = norm
 
         self.counter = 0        
         self.anchors = [BoundBox(0, 0, config['ANCHORS'][2*i], config['ANCHORS'][2*i+1]) for i in range(int(len(config['ANCHORS'])/2))]
 
-        if shuffle: np.random.shuffle(self.images)
-
     def __len__(self):
-        return int(np.ceil(float(len(self.images))/self.config['BATCH_SIZE']))   
-
-    def _get_annotations_batch(self, idx):
-        l_bound = idx*self.config['BATCH_SIZE']
-        r_bound = (idx+1)*self.config['BATCH_SIZE']
-
-        if r_bound > len(self.images):
-            r_bound = len(self.images)
-            l_bound = r_bound - self.config['BATCH_SIZE']
-            
-        return self.images[l_bound:r_bound]
+        return self._ann_handler.len_batches()
 
     def _is_valid_obj(self, x1, y1, x2, y2, label, grid_x, grid_y):
         """
@@ -119,11 +108,44 @@ class BatchGenerator(Sequence):
         norm_h = h / (float(self.config['IMAGE_H']) / self.config['GRID_H']) # unit: grid cell
         return norm_cx, norm_cy, norm_w, norm_h
 
-    def __getitem__(self, idx):
+    
+    def _generate_ann_batch(self, boxes, labels):
         
-        anns = self._get_annotations_batch(idx)
-        batch_size = len(anns)
+        # construct output from object's x, y, w, h
+        true_box_index = 0
+        y = np.zeros((13,13,5,6))
+        b_ = np.zeros((1,1,1,10,4))
+        
+        # loop over objects in one image
+        for box, label in zip(boxes, labels):
+            x1, y1, x2, y2 = box
+            cx, cy, w, h = to_cxcy_wh(x1, y1, x2, y2)
+            norm_box = self._normalize_box(cx, cy, w, h)
+            
+            grid_x = int(np.floor(norm_box[0]))
+            grid_y = int(np.floor(norm_box[1]))
 
+            if self._is_valid_obj(x1, y1, x2, y2, label, grid_x, grid_y):
+                obj_indx  = self.config['LABELS'].index(label)
+                best_anchor = self._get_anchor_idx(norm_box)
+
+                # assign ground truth x, y, w, h, confidence and class probs to y_batch
+                y += self._generate_y(grid_x, grid_y, best_anchor, obj_indx, norm_box)
+                
+                # assign the true box to b_batch
+                b_[0, 0, 0, true_box_index] = norm_box
+                
+                true_box_index += 1
+                true_box_index = true_box_index % self.config['TRUE_BOX_BUFFER']
+        return y, b_
+
+    def __getitem__(self, idx):
+        """
+        # Args
+            idx : int
+                batch index
+        """
+        batch_size = self._ann_handler.get_batch_size(idx)
         instance_count = 0
 
         x_batch = np.zeros((batch_size, self.config['IMAGE_H'], self.config['IMAGE_W'], 3))                         # input images
@@ -131,55 +153,19 @@ class BatchGenerator(Sequence):
         y_batch = np.zeros((batch_size, self.config['GRID_H'],  self.config['GRID_W'], self.config['BOX'], 4+1+self.config['CLASS']))                # desired network output
 
         # loop over batch
-        for annotation in anns:
-            
-            # Todo : annotation handling logic 
-            boxes = []
-            labels = []
-            for obj in annotation["object"]:
-                x1, y1, x2, y2 = obj["xmin"], obj["ymin"], obj["xmax"], obj["ymax"]
-                label = obj["name"]
-                boxes.append([x1, y1, x2, y2])
-                labels.append(label)
-            boxes = np.array(boxes)
+        for i in range(batch_size):
+            fname, boxes, labels = self._ann_handler.get_ann(idx, i)
             
             # augment input image and fix object's position and size
-            img, boxes = augment.imread(annotation["filename"],
+            img, boxes = augment.imread(fname,
                                           boxes,
                                           self.config["IMAGE_W"],
                                           self.config["IMAGE_H"],
                                           self.jitter)
             
-            # assign input image to x_batch
             x_batch[instance_count] = self._generate_x(img, boxes, labels)
-            
-            # construct output from object's x, y, w, h
-            true_box_index = 0
-            
-            # loop over objects in one image
-            for box, label in zip(boxes, labels):
-                x1, y1, x2, y2 = box
-                cx, cy, w, h = to_cxcy_wh(x1, y1, x2, y2)
-                norm_box = self._normalize_box(cx, cy, w, h)
-                
-                grid_x = int(np.floor(norm_box[0]))
-                grid_y = int(np.floor(norm_box[1]))
-
-                if self._is_valid_obj(x1, y1, x2, y2, label, grid_x, grid_y):
-                    obj_indx  = self.config['LABELS'].index(label)
-                    best_anchor = self._get_anchor_idx(norm_box)
-
-                    # assign ground truth x, y, w, h, confidence and class probs to y_batch
-                    y_batch[instance_count] = self._generate_y(grid_x, grid_y, best_anchor, obj_indx, norm_box)
-                    
-                    # assign the true box to b_batch
-                    b_batch[instance_count, 0, 0, 0, true_box_index] = norm_box
-                    
-                    true_box_index += 1
-                    true_box_index = true_box_index % self.config['TRUE_BOX_BUFFER']
-                            
-            # increase instance counter in current batch
-            instance_count += 1  
+            y_batch[instance_count], b_batch[instance_count] = self._generate_ann_batch(boxes, labels)
+            instance_count += 1
 
         self.counter += 1
         #print ' new batch created', self.counter
@@ -187,7 +173,7 @@ class BatchGenerator(Sequence):
         return [x_batch, b_batch], y_batch
 
     def on_epoch_end(self):
-        if self.shuffle: np.random.shuffle(self.images)
+        self._ann_handler.end_epoch()
         self.counter = 0
 
 
