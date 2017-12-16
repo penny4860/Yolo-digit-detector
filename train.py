@@ -20,10 +20,8 @@ argparser.add_argument(
     help='path to configuration file')
 
 if __name__ == '__main__':
-#     args = argparser.parse_args()
-#     train(args.conf)
-#     # loss: 2.1691, train batch jitter=False
-    
+    args = argparser.parse_args()
+    train(args.conf)
     predict("sample//raccoon_train_imgs//raccoon-72.jpg",
             "test_raccoon_weight.h5",
             config_path="config.json")
