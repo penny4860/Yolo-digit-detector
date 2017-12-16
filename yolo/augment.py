@@ -6,17 +6,16 @@ import numpy as np
 from astroid.protocols import objects
 
 
-class ImgAugment(object):
+def _create_augment_pipeline():
     
-    def __init__(self):
         ### augmentors by https://github.com/aleju/imgaug
         sometimes = lambda aug: iaa.Sometimes(0.5, aug)
-        # Todo : class extraction
+
         # Define our sequence of augmentation steps that will be applied to every image
         # All augmenters with per_channel=0.5 will sample one value _per image_
         # in 50% of all cases. In all other cases they will sample new values
         # _per channel_.
-        self.aug_pipe = iaa.Sequential(
+        aug_pipe = iaa.Sequential(
             [
                 # apply the following augmenters to most images
                 #iaa.Fliplr(0.5), # horizontally flip 50% of all images
@@ -66,6 +65,13 @@ class ImgAugment(object):
             ],
             random_order=True
         )
+        return aug_pipe
+
+
+class ImgAugment(object):
+    
+    def __init__(self):
+        self.aug_pipe = _create_augment_pipeline()
 
     def _resize_img(self, image, boxes, desired_w, desired_h):
         h, w, _ = image.shape
