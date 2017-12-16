@@ -66,7 +66,34 @@ class ImgAugment(object):
             ],
             random_order=True
         )
-    
+
+
+    def _jitter_on_img(self, image):
+        h, w, _ = image.shape
+
+        ### scale the image
+        scale = np.random.uniform() / 10. + 1.
+        image = cv2.resize(image, (0,0), fx = scale, fy = scale)
+
+        ### translate the image
+        max_offx = (scale-1.) * w
+        max_offy = (scale-1.) * h
+        offx = int(np.random.uniform() * max_offx)
+        offy = int(np.random.uniform() * max_offy)
+        
+        image = image[offy : (offy + h), offx : (offx + w)]
+
+        ### flip the image
+        flip = np.random.binomial(1, .5)
+        if flip > 0.5:
+            image = cv2.flip(image, 1)
+            is_flip = True
+        else:
+            is_flip = False
+            
+        image = self.aug_pipe.augment_image(image)
+        return image, scale, offx, offy, is_flip
+
     def run(self, img_file,
             boxes,
             desired_w,
@@ -83,23 +110,9 @@ class ImgAugment(object):
         h, w, _ = image.shape
         
         if jitter:
-            ### scale the image
-            scale = np.random.uniform() / 10. + 1.
-            image = cv2.resize(image, (0,0), fx = scale, fy = scale)
-
-            ### translate the image
-            max_offx = (scale-1.) * w
-            max_offy = (scale-1.) * h
-            offx = int(np.random.uniform() * max_offx)
-            offy = int(np.random.uniform() * max_offy)
-            
-            image = image[offy : (offy + h), offx : (offx + w)]
-
-            ### flip the image
-            flip = np.random.binomial(1, .5)
-            if flip > 0.5: image = cv2.flip(image, 1)
-                
-            image = self.aug_pipe.augment_image(image)            
+            image, scale, offx, offy, is_flip = self._jitter_on_img(image)
+        else:
+            scale, offx, offy, is_flip = 1, 0, 0, False
             
         # resize the image to standard size
         image = cv2.resize(image, (desired_h, desired_w))
@@ -109,23 +122,21 @@ class ImgAugment(object):
         new_boxes = []
         for box in boxes:
             x1,y1,x2,y2 = box
-            if jitter:
-                x1 = int(x1 * scale - offx)
-                x2 = int(x2 * scale - offx)
+            x1 = int(x1 * scale - offx)
+            x2 = int(x2 * scale - offx)
             x1 = int(x1 * float(desired_w) / w)
             x1 = max(min(x1, desired_w), 0)
             x2 = int(x2 * float(desired_w) / w)
             x2 = max(min(x2, desired_w), 0)
             
-            if jitter:
-                y1 = int(y1 * scale - offy)
-                y2 = int(y2 * scale - offy)
+            y1 = int(y1 * scale - offy)
+            y2 = int(y2 * scale - offy)
             y1 = int(y1 * float(desired_h) / h)
             y1 = max(min(y1, desired_h), 0)
             y2 = int(y2 * float(desired_h) / h)
             y2 = max(min(y2, desired_h), 0)
 
-            if jitter and flip > 0.5:
+            if is_flip:
                 xmin = x1
                 x1 = desired_w - x2
                 x2 = desired_w - xmin
