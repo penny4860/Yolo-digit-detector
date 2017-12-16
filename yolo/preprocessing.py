@@ -189,13 +189,23 @@ class BatchGenerator(Sequence):
                 "ymin"
                 "ymax"
         """
-        img_augmenter = ImgAugment()
-        image, all_objs = img_augmenter.run(train_instance["filename"],
-                                            train_instance["object"],
-                                            self.config["IMAGE_W"],
-                                            self.config["IMAGE_H"],
-                                            jitter)
-        return image, all_objs
+        boxes = []
+        for obj in train_instance["object"]:
+            x1, y1, x2, y2 = obj["xmin"], obj["ymin"], obj["xmax"], obj["ymax"]
+            boxes.append([x1, y1, x2, y2])
+        boxes = np.array(boxes)
+        
+        image, boxes = ImgAugment.run(train_instance["filename"],
+                                         boxes,
+                                         self.config["IMAGE_W"],
+                                         self.config["IMAGE_H"],
+                                         jitter)
+        
+        objs = []
+        for obj, box in zip(train_instance["object"], boxes):
+            obj["xmin"], obj["ymin"], obj["xmax"], obj["ymax"] = box.astype(np.int)
+            objs.append(obj)
+        return image, objs
 
 import pytest
 @pytest.fixture(scope='function')
