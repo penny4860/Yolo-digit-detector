@@ -136,9 +136,9 @@ class BatchGenerator(Sequence):
             x = img
         return x
 
-    def _generate_box(self, center_x, center_y, center_w, center_h):
-        box = [center_x, center_y, center_w, center_h]
-
+    def _get_anchor_idx(self, box):
+        _, _, center_w, center_h = box
+        
         # find the anchor that best predicts this box
         best_anchor = -1
         max_iou     = -1
@@ -155,7 +155,19 @@ class BatchGenerator(Sequence):
             if max_iou < iou:
                 best_anchor = i
                 max_iou     = iou
-        return box, best_anchor
+        return best_anchor
+
+    def _generate_box(self, obj):
+        center_x = .5*(obj['xmin'] + obj['xmax'])
+        center_x = center_x / (float(self.config['IMAGE_W']) / self.config['GRID_W'])
+        center_y = .5*(obj['ymin'] + obj['ymax'])
+        center_y = center_y / (float(self.config['IMAGE_H']) / self.config['GRID_H'])
+        center_w = (obj['xmax'] - obj['xmin']) / (float(self.config['IMAGE_W']) / self.config['GRID_W']) # unit: grid cell
+        center_h = (obj['ymax'] - obj['ymin']) / (float(self.config['IMAGE_H']) / self.config['GRID_H']) # unit: grid cell
+        grid_x = int(np.floor(center_x))
+        grid_y = int(np.floor(center_y))
+        
+        return [center_x, center_y, center_w, center_h], grid_x, grid_y
 
     def __getitem__(self, idx):
         
@@ -182,19 +194,11 @@ class BatchGenerator(Sequence):
             # loop over objects in one image
             for obj in all_objs:
                 if self._is_valid_obj(obj['xmin'], obj['ymin'], obj['xmax'], obj['ymax'], obj['name']):
-                    center_x = .5*(obj['xmin'] + obj['xmax'])
-                    center_x = center_x / (float(self.config['IMAGE_W']) / self.config['GRID_W'])
-                    center_y = .5*(obj['ymin'] + obj['ymax'])
-                    center_y = center_y / (float(self.config['IMAGE_H']) / self.config['GRID_H'])
-                    center_w = (obj['xmax'] - obj['xmin']) / (float(self.config['IMAGE_W']) / self.config['GRID_W']) # unit: grid cell
-                    center_h = (obj['ymax'] - obj['ymin']) / (float(self.config['IMAGE_H']) / self.config['GRID_H']) # unit: grid cell
-
-                    grid_x = int(np.floor(center_x))
-                    grid_y = int(np.floor(center_y))
+                    box, grid_x, grid_y = self._generate_box(obj)
 
                     if grid_x < self.config['GRID_W'] and grid_y < self.config['GRID_H']:
                         obj_indx  = self.config['LABELS'].index(obj['name'])
-                        box, best_anchor = self._generate_box(center_x, center_y, center_w, center_h)
+                        best_anchor = self._get_anchor_idx(box)
                                 
                         # assign ground truth x, y, w, h, confidence and class probs to y_batch
                         y_batch[instance_count, grid_y, grid_x, best_anchor, 0:4] = box
