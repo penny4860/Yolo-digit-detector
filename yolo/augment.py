@@ -3,6 +3,7 @@ from imgaug import augmenters as iaa
 import copy
 import cv2
 import numpy as np
+from astroid.protocols import objects
 
 
 class ImgAugment(object):
@@ -71,6 +72,7 @@ class ImgAugment(object):
             desired_w,
             desired_h,
             jitter):
+        
         image = cv2.imread(img_file)
         h, w, c = image.shape
         
@@ -118,3 +120,31 @@ class ImgAugment(object):
                 obj['xmin'] = desired_w - obj['xmax']
                 obj['xmax'] = desired_w - xmin
         return image, all_objs
+
+
+if __name__ == '__main__':
+    
+    img_file = "C://Users//penny//git//basic-yolo-keras//sample//raccoon_train_imgs//raccoon-1.jpg"
+    objects = [{'name': 'raccoon', 'xmin': 81, 'ymin': 88, 'xmax': 522, 'ymax': 408},
+               {'name': 'raccoon', 'xmin': 100, 'ymin': 100, 'xmax': 400, 'ymax': 300}]
+    desired_w = 416
+    desired_h = 416
+    jitter = True
+     
+    img_augment = ImgAugment()
+    img, objects_ = img_augment.run(img_file, objects, desired_w, desired_h, jitter)
+    img = img.astype(np.uint8)
+    
+    import matplotlib.pyplot as plt
+    for obj in objects_:
+        x1, y1, x2, y2 = obj["xmin"], obj["ymin"], obj["xmax"], obj["ymax"]
+        cv2.rectangle(img, (x1,y1), (x2,y2), (0,255,0), 3)
+    plt.imshow(img)
+    plt.show()
+
+    
+    
+    
+
+
+
