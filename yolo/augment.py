@@ -5,37 +5,22 @@ import numpy as np
 np.random.seed(1337)
 
 
-class ImgAugment(object):
-    
-    @staticmethod
-    def run(img_file,
-            boxes,
-            desired_w,
-            desired_h,
-            jitter):
-        """
-        # Args
-            img_file : str
-            boxes : array, shape of (N, 4)
-                (x1,y1,x2,y2)-ordered
-            desired_w, desired_h: int
-            jitter : bool
-        
-        # Returns
-            image : ndarray, shape of (h, w, 3)
-                BRG-ordered image array
-            boxes : ndarray, shape of (N, 4)
-        """
-        # 1. read image file
-        image = cv2.imread(img_file)
+def imread(img_file,
+           boxes,
+           desired_w,
+           desired_h,
+           jitter):
 
-        # 2. make jitter on image        
-        if jitter:
-            image, boxes = make_jitter_on_image(image, boxes)
+    # 1. read image file
+    image = cv2.imread(img_file)
 
-        # 3. resize image            
-        image, boxes = resize_image(image, boxes, desired_w, desired_h)
-        return image, boxes
+    # 2. make jitter on image        
+    if jitter:
+        image, boxes = make_jitter_on_image(image, boxes)
+
+    # 3. resize image            
+    image, boxes = resize_image(image, boxes, desired_w, desired_h)
+    return image, boxes
 
 
 def make_jitter_on_image(image, boxes):
@@ -181,8 +166,7 @@ if __name__ == '__main__':
     desired_h = 416
     jitter = True
      
-    img_augment = ImgAugment()
-    img, boxes_ = img_augment.run(img_file, boxes, desired_w, desired_h, jitter)
+    img, boxes_ = imread(img_file, boxes, desired_w, desired_h, jitter)
     img = img.astype(np.uint8)
     
     import matplotlib.pyplot as plt

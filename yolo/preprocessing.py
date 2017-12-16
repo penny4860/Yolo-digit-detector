@@ -2,9 +2,9 @@
 import cv2
 import numpy as np
 np.random.seed(1337)
+import yolo.augment as augment
 from keras.utils import Sequence
 from yolo.box import BoundBox, bbox_iou
-from yolo.augment import ImgAugment
 
 class BatchGenerator(Sequence):
     def __init__(self, images, 
@@ -195,11 +195,11 @@ class BatchGenerator(Sequence):
             boxes.append([x1, y1, x2, y2])
         boxes = np.array(boxes)
         
-        image, boxes = ImgAugment.run(train_instance["filename"],
-                                         boxes,
-                                         self.config["IMAGE_W"],
-                                         self.config["IMAGE_H"],
-                                         jitter)
+        image, boxes = augment.imread(train_instance["filename"],
+                              boxes,
+                              self.config["IMAGE_W"],
+                              self.config["IMAGE_H"],
+                              jitter)
         
         objs = []
         for obj, box in zip(train_instance["object"], boxes):
