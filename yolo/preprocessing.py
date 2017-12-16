@@ -190,7 +190,7 @@ class BatchGenerator(Sequence):
                 "ymax"
         """
         img_augmenter = ImgAugment()
-        image, all_objs = img_augmenter.run(train_instance, jitter, self.config["IMAGE_W"], self.config["IMAGE_H"])
+        image, all_objs = img_augmenter.run(train_instance["filename"], train_instance["object"], jitter, self.config["IMAGE_W"], self.config["IMAGE_H"])
         return image, all_objs
 
 import pytest
