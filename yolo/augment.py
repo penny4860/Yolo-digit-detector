@@ -67,8 +67,7 @@ class ImgAugment(object):
             random_order=True
         )
 
-
-    def _jitter_on_img(self, image):
+    def _jitter_on_img(self, image, boxes):
         h, w, _ = image.shape
 
         ### scale the image
@@ -92,7 +91,23 @@ class ImgAugment(object):
             is_flip = False
             
         image = self.aug_pipe.augment_image(image)
-        return image, scale, offx, offy, is_flip
+        
+        # fix object's position and size
+        new_boxes = []
+        for box in boxes:
+            x1,y1,x2,y2 = box
+            x1 = int(x1 * scale - offx)
+            x2 = int(x2 * scale - offx)
+            
+            y1 = int(y1 * scale - offy)
+            y2 = int(y2 * scale - offy)
+
+            if is_flip:
+                xmin = x1
+                x1 = w - x2
+                x2 = w - xmin
+            new_boxes.append([x1,y1,x2,y2])
+        return image, np.array(new_boxes)
 
     def run(self, img_file,
             boxes,
@@ -112,26 +127,7 @@ class ImgAugment(object):
 
         # 2. make jitter on image        
         if jitter:
-            image, scale, offx, offy, is_flip = self._jitter_on_img(image)
-        else:
-            scale, offx, offy, is_flip = 1, 0, 0, False
-        
-        # fix object's position and size
-        new_boxes = []
-        for box in boxes:
-            x1,y1,x2,y2 = box
-            x1 = int(x1 * scale - offx)
-            x2 = int(x2 * scale - offx)
-            
-            y1 = int(y1 * scale - offy)
-            y2 = int(y2 * scale - offy)
-
-            if is_flip:
-                xmin = x1
-                x1 = w - x2
-                x2 = w - xmin
-            new_boxes.append([x1,y1,x2,y2])
-        boxes = np.array(new_boxes)
+            image, boxes = self._jitter_on_img(image, boxes)
         
         # resize the image to standard size
         image = cv2.resize(image, (desired_h, desired_w))
