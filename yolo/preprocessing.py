@@ -4,7 +4,7 @@ import numpy as np
 np.random.seed(1337)
 import yolo.augment as augment
 from keras.utils import Sequence
-from yolo.box import BoundBox, bbox_iou
+from yolo.box import BoundBox, bbox_iou, to_cxcy_wh
 
 class BatchGenerator(Sequence):
     def __init__(self, images, 
@@ -146,7 +146,7 @@ class BatchGenerator(Sequence):
             # loop over objects in one image
             for obj in all_objs:
                 x1, y1, x2, y2 = obj['xmin'], obj['ymin'], obj['xmax'], obj['ymax']
-                cx, cy, w, h = _to_cxcy_wh(x1, y1, x2, y2)
+                cx, cy, w, h = to_cxcy_wh(x1, y1, x2, y2)
                 box, grid_x, grid_y = self._generate_box(cx, cy, w, h)
 
                 if self._is_valid_obj(x1, y1, x2, y2, obj['name'], grid_x, grid_y):
@@ -207,13 +207,6 @@ class BatchGenerator(Sequence):
             objs.append(obj)
         return image, objs
 
-
-def _to_cxcy_wh(x1, y1, x2, y2):
-    cx = (x1 + x2) / 2
-    cy = (y1 + y2) / 2
-    w = x2-x1
-    h = y2-y1
-    return cx, cy, w, h
 
 import pytest
 @pytest.fixture(scope='function')
