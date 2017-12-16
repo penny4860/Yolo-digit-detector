@@ -277,7 +277,8 @@ class BatchGenerator(Sequence):
                 
         return image, all_objs
 
-
+import pytest
+@pytest.fixture(scope='function')
 def setup():
     import json
     from yolo.annotation import parse_annotation
@@ -300,15 +301,16 @@ def setup():
                                                 config['model']['labels'])
     return train_imgs, generator_config
 
+@pytest.fixture(scope='function')
 def expected():
     x_batch_gt = np.load("x_batch_gt.npy")
     b_batch_gt = np.load("b_batch_gt.npy")
     y_batch_gt = np.load("y_batch_gt.npy")
     return x_batch_gt, b_batch_gt, y_batch_gt
 
-def test_generate_batch():
-    images, config = setup()
-    x_batch_gt, b_batch_gt, y_batch_gt = expected()
+def test_generate_batch(setup, expected):
+    images, config = setup
+    x_batch_gt, b_batch_gt, y_batch_gt = expected
 
     batch_gen = BatchGenerator(images, config, False, False)
     
@@ -321,7 +323,6 @@ def test_generate_batch():
 
 
 if __name__ == '__main__':
-    import pytest
     pytest.main([__file__, "-v", "-s"])
 
         
