@@ -136,10 +136,7 @@ class BatchGenerator(Sequence):
             x = img
         return x
 
-    def _generate_box(self, obj, center_x, center_y):
-        center_w = (obj['xmax'] - obj['xmin']) / (float(self.config['IMAGE_W']) / self.config['GRID_W']) # unit: grid cell
-        center_h = (obj['ymax'] - obj['ymin']) / (float(self.config['IMAGE_H']) / self.config['GRID_H']) # unit: grid cell
-        
+    def _generate_box(self, center_x, center_y, center_w, center_h):
         box = [center_x, center_y, center_w, center_h]
 
         # find the anchor that best predicts this box
@@ -189,13 +186,15 @@ class BatchGenerator(Sequence):
                     center_x = center_x / (float(self.config['IMAGE_W']) / self.config['GRID_W'])
                     center_y = .5*(obj['ymin'] + obj['ymax'])
                     center_y = center_y / (float(self.config['IMAGE_H']) / self.config['GRID_H'])
+                    center_w = (obj['xmax'] - obj['xmin']) / (float(self.config['IMAGE_W']) / self.config['GRID_W']) # unit: grid cell
+                    center_h = (obj['ymax'] - obj['ymin']) / (float(self.config['IMAGE_H']) / self.config['GRID_H']) # unit: grid cell
 
                     grid_x = int(np.floor(center_x))
                     grid_y = int(np.floor(center_y))
 
                     if grid_x < self.config['GRID_W'] and grid_y < self.config['GRID_H']:
                         obj_indx  = self.config['LABELS'].index(obj['name'])
-                        box, best_anchor = self._generate_box(obj, center_x, center_y)
+                        box, best_anchor = self._generate_box(center_x, center_y, center_w, center_h)
                                 
                         # assign ground truth x, y, w, h, confidence and class probs to y_batch
                         y_batch[instance_count, grid_y, grid_x, best_anchor, 0:4] = box
