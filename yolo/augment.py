@@ -27,9 +27,10 @@ def imread(img_file,
     # 1. read image file
     image = cv2.imread(img_file)
 
-    # 2. make jitter on image        
+    # 2. make jitter on image
+    boxes_ = np.copy(boxes)
     if jitter:
-        image, boxes_ = make_jitter_on_image(image, boxes)
+        image, boxes_ = make_jitter_on_image(image, boxes_)
 
     # 3. resize image            
     image, boxes_ = resize_image(image, boxes_, desired_w, desired_h)
