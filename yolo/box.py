@@ -67,6 +67,14 @@ def draw_boxes(image, boxes, labels):
     return image        
 
 
+def to_cxcy_wh(x1, y1, x2, y2):
+    cx = float(x1 + x2) / 2
+    cy = float(y1 + y2) / 2
+    w = x2-x1
+    h = y2-y1
+    return cx, cy, w, h
+
+
 def _interval_overlap(interval_a, interval_b):
     x1, x2 = interval_a
     x3, x4 = interval_b
