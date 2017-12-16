@@ -68,10 +68,16 @@ class ImgAugment(object):
         )
     
     def run(self, img_file,
-            objects,
+            boxes,
             desired_w,
             desired_h,
             jitter):
+        """
+        # Args
+            boxes : array, shape of (N, 4)
+                (x1,y1,x2,y2)-ordered
+        
+        """
         
         image = cv2.imread(img_file)
         h, w, c = image.shape
@@ -102,24 +108,31 @@ class ImgAugment(object):
         image = image[:,:,::-1]
 
         # fix object's position and size
-        for obj in all_objs:
-            for attr in ['xmin', 'xmax']:
-                if jitter: obj[attr] = int(obj[attr] * scale - offx)
-                    
-                obj[attr] = int(obj[attr] * float(desired_w) / w)
-                obj[attr] = max(min(obj[attr], desired_w), 0)
-                
-            for attr in ['ymin', 'ymax']:
-                if jitter: obj[attr] = int(obj[attr] * scale - offy)
-                    
-                obj[attr] = int(obj[attr] * float(desired_h) / h)
-                obj[attr] = max(min(obj[attr], desired_h), 0)
+        new_boxes = []
+        for box in boxes:
+            x1,y1,x2,y2 = box
+            if jitter:
+                x1 = int(x1 * scale - offx)
+                x2 = int(x2 * scale - offx)
+            x1 = int(x1 * float(desired_w) / w)
+            x1 = max(min(x1, desired_w), 0)
+            x2 = int(x2 * float(desired_w) / w)
+            x2 = max(min(x2, desired_w), 0)
+            
+            if jitter:
+                y1 = int(y1 * scale - offy)
+                y2 = int(y2 * scale - offy)
+            y1 = int(y1 * float(desired_h) / h)
+            y1 = max(min(y1, desired_h), 0)
+            y2 = int(y2 * float(desired_h) / h)
+            y2 = max(min(y2, desired_h), 0)
 
             if jitter and flip > 0.5:
-                xmin = obj['xmin']
-                obj['xmin'] = desired_w - obj['xmax']
-                obj['xmax'] = desired_w - xmin
-        return image, all_objs
+                xmin = x1
+                x1 = desired_w - x2
+                x2 = desired_w - xmin
+            new_boxes.append([x1,y1,x2,y2])
+        return image, np.array(new_boxes)
 
 
 if __name__ == '__main__':
@@ -127,17 +140,20 @@ if __name__ == '__main__':
     img_file = "C://Users//penny//git//basic-yolo-keras//sample//raccoon_train_imgs//raccoon-1.jpg"
     objects = [{'name': 'raccoon', 'xmin': 81, 'ymin': 88, 'xmax': 522, 'ymax': 408},
                {'name': 'raccoon', 'xmin': 100, 'ymin': 100, 'xmax': 400, 'ymax': 300}]
+    boxes = np.array([[81,88,522,408],
+                      [100,100,400,300]])
+    
     desired_w = 416
     desired_h = 416
     jitter = True
      
     img_augment = ImgAugment()
-    img, objects_ = img_augment.run(img_file, objects, desired_w, desired_h, jitter)
+    img, boxes_ = img_augment.run(img_file, boxes, desired_w, desired_h, jitter)
     img = img.astype(np.uint8)
     
     import matplotlib.pyplot as plt
-    for obj in objects_:
-        x1, y1, x2, y2 = obj["xmin"], obj["ymin"], obj["xmax"], obj["ymax"]
+    for box in boxes_:
+        x1, y1, x2, y2 = box
         cv2.rectangle(img, (x1,y1), (x2,y2), (0,255,0), 3)
     plt.imshow(img)
     plt.show()
