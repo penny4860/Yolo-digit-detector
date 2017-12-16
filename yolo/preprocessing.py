@@ -132,8 +132,22 @@ class BatchGenerator(Sequence):
 
         # loop over batch
         for annotation in anns:
+            
+            boxes = []
+            labels = []
+            for obj in annotation["object"]:
+                x1, y1, x2, y2 = obj["xmin"], obj["ymin"], obj["xmax"], obj["ymax"]
+                label = obj["name"]
+                boxes.append([x1, y1, x2, y2])
+                labels.append(label)
+            boxes = np.array(boxes)
+            
             # augment input image and fix object's position and size
-            img, boxes, labels = self.aug_image(annotation, jitter=self.jitter)
+            img, boxes = augment.imread(annotation["filename"],
+                                          boxes,
+                                          self.config["IMAGE_W"],
+                                          self.config["IMAGE_H"],
+                                          self.jitter)
             
             # assign input image to x_batch
             x_batch[instance_count] = self._generate_x(img, boxes, labels)
@@ -174,38 +188,6 @@ class BatchGenerator(Sequence):
     def on_epoch_end(self):
         if self.shuffle: np.random.shuffle(self.images)
         self.counter = 0
-
-    def aug_image(self, train_instance, jitter):
-        """
-        # Args
-            train_instance : dict
-            jitter : bool
-        
-        # Returns
-            image : 3d-array
-            all_objs : list of dicts
-                "name"
-                "xmin"
-                "xmax"
-                "ymin"
-                "ymax"
-        """
-        boxes = []
-        labels = []
-        for obj in train_instance["object"]:
-            x1, y1, x2, y2 = obj["xmin"], obj["ymin"], obj["xmax"], obj["ymax"]
-            label = obj["name"]
-            boxes.append([x1, y1, x2, y2])
-            labels.append(label)
-        boxes = np.array(boxes)
-        
-        image, boxes = augment.imread(train_instance["filename"],
-                              boxes,
-                              self.config["IMAGE_W"],
-                              self.config["IMAGE_H"],
-                              jitter)
-        
-        return image, boxes, labels
 
 
 import pytest
