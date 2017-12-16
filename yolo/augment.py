@@ -66,7 +66,7 @@ class ImgAugment(object):
             random_order=True
         )
     
-    def run(self, train_instance, jitter, config):
+    def run(self, train_instance, jitter, desired_w, desired_h):
         image_name = train_instance['filename']
         image = cv2.imread(image_name)
         h, w, c = image.shape
@@ -93,7 +93,7 @@ class ImgAugment(object):
             image = self.aug_pipe.augment_image(image)            
             
         # resize the image to standard size
-        image = cv2.resize(image, (config['IMAGE_H'], config['IMAGE_W']))
+        image = cv2.resize(image, (desired_h, desired_w))
         image = image[:,:,::-1]
 
         # fix object's position and size
@@ -101,17 +101,17 @@ class ImgAugment(object):
             for attr in ['xmin', 'xmax']:
                 if jitter: obj[attr] = int(obj[attr] * scale - offx)
                     
-                obj[attr] = int(obj[attr] * float(config['IMAGE_W']) / w)
-                obj[attr] = max(min(obj[attr], config['IMAGE_W']), 0)
+                obj[attr] = int(obj[attr] * float(desired_w) / w)
+                obj[attr] = max(min(obj[attr], desired_w), 0)
                 
             for attr in ['ymin', 'ymax']:
                 if jitter: obj[attr] = int(obj[attr] * scale - offy)
                     
-                obj[attr] = int(obj[attr] * float(config['IMAGE_H']) / h)
-                obj[attr] = max(min(obj[attr], config['IMAGE_H']), 0)
+                obj[attr] = int(obj[attr] * float(desired_h) / h)
+                obj[attr] = max(min(obj[attr], desired_h), 0)
 
             if jitter and flip > 0.5:
                 xmin = obj['xmin']
-                obj['xmin'] = config['IMAGE_W'] - obj['xmax']
-                obj['xmax'] = config['IMAGE_W'] - xmin
+                obj['xmin'] = desired_w - obj['xmax']
+                obj['xmax'] = desired_w - xmin
         return image, all_objs
