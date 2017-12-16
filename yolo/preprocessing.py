@@ -143,6 +143,13 @@ class BatchGenerator(Sequence):
                     
             x = img
         return x
+    
+    def _generate_y(self, grid_x, grid_y, best_anchor, obj_indx, box):
+        y = np.zeros((self.config['GRID_H'],  self.config['GRID_W'], self.config['BOX'], 4+1+self.config['CLASS']))
+        y[grid_y, grid_x, best_anchor, 0:4] = box
+        y[grid_y, grid_x, best_anchor, 4  ] = 1.
+        y[grid_y, grid_x, best_anchor, 5+obj_indx] = 1
+        return y
 
     def _get_anchor_idx(self, box):
         _, _, center_w, center_h = box
@@ -208,9 +215,7 @@ class BatchGenerator(Sequence):
                     best_anchor = self._get_anchor_idx(box)
                             
                     # assign ground truth x, y, w, h, confidence and class probs to y_batch
-                    y_batch[instance_count, grid_y, grid_x, best_anchor, 0:4] = box
-                    y_batch[instance_count, grid_y, grid_x, best_anchor, 4  ] = 1.
-                    y_batch[instance_count, grid_y, grid_x, best_anchor, 5+obj_indx] = 1
+                    y_batch[instance_count] = self._generate_y(grid_x, grid_y, best_anchor, obj_indx, box)
                     
                     # assign the true box to b_batch
                     b_batch[instance_count, 0, 0, 0, true_box_index] = box
