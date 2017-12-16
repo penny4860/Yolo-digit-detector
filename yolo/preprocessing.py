@@ -204,12 +204,6 @@ class BatchGenerator(Sequence):
                 box, grid_x, grid_y = self._generate_box(obj)
 
                 if self._is_valid_obj(obj['xmin'], obj['ymin'], obj['xmax'], obj['ymax'], obj['name'], grid_x, grid_y):
-                    print("============================================================")                    
-                    print(box)
-                    print(grid_x, grid_y)
-                    print(obj['xmin'], obj['ymin'], obj['xmax'], obj['ymax'], obj['name'])
-                    print("============================================================")                    
-                    
                     obj_indx  = self.config['LABELS'].index(obj['name'])
                     best_anchor = self._get_anchor_idx(box)
                             
