@@ -2,14 +2,13 @@
 from imgaug import augmenters as iaa
 import cv2
 import numpy as np
+np.random.seed(1337)
 
 
 class ImgAugment(object):
     
-    def __init__(self):
-        pass
-
-    def run(self, img_file,
+    @staticmethod
+    def run(img_file,
             boxes,
             desired_w,
             desired_h,
