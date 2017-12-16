@@ -5,74 +5,7 @@ np.random.seed(1337)
 import yolo.augment as augment
 from keras.utils import Sequence
 from yolo.box import BoundBox, bbox_iou, to_cxcy_wh
-
-# Todo : annotataion module
-class AnnHandler(object):
-    def __init__(self, image_anns, batch_size, shuffle):
-        """
-        # Args
-            image_anns : list of dictionary including following keys
-                "filename"  : str
-                "width"     : int
-                "height"    : int
-                "object"    : list of dictionary
-                    'name' : str
-                    'xmin' : int
-                    'ymin' : int
-                    'xmax' : int
-                    'ymax' : int
-        """
-        self.image_anns = image_anns
-        self.batch_size = batch_size
-        self.shuffle = shuffle
-
-        if shuffle:
-            np.random.shuffle(self.image_anns)
-
-    def get_ann(self, batch_idx, index):
-        batch_anns = self._get_batch(batch_idx)
-        fname = self._get_fname(batch_anns, index)        
-        labels = self._get_labels(batch_anns, index)        
-        boxes = self._get_boxes(batch_anns, index)        
-        return fname, boxes, labels
-
-    def get_batch_size(self, batch_idx):
-        batch_anns = self._get_batch(batch_idx)
-        return len(batch_anns)
-
-    def len_batches(self):
-        return int(np.ceil(float(len(self.image_anns))/self.batch_size))
-
-    def end_epoch(self):
-        if self.shuffle:
-            np.random.shuffle(self.image_anns)
-
-    def _get_fname(self, batch_anns, index):
-        return batch_anns[index]["filename"]
-
-    def _get_labels(self, batch_anns, index):
-        labels = []
-        for obj in batch_anns[index]["object"]:
-            labels.append(obj["name"])
-        return labels
-
-    def _get_boxes(self, batch_anns, index):
-        boxes = []
-        for obj in batch_anns[index]["object"]:
-            x1, y1, x2, y2 = obj["xmin"], obj["ymin"], obj["xmax"], obj["ymax"]
-            boxes.append([x1, y1, x2, y2])
-        boxes = np.array(boxes)
-        return boxes
-
-    def _get_batch(self, batch_idx):
-        l_bound = batch_idx * self.batch_size
-        r_bound = (batch_idx+1) * self.batch_size
-
-        if r_bound > len(self.image_anns):
-            r_bound = len(self.image_anns)
-            l_bound = r_bound - self.batch_size
-        return self.image_anns[l_bound:r_bound]
-
+from yolo.annotation import AnnHandler
 
 class BatchGenerator(Sequence):
     def __init__(self, images, 
@@ -99,8 +32,6 @@ class BatchGenerator(Sequence):
         # self.images = images
         self.config = config
 
-        # Todo : AnnHandler
-        self.shuffle = shuffle
         self.jitter  = jitter
         self.norm    = norm
 
