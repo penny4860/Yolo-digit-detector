@@ -309,9 +309,15 @@ if __name__ == '__main__':
     (x_batch, b_batch), y_batch = batch_gen[0]
     print(x_batch.shape, b_batch.shape, y_batch.shape)
     
-    np.save("x_batch_gt", x_batch)
-    np.save("b_batch_gt", b_batch)
-    np.save("y_batch_gt", y_batch)
+    x_batch_gt = np.load("x_batch_gt.npy")
+    b_batch_gt = np.load("b_batch_gt.npy")
+    y_batch_gt = np.load("y_batch_gt.npy")
+    
+    print(np.array_equal(x_batch, x_batch_gt))
+    print(np.array_equal(b_batch, b_batch_gt))
+    print(np.array_equal(y_batch, y_batch_gt))
+    
+    
     
     
     
