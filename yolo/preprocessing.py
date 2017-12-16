@@ -133,6 +133,7 @@ class BatchGenerator(Sequence):
         # loop over batch
         for annotation in anns:
             
+            # Todo : annotation handling logic 
             boxes = []
             labels = []
             for obj in annotation["object"]:
