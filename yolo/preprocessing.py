@@ -66,20 +66,20 @@ class BatchGenerator(Sequence):
                     is_valid = True
         return is_valid
 
-    def _generate_x(self, img, all_objs):
+    def _generate_x(self, img, boxes, labels):
         # assign input image to x_batch
         if self.norm != None: 
             x = self.norm(img)
         else:
             # plot image and bounding boxes for sanity check
-            for obj in all_objs:
-                if obj['xmax'] > obj['xmin'] and obj['ymax'] > obj['ymin']:
-                    cv2.rectangle(img[:,:,::-1], (obj['xmin'],obj['ymin']), (obj['xmax'],obj['ymax']), (255,0,0), 3)
-                    cv2.putText(img[:,:,::-1], obj['name'], 
-                                (obj['xmin']+2, obj['ymin']+12), 
+            for box, label in zip(boxes, labels):
+                x1, y1, x2, y2 = box
+                if x2 > x1 and y2 > y1:
+                    cv2.rectangle(img[:,:,::-1], (x1, y1), (x2, y2), (255,0,0), 3)
+                    cv2.putText(img[:,:,::-1], label, 
+                                (x1+2, y1+12), 
                                 0, 1.2e-3 * img.shape[0], 
                                 (0,255,0), 2)
-                    
             x = img
         return x
     
@@ -133,25 +133,25 @@ class BatchGenerator(Sequence):
         # loop over batch
         for annotation in anns:
             # augment input image and fix object's position and size
-            img, all_objs = self.aug_image(annotation, jitter=self.jitter)
+            img, boxes, labels = self.aug_image(annotation, jitter=self.jitter)
             
             # assign input image to x_batch
-            x_batch[instance_count] = self._generate_x(img, all_objs)
+            x_batch[instance_count] = self._generate_x(img, boxes, labels)
             
             # construct output from object's x, y, w, h
             true_box_index = 0
             
             # loop over objects in one image
-            for obj in all_objs:
-                x1, y1, x2, y2 = obj['xmin'], obj['ymin'], obj['xmax'], obj['ymax']
+            for box, label in zip(boxes, labels):
+                x1, y1, x2, y2 = box
                 cx, cy, w, h = to_cxcy_wh(x1, y1, x2, y2)
                 norm_box = self._normalize_box(cx, cy, w, h)
                 
                 grid_x = int(np.floor(norm_box[0]))
                 grid_y = int(np.floor(norm_box[1]))
 
-                if self._is_valid_obj(x1, y1, x2, y2, obj['name'], grid_x, grid_y):
-                    obj_indx  = self.config['LABELS'].index(obj['name'])
+                if self._is_valid_obj(x1, y1, x2, y2, label, grid_x, grid_y):
+                    obj_indx  = self.config['LABELS'].index(label)
                     best_anchor = self._get_anchor_idx(norm_box)
 
                     # assign ground truth x, y, w, h, confidence and class probs to y_batch
@@ -191,9 +191,12 @@ class BatchGenerator(Sequence):
                 "ymax"
         """
         boxes = []
+        labels = []
         for obj in train_instance["object"]:
             x1, y1, x2, y2 = obj["xmin"], obj["ymin"], obj["xmax"], obj["ymax"]
+            label = obj["name"]
             boxes.append([x1, y1, x2, y2])
+            labels.append(label)
         boxes = np.array(boxes)
         
         image, boxes = augment.imread(train_instance["filename"],
@@ -202,11 +205,7 @@ class BatchGenerator(Sequence):
                               self.config["IMAGE_H"],
                               jitter)
         
-        objs = []
-        for obj, box in zip(train_instance["object"], boxes):
-            obj["xmin"], obj["ymin"], obj["xmax"], obj["ymax"] = box.astype(np.int)
-            objs.append(obj)
-        return image, objs
+        return image, boxes, labels
 
 
 import pytest
