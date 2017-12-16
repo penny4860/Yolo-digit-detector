@@ -136,6 +136,30 @@ class BatchGenerator(Sequence):
             x = img
         return x
 
+    def _generate_box(self, obj, center_x, center_y):
+        center_w = (obj['xmax'] - obj['xmin']) / (float(self.config['IMAGE_W']) / self.config['GRID_W']) # unit: grid cell
+        center_h = (obj['ymax'] - obj['ymin']) / (float(self.config['IMAGE_H']) / self.config['GRID_H']) # unit: grid cell
+        
+        box = [center_x, center_y, center_w, center_h]
+
+        # find the anchor that best predicts this box
+        best_anchor = -1
+        max_iou     = -1
+        
+        shifted_box = BoundBox(0, 
+                               0, 
+                               center_w, 
+                               center_h)
+        
+        for i in range(len(self.anchors)):
+            anchor = self.anchors[i]
+            iou    = bbox_iou(shifted_box, anchor)
+            
+            if max_iou < iou:
+                best_anchor = i
+                max_iou     = iou
+        return box, best_anchor
+
     def __getitem__(self, idx):
         
         anns = self._get_annotations_batch(idx)
@@ -171,28 +195,7 @@ class BatchGenerator(Sequence):
 
                     if grid_x < self.config['GRID_W'] and grid_y < self.config['GRID_H']:
                         obj_indx  = self.config['LABELS'].index(obj['name'])
-                        
-                        center_w = (obj['xmax'] - obj['xmin']) / (float(self.config['IMAGE_W']) / self.config['GRID_W']) # unit: grid cell
-                        center_h = (obj['ymax'] - obj['ymin']) / (float(self.config['IMAGE_H']) / self.config['GRID_H']) # unit: grid cell
-                        
-                        box = [center_x, center_y, center_w, center_h]
-
-                        # find the anchor that best predicts this box
-                        best_anchor = -1
-                        max_iou     = -1
-                        
-                        shifted_box = BoundBox(0, 
-                                               0, 
-                                               center_w, 
-                                               center_h)
-                        
-                        for i in range(len(self.anchors)):
-                            anchor = self.anchors[i]
-                            iou    = bbox_iou(shifted_box, anchor)
-                            
-                            if max_iou < iou:
-                                best_anchor = i
-                                max_iou     = iou
+                        box, best_anchor = self._generate_box(obj, center_x, center_y)
                                 
                         # assign ground truth x, y, w, h, confidence and class probs to y_batch
                         y_batch[instance_count, grid_y, grid_x, best_anchor, 0:4] = box
