@@ -71,6 +71,11 @@ class ImgAugment(object):
             desired_w,
             desired_h,
             jitter):
+        print("======================================")
+        print(img_file)
+        print(objects)
+        print("======================================")
+        
         image = cv2.imread(img_file)
         h, w, c = image.shape
         
@@ -118,3 +123,12 @@ class ImgAugment(object):
                 obj['xmin'] = desired_w - obj['xmax']
                 obj['xmax'] = desired_w - xmin
         return image, all_objs
+
+# if __name__ == '__main__':
+#     augmenter = ImgAugment()
+#     objects
+#     image, aug_objects = augmenter.run(img_file, objects, desired_w, desired_h, jitter)
+
+
+
+
