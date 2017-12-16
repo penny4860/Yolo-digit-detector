@@ -4,7 +4,7 @@ from yolo.box import BoundBox, bbox_iou
 
 class YoloDecoder(object):
     
-    def __init__(self, anchors, obj_threshold=0.3, nms_threshold=0.3):
+    def __init__(self, anchors, obj_threshold=0.10, nms_threshold=0.3):
         self._anchors = anchors
         self._obj_threshold = obj_threshold
         self._nms_threshold = nms_threshold
