@@ -110,16 +110,14 @@ class BatchGenerator(Sequence):
                 best_anchor = i
                 max_iou     = iou
         return best_anchor
-
-    def _generate_box(self, cx, cy, w, h):
-        center_x = cx / (float(self.config['IMAGE_W']) / self.config['GRID_W'])
-        center_y = cy / (float(self.config['IMAGE_H']) / self.config['GRID_H'])
-        center_w = w / (float(self.config['IMAGE_W']) / self.config['GRID_W']) # unit: grid cell
-        center_h = h / (float(self.config['IMAGE_H']) / self.config['GRID_H']) # unit: grid cell
-        grid_x = int(np.floor(center_x))
-        grid_y = int(np.floor(center_y))
-        
-        return [center_x, center_y, center_w, center_h], grid_x, grid_y
+    
+    def _normalize_box(self, cx, cy, w, h):
+        """Noramlize box : 1-grid == 1.0"""
+        norm_cx = cx / (float(self.config['IMAGE_W']) / self.config['GRID_W'])
+        norm_cy = cy / (float(self.config['IMAGE_H']) / self.config['GRID_H'])
+        norm_w = w / (float(self.config['IMAGE_W']) / self.config['GRID_W']) # unit: grid cell
+        norm_h = h / (float(self.config['IMAGE_H']) / self.config['GRID_H']) # unit: grid cell
+        return norm_cx, norm_cy, norm_w, norm_h
 
     def __getitem__(self, idx):
         
@@ -147,17 +145,20 @@ class BatchGenerator(Sequence):
             for obj in all_objs:
                 x1, y1, x2, y2 = obj['xmin'], obj['ymin'], obj['xmax'], obj['ymax']
                 cx, cy, w, h = to_cxcy_wh(x1, y1, x2, y2)
-                box, grid_x, grid_y = self._generate_box(cx, cy, w, h)
+                norm_box = self._normalize_box(cx, cy, w, h)
+                
+                grid_x = int(np.floor(norm_box[0]))
+                grid_y = int(np.floor(norm_box[1]))
 
                 if self._is_valid_obj(x1, y1, x2, y2, obj['name'], grid_x, grid_y):
                     obj_indx  = self.config['LABELS'].index(obj['name'])
-                    best_anchor = self._get_anchor_idx(box)
+                    best_anchor = self._get_anchor_idx(norm_box)
 
                     # assign ground truth x, y, w, h, confidence and class probs to y_batch
-                    y_batch[instance_count] = self._generate_y(grid_x, grid_y, best_anchor, obj_indx, box)
+                    y_batch[instance_count] = self._generate_y(grid_x, grid_y, best_anchor, obj_indx, norm_box)
                     
                     # assign the true box to b_batch
-                    b_batch[instance_count, 0, 0, 0, true_box_index] = box
+                    b_batch[instance_count, 0, 0, 0, true_box_index] = norm_box
                     
                     true_box_index += 1
                     true_box_index = true_box_index % self.config['TRUE_BOX_BUFFER']
