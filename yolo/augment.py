@@ -67,6 +67,30 @@ class ImgAugment(object):
             random_order=True
         )
 
+    def _resize_img(self, image, boxes, desired_w, desired_h):
+        h, w, _ = image.shape
+        
+        # resize the image to standard size
+        image = cv2.resize(image, (desired_h, desired_w))
+        image = image[:,:,::-1]
+
+        # fix object's position and size
+        new_boxes = []
+        for box in boxes:
+            x1,y1,x2,y2 = box
+            x1 = int(x1 * float(desired_w) / w)
+            x1 = max(min(x1, desired_w), 0)
+            x2 = int(x2 * float(desired_w) / w)
+            x2 = max(min(x2, desired_w), 0)
+            
+            y1 = int(y1 * float(desired_h) / h)
+            y1 = max(min(y1, desired_h), 0)
+            y2 = int(y2 * float(desired_h) / h)
+            y2 = max(min(y2, desired_h), 0)
+
+            new_boxes.append([x1,y1,x2,y2])
+        return image, np.array(new_boxes)
+
     def _jitter_on_img(self, image, boxes):
         h, w, _ = image.shape
 
@@ -120,35 +144,16 @@ class ImgAugment(object):
                 (x1,y1,x2,y2)-ordered
         
         """
-        
         # 1. read image file
         image = cv2.imread(img_file)
-        h, w, _ = image.shape
 
         # 2. make jitter on image        
         if jitter:
             image, boxes = self._jitter_on_img(image, boxes)
-        
-        # resize the image to standard size
-        image = cv2.resize(image, (desired_h, desired_w))
-        image = image[:,:,::-1]
 
-        # fix object's position and size
-        new_boxes = []
-        for box in boxes:
-            x1,y1,x2,y2 = box
-            x1 = int(x1 * float(desired_w) / w)
-            x1 = max(min(x1, desired_w), 0)
-            x2 = int(x2 * float(desired_w) / w)
-            x2 = max(min(x2, desired_w), 0)
-            
-            y1 = int(y1 * float(desired_h) / h)
-            y1 = max(min(y1, desired_h), 0)
-            y2 = int(y2 * float(desired_h) / h)
-            y2 = max(min(y2, desired_h), 0)
-
-            new_boxes.append([x1,y1,x2,y2])
-        return image, np.array(new_boxes)
+        # 3. resize image            
+        image, boxes = self._resize_img(image, boxes, desired_w, desired_h)
+        return image, boxes
 
 
 if __name__ == '__main__':
