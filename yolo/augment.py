@@ -66,12 +66,11 @@ class ImgAugment(object):
             random_order=True
         )
     
-    def run(self, train_instance, jitter, desired_w, desired_h):
-        image_name = train_instance['filename']
-        image = cv2.imread(image_name)
+    def run(self, img_file, objects, jitter, desired_w, desired_h):
+        image = cv2.imread(img_file)
         h, w, c = image.shape
         
-        all_objs = copy.deepcopy(train_instance['object'])
+        all_objs = copy.deepcopy(objects)
 
         if jitter:
             ### scale the image
