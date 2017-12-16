@@ -111,13 +111,11 @@ class BatchGenerator(Sequence):
                 max_iou     = iou
         return best_anchor
 
-    def _generate_box(self, obj):
-        center_x = .5*(obj['xmin'] + obj['xmax'])
-        center_x = center_x / (float(self.config['IMAGE_W']) / self.config['GRID_W'])
-        center_y = .5*(obj['ymin'] + obj['ymax'])
-        center_y = center_y / (float(self.config['IMAGE_H']) / self.config['GRID_H'])
-        center_w = (obj['xmax'] - obj['xmin']) / (float(self.config['IMAGE_W']) / self.config['GRID_W']) # unit: grid cell
-        center_h = (obj['ymax'] - obj['ymin']) / (float(self.config['IMAGE_H']) / self.config['GRID_H']) # unit: grid cell
+    def _generate_box(self, cx, cy, w, h):
+        center_x = cx / (float(self.config['IMAGE_W']) / self.config['GRID_W'])
+        center_y = cy / (float(self.config['IMAGE_H']) / self.config['GRID_H'])
+        center_w = w / (float(self.config['IMAGE_W']) / self.config['GRID_W']) # unit: grid cell
+        center_h = h / (float(self.config['IMAGE_H']) / self.config['GRID_H']) # unit: grid cell
         grid_x = int(np.floor(center_x))
         grid_y = int(np.floor(center_y))
         
@@ -147,9 +145,11 @@ class BatchGenerator(Sequence):
             
             # loop over objects in one image
             for obj in all_objs:
-                box, grid_x, grid_y = self._generate_box(obj)
+                x1, y1, x2, y2 = obj['xmin'], obj['ymin'], obj['xmax'], obj['ymax']
+                cx, cy, w, h = _to_cxcy_wh(x1, y1, x2, y2)
+                box, grid_x, grid_y = self._generate_box(cx, cy, w, h)
 
-                if self._is_valid_obj(obj['xmin'], obj['ymin'], obj['xmax'], obj['ymax'], obj['name'], grid_x, grid_y):
+                if self._is_valid_obj(x1, y1, x2, y2, obj['name'], grid_x, grid_y):
                     obj_indx  = self.config['LABELS'].index(obj['name'])
                     best_anchor = self._get_anchor_idx(box)
 
@@ -206,6 +206,14 @@ class BatchGenerator(Sequence):
             obj["xmin"], obj["ymin"], obj["xmax"], obj["ymax"] = box.astype(np.int)
             objs.append(obj)
         return image, objs
+
+
+def _to_cxcy_wh(x1, y1, x2, y2):
+    cx = (x1 + x2) / 2
+    cy = (y1 + y2) / 2
+    w = x2-x1
+    h = y2-y1
+    return cx, cy, w, h
 
 import pytest
 @pytest.fixture(scope='function')
