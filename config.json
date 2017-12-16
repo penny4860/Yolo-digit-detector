@@ -14,8 +14,8 @@
         "pretrained_weights":   "",
         "batch_size":           1,
         "learning_rate":        1e-4,
-        "nb_epoch":             200,
-        "warmup_epochs":        200,
+        "nb_epoch":             300,
+        "warmup_epochs":        300,
 
         "object_scale":         5.0 ,
         "no_object_scale":      1.0,
