@@ -309,6 +309,10 @@ if __name__ == '__main__':
     (x_batch, b_batch), y_batch = batch_gen[0]
     print(x_batch.shape, b_batch.shape, y_batch.shape)
     
+    np.save("x_batch_gt", x_batch)
+    np.save("b_batch_gt", b_batch)
+    np.save("y_batch_gt", y_batch)
+    
     
     
 
