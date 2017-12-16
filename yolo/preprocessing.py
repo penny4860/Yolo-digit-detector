@@ -183,6 +183,7 @@ class BatchGenerator(Sequence):
             
             x_batch[instance_count] = self._generate_x(img, boxes, labels)
             y_batch[instance_count], b_batch[instance_count] = self._generate_ann_batch(boxes, labels)
+            instance_count += 1
 
         self.counter += 1
         #print ' new batch created', self.counter
