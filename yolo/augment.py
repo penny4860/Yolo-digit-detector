@@ -80,10 +80,8 @@ class ImgAugment(object):
         """
         
         image = cv2.imread(img_file)
-        h, w, c = image.shape
+        h, w, _ = image.shape
         
-        all_objs = copy.deepcopy(objects)
-
         if jitter:
             ### scale the image
             scale = np.random.uniform() / 10. + 1.
