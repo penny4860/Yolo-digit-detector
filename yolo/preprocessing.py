@@ -113,11 +113,12 @@ class BatchGenerator(Sequence):
             
         return self.images[l_bound:r_bound]
 
-    def _is_valid_obj(self, x1, y1, x2, y2, label):
+    def _is_valid_obj(self, x1, y1, x2, y2, label, grid_x, grid_y):
+        is_valid = False
         if x2 > x1 and y2 > y1 and label in self.config['LABELS']:
-            return True
-        else:
-            return False
+            if grid_x < self.config['GRID_W'] and grid_y < self.config['GRID_H']:
+                is_valid = True
+        return is_valid
 
     def _generate_x(self, img, all_objs):
         # assign input image to x_batch
@@ -193,23 +194,28 @@ class BatchGenerator(Sequence):
             
             # loop over objects in one image
             for obj in all_objs:
-                if self._is_valid_obj(obj['xmin'], obj['ymin'], obj['xmax'], obj['ymax'], obj['name']):
-                    box, grid_x, grid_y = self._generate_box(obj)
+                box, grid_x, grid_y = self._generate_box(obj)
 
-                    if grid_x < self.config['GRID_W'] and grid_y < self.config['GRID_H']:
-                        obj_indx  = self.config['LABELS'].index(obj['name'])
-                        best_anchor = self._get_anchor_idx(box)
-                                
-                        # assign ground truth x, y, w, h, confidence and class probs to y_batch
-                        y_batch[instance_count, grid_y, grid_x, best_anchor, 0:4] = box
-                        y_batch[instance_count, grid_y, grid_x, best_anchor, 4  ] = 1.
-                        y_batch[instance_count, grid_y, grid_x, best_anchor, 5+obj_indx] = 1
-                        
-                        # assign the true box to b_batch
-                        b_batch[instance_count, 0, 0, 0, true_box_index] = box
-                        
-                        true_box_index += 1
-                        true_box_index = true_box_index % self.config['TRUE_BOX_BUFFER']
+                if self._is_valid_obj(obj['xmin'], obj['ymin'], obj['xmax'], obj['ymax'], obj['name'], grid_x, grid_y):
+                    print("============================================================")                    
+                    print(box)
+                    print(grid_x, grid_y)
+                    print(obj['xmin'], obj['ymin'], obj['xmax'], obj['ymax'], obj['name'])
+                    print("============================================================")                    
+                    
+                    obj_indx  = self.config['LABELS'].index(obj['name'])
+                    best_anchor = self._get_anchor_idx(box)
+                            
+                    # assign ground truth x, y, w, h, confidence and class probs to y_batch
+                    y_batch[instance_count, grid_y, grid_x, best_anchor, 0:4] = box
+                    y_batch[instance_count, grid_y, grid_x, best_anchor, 4  ] = 1.
+                    y_batch[instance_count, grid_y, grid_x, best_anchor, 5+obj_indx] = 1
+                    
+                    # assign the true box to b_batch
+                    b_batch[instance_count, 0, 0, 0, true_box_index] = box
+                    
+                    true_box_index += 1
+                    true_box_index = true_box_index % self.config['TRUE_BOX_BUFFER']
                             
             # increase instance counter in current batch
             instance_count += 1  
