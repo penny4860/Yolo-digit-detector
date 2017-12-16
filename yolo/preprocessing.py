@@ -8,40 +8,11 @@ from keras.utils import Sequence
 from yolo.box import BoundBox, bbox_iou
 
 
-class BatchGenerator(Sequence):
-    def __init__(self, images, 
-                       config, 
-                       shuffle=True, 
-                       jitter=True, 
-                       norm=None):
-        """
-        # Args
-            images : list of dictionary including following keys
-                "filename"  : str
-                "width"     : int
-                "height"    : int
-                "object"    : list of dictionary
-                    'name' : str
-                    'xmin' : int
-                    'ymin' : int
-                    'xmax' : int
-                    'ymax' : int
-        """
-        self.generator = None
-
-        self.images = images
-        self.config = config
-
-        self.shuffle = shuffle
-        self.jitter  = jitter
-        self.norm    = norm
-
-        self.counter = 0        
-        self.anchors = [BoundBox(0, 0, config['ANCHORS'][2*i], config['ANCHORS'][2*i+1]) for i in range(int(len(config['ANCHORS'])/2))]
-
+class ImgAugment(object):
+    
+    def __init__(self):
         ### augmentors by https://github.com/aleju/imgaug
         sometimes = lambda aug: iaa.Sometimes(0.5, aug)
-
         # Todo : class extraction
         # Define our sequence of augmentation steps that will be applied to every image
         # All augmenters with per_channel=0.5 will sample one value _per image_
@@ -97,6 +68,88 @@ class BatchGenerator(Sequence):
             ],
             random_order=True
         )
+    
+    def run(self, train_instance, jitter, config):
+        image_name = train_instance['filename']
+        image = cv2.imread(image_name)
+        h, w, c = image.shape
+        
+        all_objs = copy.deepcopy(train_instance['object'])
+
+        if jitter:
+            ### scale the image
+            scale = np.random.uniform() / 10. + 1.
+            image = cv2.resize(image, (0,0), fx = scale, fy = scale)
+
+            ### translate the image
+            max_offx = (scale-1.) * w
+            max_offy = (scale-1.) * h
+            offx = int(np.random.uniform() * max_offx)
+            offy = int(np.random.uniform() * max_offy)
+            
+            image = image[offy : (offy + h), offx : (offx + w)]
+
+            ### flip the image
+            flip = np.random.binomial(1, .5)
+            if flip > 0.5: image = cv2.flip(image, 1)
+                
+            image = self.aug_pipe.augment_image(image)            
+            
+        # resize the image to standard size
+        image = cv2.resize(image, (config['IMAGE_H'], config['IMAGE_W']))
+        image = image[:,:,::-1]
+
+        # fix object's position and size
+        for obj in all_objs:
+            for attr in ['xmin', 'xmax']:
+                if jitter: obj[attr] = int(obj[attr] * scale - offx)
+                    
+                obj[attr] = int(obj[attr] * float(config['IMAGE_W']) / w)
+                obj[attr] = max(min(obj[attr], config['IMAGE_W']), 0)
+                
+            for attr in ['ymin', 'ymax']:
+                if jitter: obj[attr] = int(obj[attr] * scale - offy)
+                    
+                obj[attr] = int(obj[attr] * float(config['IMAGE_H']) / h)
+                obj[attr] = max(min(obj[attr], config['IMAGE_H']), 0)
+
+            if jitter and flip > 0.5:
+                xmin = obj['xmin']
+                obj['xmin'] = config['IMAGE_W'] - obj['xmax']
+                obj['xmax'] = config['IMAGE_W'] - xmin
+        return image, all_objs
+
+
+class BatchGenerator(Sequence):
+    def __init__(self, images, 
+                       config, 
+                       shuffle=True, 
+                       jitter=True, 
+                       norm=None):
+        """
+        # Args
+            images : list of dictionary including following keys
+                "filename"  : str
+                "width"     : int
+                "height"    : int
+                "object"    : list of dictionary
+                    'name' : str
+                    'xmin' : int
+                    'ymin' : int
+                    'xmax' : int
+                    'ymax' : int
+        """
+        self.generator = None
+
+        self.images = images
+        self.config = config
+
+        self.shuffle = shuffle
+        self.jitter  = jitter
+        self.norm    = norm
+
+        self.counter = 0        
+        self.anchors = [BoundBox(0, 0, config['ANCHORS'][2*i], config['ANCHORS'][2*i+1]) for i in range(int(len(config['ANCHORS'])/2))]
 
         if shuffle: np.random.shuffle(self.images)
 
@@ -213,7 +266,7 @@ class BatchGenerator(Sequence):
                 if self._is_valid_obj(obj['xmin'], obj['ymin'], obj['xmax'], obj['ymax'], obj['name'], grid_x, grid_y):
                     obj_indx  = self.config['LABELS'].index(obj['name'])
                     best_anchor = self._get_anchor_idx(box)
-                            
+
                     # assign ground truth x, y, w, h, confidence and class probs to y_batch
                     y_batch[instance_count] = self._generate_y(grid_x, grid_y, best_anchor, obj_indx, box)
                     
@@ -250,55 +303,8 @@ class BatchGenerator(Sequence):
                 "ymin"
                 "ymax"
         """
-        
-        image_name = train_instance['filename']
-        image = cv2.imread(image_name)
-        h, w, c = image.shape
-        
-        all_objs = copy.deepcopy(train_instance['object'])
-
-        if jitter:
-            ### scale the image
-            scale = np.random.uniform() / 10. + 1.
-            image = cv2.resize(image, (0,0), fx = scale, fy = scale)
-
-            ### translate the image
-            max_offx = (scale-1.) * w
-            max_offy = (scale-1.) * h
-            offx = int(np.random.uniform() * max_offx)
-            offy = int(np.random.uniform() * max_offy)
-            
-            image = image[offy : (offy + h), offx : (offx + w)]
-
-            ### flip the image
-            flip = np.random.binomial(1, .5)
-            if flip > 0.5: image = cv2.flip(image, 1)
-                
-            image = self.aug_pipe.augment_image(image)            
-            
-        # resize the image to standard size
-        image = cv2.resize(image, (self.config['IMAGE_H'], self.config['IMAGE_W']))
-        image = image[:,:,::-1]
-
-        # fix object's position and size
-        for obj in all_objs:
-            for attr in ['xmin', 'xmax']:
-                if jitter: obj[attr] = int(obj[attr] * scale - offx)
-                    
-                obj[attr] = int(obj[attr] * float(self.config['IMAGE_W']) / w)
-                obj[attr] = max(min(obj[attr], self.config['IMAGE_W']), 0)
-                
-            for attr in ['ymin', 'ymax']:
-                if jitter: obj[attr] = int(obj[attr] * scale - offy)
-                    
-                obj[attr] = int(obj[attr] * float(self.config['IMAGE_H']) / h)
-                obj[attr] = max(min(obj[attr], self.config['IMAGE_H']), 0)
-
-            if jitter and flip > 0.5:
-                xmin = obj['xmin']
-                obj['xmin'] = self.config['IMAGE_W'] - obj['xmax']
-                obj['xmax'] = self.config['IMAGE_W'] - xmin
-                
+        img_augmenter = ImgAugment()
+        image, all_objs = img_augmenter.run(train_instance, jitter, self.config)
         return image, all_objs
 
 import pytest
