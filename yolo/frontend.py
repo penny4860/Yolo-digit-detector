@@ -18,16 +18,22 @@ class YOLO(object):
         # Args
             feature_extractor : BaseFeatureExtractor instance
         """
-        self.network = network
+        self._yolo_network = network
+        self._yolo_network = network
+        self._yolo_network = network
+        self._yolo_network = network
+        
+        
+        
         self.labels   = list(labels)
         self.nb_class = len(self.labels)
         self.anchors  = anchors
 
         # print a summary of the whole model
-        self.network.model.summary()
+        self._yolo_network.model.summary()
 
     def load_weights(self, weight_path):
-        self.network.load_weights(weight_path)
+        self._yolo_network.load_weights(weight_path)
 
     def predict(self, image):
         """
@@ -37,7 +43,7 @@ class YOLO(object):
         # Returns
             boxes : list of BoundBox instance
         """
-        netout = self.network.forward(image)
+        netout = self._yolo_network.forward(image)
         yolo_decoder = YoloDecoder(self.anchors)
         boxes = yolo_decoder.run(netout)
         return boxes
@@ -54,21 +60,21 @@ class YOLO(object):
                     debug=False):     
 
         warmup_bs  = warmup_epochs * (train_times*(len(train_imgs)/batch_size+1) + valid_times*(len(valid_imgs)/batch_size+1))
-        yolo_loss = YoloLoss(self.network.grid_size,
-                             self.network.grid_size,
+        yolo_loss = YoloLoss(self._yolo_network.grid_size,
+                             self._yolo_network.grid_size,
                              batch_size,
                              self.anchors,
-                             self.network.nb_box,
+                             self._yolo_network.nb_box,
                              self.nb_class,
                              warmup_bs,
-                             self.network.true_boxes)
+                             self._yolo_network.true_boxes)
         
-        generator_config = GeneratorConfig(self.network.input_size,
-                                           self.network.grid_size,
-                                           self.network.nb_box,
+        generator_config = GeneratorConfig(self._yolo_network.input_size,
+                                           self._yolo_network.grid_size,
+                                           self._yolo_network.nb_box,
                                            self.labels,
                                            batch_size,
-                                           self.network.max_box_per_image,
+                                           self._yolo_network.max_box_per_image,
                                            self.anchors)
 
         # YoloNetwork, YoloTrainer, YoloLoss
@@ -78,9 +84,9 @@ class YOLO(object):
         # 2. 
         
         # Todo : self.model.model 정리
-        yolo_trainer = YoloTrainer(self.network.model,
+        yolo_trainer = YoloTrainer(self._yolo_network.model,
                                    yolo_loss.custom_loss,
-                                   self.network._feature_extractor.normalize,
+                                   self._yolo_network._feature_extractor.normalize,
                                    generator_config)
         yolo_trainer.train(train_imgs,
                            valid_imgs,
