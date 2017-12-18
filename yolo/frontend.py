@@ -19,8 +19,6 @@ class YOLO(object):
             feature_extractor : BaseFeatureExtractor instance
         """
         self.network = network
-        # self.input_size = feature_extractor.get_input_size()
-        
         self.labels   = list(labels)
         self.nb_class = len(self.labels)
         self.anchors  = anchors
