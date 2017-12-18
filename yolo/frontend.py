@@ -116,7 +116,7 @@ class YOLO(object):
                              self.true_boxes)
         
         generator_config = GeneratorConfig(self.input_size,
-                                           self.grid_size,
+                                           self.grid_h,
                                            self.nb_box,
                                            self.labels,
                                            batch_size,
