@@ -19,11 +19,7 @@ class YOLO(object):
             feature_extractor : BaseFeatureExtractor instance
         """
         self._yolo_network = network
-        self._yolo_network = network
-        self._yolo_network = network
-        self._yolo_network = network
-        
-        
+        self._yolo_decoder = YoloDecoder(anchors)
         
         self.labels   = list(labels)
         self.nb_class = len(self.labels)
@@ -44,8 +40,7 @@ class YOLO(object):
             boxes : list of BoundBox instance
         """
         netout = self._yolo_network.forward(image)
-        yolo_decoder = YoloDecoder(self.anchors)
-        boxes = yolo_decoder.run(netout)
+        boxes = self._yolo_decoder.run(netout)
         return boxes
 
     def train(self, train_imgs,     # the list of images to train the model
