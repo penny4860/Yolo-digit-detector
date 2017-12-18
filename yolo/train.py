@@ -5,6 +5,7 @@ import numpy as np
 from yolo.annotation import parse_annotation
 from yolo import YOLO
 from yolo.backend import create_feature_extractor
+from yolo.network import YoloNetwork
 
 
 def train(conf):
@@ -52,6 +53,12 @@ def train(conf):
 
     feature_extractor = create_feature_extractor(config['model']['architecture'],
                                                  config['model']['input_size'])
+
+    yolo_network = YoloNetwork(config['model']['architecture'],
+                               config['model']['input_size'],
+                               nb_box,
+                               nb_classes,
+                               max_box_per_image=10)
 
     yolo = YOLO(feature_extractor   = feature_extractor,
                 labels              = config['model']['labels'], 
