@@ -58,7 +58,6 @@ def train(conf):
 
     yolo = YOLO(network             = yolo_network,
                 labels              = config['model']['labels'], 
-                max_box_per_image   = config['model']['max_box_per_image'],
                 anchors             = config['model']['anchors'])
 
     ###############################
