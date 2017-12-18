@@ -24,7 +24,6 @@ class YOLO(object):
         
         self.labels   = list(labels)
         self.nb_class = len(self.labels)
-        self.nb_box   = 5
         self.anchors  = anchors
         self.max_box_per_image = max_box_per_image
 
@@ -62,25 +61,34 @@ class YOLO(object):
                     debug=False):     
 
         warmup_bs  = warmup_epochs * (train_times*(len(train_imgs)/batch_size+1) + valid_times*(len(valid_imgs)/batch_size+1))
-        yolo_loss = YoloLoss(self.grid_w,
-                             self.grid_h,
+        yolo_loss = YoloLoss(self.network._grid_w,
+                             self.network._grid_h,
                              batch_size,
                              self.anchors,
-                             self.nb_box,
+                             self.network.nb_box,
                              self.nb_class,
                              warmup_bs,
                              self.true_boxes)
         
-        generator_config = GeneratorConfig(self.input_size,
-                                           self.grid_h,
-                                           self.nb_box,
+        generator_config = GeneratorConfig(self.network.input_size,
+                                           self.network._grid_w,
+                                           self.network.nb_box,
                                            self.labels,
                                            batch_size,
                                            self.max_box_per_image,
                                            self.anchors)
+
+        # YoloNetwork, YoloTrainer, YoloLoss
+        
+        # 1. Batch Generator 를 여기서 생성
+        
+        # 2. 
         
         # Todo : self.model.model 정리
-        yolo_trainer = YoloTrainer(self.network.model, yolo_loss.custom_loss, self.feature_extractor.normalize, generator_config)
+        yolo_trainer = YoloTrainer(self.network.model,
+                                   yolo_loss.custom_loss,
+                                   self.network._feature_extractor.normalize,
+                                   generator_config)
         yolo_trainer.train(train_imgs,
                            valid_imgs,
                            train_times,
