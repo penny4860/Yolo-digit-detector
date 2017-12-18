@@ -20,10 +20,7 @@ def predict(image_path, weights_path, config_path="config.json"):
 
     yolo = YOLO(network             = yolo_network,
                 labels              = config['model']['labels'], 
-                max_box_per_image   = config['model']['max_box_per_image'],
                 anchors             = config['model']['anchors'])
-
-
 
     ###############################
     #   Load trained weights

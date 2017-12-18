@@ -13,7 +13,6 @@ from yolo.preprocessing import GeneratorConfig
 class YOLO(object):
     def __init__(self, network,
                        labels, 
-                       max_box_per_image,
                        anchors):
         """
         # Args
@@ -25,7 +24,6 @@ class YOLO(object):
         self.labels   = list(labels)
         self.nb_class = len(self.labels)
         self.anchors  = anchors
-        self.max_box_per_image = max_box_per_image
 
         # truth tensor
         self.true_boxes = self.network.true_boxes
@@ -75,7 +73,7 @@ class YOLO(object):
                                            self.network.nb_box,
                                            self.labels,
                                            batch_size,
-                                           self.max_box_per_image,
+                                           self.network.max_box_per_image,
                                            self.anchors)
 
         # YoloNetwork, YoloTrainer, YoloLoss
