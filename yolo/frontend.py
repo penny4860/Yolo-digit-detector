@@ -56,8 +56,8 @@ class YOLO(object):
                     debug=False):     
 
         warmup_bs  = warmup_epochs * (train_times*(len(train_imgs)/batch_size+1) + valid_times*(len(valid_imgs)/batch_size+1))
-        yolo_loss = YoloLoss(self.network._grid_w,
-                             self.network._grid_h,
+        yolo_loss = YoloLoss(self.network.grid_size,
+                             self.network.grid_size,
                              batch_size,
                              self.anchors,
                              self.network.nb_box,
@@ -66,7 +66,7 @@ class YOLO(object):
                              self.network.true_boxes)
         
         generator_config = GeneratorConfig(self.network.input_size,
-                                           self.network._grid_w,
+                                           self.network.grid_size,
                                            self.network.nb_box,
                                            self.labels,
                                            batch_size,
