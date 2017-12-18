@@ -51,16 +51,12 @@ def train(conf):
     #   Construct the model 
     ###############################
 
-    feature_extractor = create_feature_extractor(config['model']['architecture'],
-                                                 config['model']['input_size'])
-
     yolo_network = YoloNetwork(config['model']['architecture'],
                                config['model']['input_size'],
-                               nb_box,
-                               nb_classes,
+                               len(config['model']['labels']),
                                max_box_per_image=10)
 
-    yolo = YOLO(feature_extractor   = feature_extractor,
+    yolo = YOLO(network             = yolo_network,
                 labels              = config['model']['labels'], 
                 max_box_per_image   = config['model']['max_box_per_image'],
                 anchors             = config['model']['anchors'])
