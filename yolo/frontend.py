@@ -28,7 +28,7 @@ class YOLO(object):
         self.max_box_per_image = max_box_per_image
 
         # truth tensor
-        self.true_boxes = Input(shape=(1, 1, 1, self.max_box_per_image , 4))
+        self.true_boxes = self.network.true_boxes
 
         # print a summary of the whole model
         self.network.model.summary()
