@@ -3,7 +3,7 @@ import json
 from yolo.box import draw_boxes
 from yolo import YOLO
 import cv2
-from yolo.backend import create_feature_extractor
+from yolo.network import YoloNetwork
 
 def predict(image_path, weights_path, config_path="config.json"):
 
@@ -13,13 +13,17 @@ def predict(image_path, weights_path, config_path="config.json"):
     ###############################
     #   Make the model 
     ###############################
-    feature_extractor = create_feature_extractor(config['model']['architecture'],
-                                                 config['model']['input_size'])
+    yolo_network = YoloNetwork(config['model']['architecture'],
+                               config['model']['input_size'],
+                               len(config['model']['labels']),
+                               max_box_per_image=10)
 
-    yolo = YOLO(feature_extractor   = feature_extractor,
+    yolo = YOLO(network             = yolo_network,
                 labels              = config['model']['labels'], 
                 max_box_per_image   = config['model']['max_box_per_image'],
                 anchors             = config['model']['anchors'])
+
+
 
     ###############################
     #   Load trained weights
