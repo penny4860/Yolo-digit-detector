@@ -25,9 +25,6 @@ class YOLO(object):
         self.nb_class = len(self.labels)
         self.anchors  = anchors
 
-        # truth tensor
-        self.true_boxes = self.network.true_boxes
-
         # print a summary of the whole model
         self.network.model.summary()
 
@@ -66,7 +63,7 @@ class YOLO(object):
                              self.network.nb_box,
                              self.nb_class,
                              warmup_bs,
-                             self.true_boxes)
+                             self.network.true_boxes)
         
         generator_config = GeneratorConfig(self.network.input_size,
                                            self.network._grid_w,
