@@ -58,9 +58,9 @@ class BaseFeatureExtractor(object):
         raise NotImplementedError("error message")       
 
     def get_input_size(self):
-        h, w = self.feature_extractor.get_output_shape_at(0)[0:2]
-        assert h == w
-        return h
+        input_shape = self.feature_extractor.get_input_shape_at(0)
+        assert input_shape[1] == input_shape[2]
+        return input_shape[1]
 
     def get_output_shape(self):
         return self.feature_extractor.get_output_shape_at(-1)[1:3]
