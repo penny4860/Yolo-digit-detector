@@ -12,12 +12,19 @@ from yolo.loss import YoloLoss
 from yolo.trainer import YoloTrainer
 from yolo.preprocessing import GeneratorConfig
 
+# create_feature_extractor(architecture, input_size)
+# client : predict.py
+# client : train.py
 class YOLO(object):
-    def __init__(self, architecture,
+    def __init__(self, feature_extractor,
                        input_size, 
                        labels, 
                        max_box_per_image,
                        anchors):
+        """
+        # Args
+            feature_extractor : BaseFeatureExtractor instance
+        """
 
         self.input_size = input_size
         
@@ -28,7 +35,7 @@ class YOLO(object):
         self.max_box_per_image = max_box_per_image
 
         # create feature extractor
-        self.feature_extractor = create_feature_extractor(architecture, input_size)
+        self.feature_extractor = feature_extractor
         self.grid_h, self.grid_w = self.feature_extractor.get_output_shape()        
 
         # truth tensor
