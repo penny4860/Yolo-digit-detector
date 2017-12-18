@@ -16,21 +16,13 @@ class YoloNetwork(object):
                  nb_classes,
                  max_box_per_image=10):
     
-        def _init_layer(layer):
-            weights = layer.get_weights()
-    
-            new_kernel = np.random.normal(size=weights[0].shape)/(self._grid_h*self._grid_w)
-            new_bias   = np.random.normal(size=weights[1].shape)/(self._grid_h*self._grid_w)
-    
-            layer.set_weights([new_kernel, new_bias])
-        
         # 1. create feature extractor
         self._feature_extractor = create_feature_extractor(architecture, input_size)
         
         # 2. create full network
         input_tensor = Input(shape=(input_size, input_size, 3))
         features = self._feature_extractor.extract(input_tensor)
-        self._grid_h, self._grid_w = self._feature_extractor.get_output_shape()
+        self.grid_size = self._feature_extractor.get_output_size()
         
         # truth tensor
         true_boxes = Input(shape=(1, 1, 1, max_box_per_image , 4))
@@ -41,17 +33,26 @@ class YoloNetwork(object):
                         padding='same', 
                         name='conv_23', 
                         kernel_initializer='lecun_normal')(features)
-        output_tensor = Reshape((self._grid_h, self._grid_w, nb_box, 4 + 1 + nb_classes))(output_tensor)
+        output_tensor = Reshape((self.grid_size, self.grid_size, nb_box, 4 + 1 + nb_classes))(output_tensor)
         output_tensor = Lambda(lambda args: args[0])([output_tensor, true_boxes])
     
         model = Model([input_tensor, true_boxes], output_tensor)
-        _init_layer(model.layers[-4])
 
         self.model = model
+        self._init_layer()
         self.input_size = input_size
         self.max_box_per_image = max_box_per_image
         self.nb_box = 5
         self.true_boxes = true_boxes
+
+    def _init_layer(self):
+        layer = self.model.layers[-4]
+        weights = layer.get_weights()
+
+        new_kernel = np.random.normal(size=weights[0].shape)/(self.grid_size*self.grid_size)
+        new_bias   = np.random.normal(size=weights[1].shape)/(self.grid_size*self.grid_size)
+
+        layer.set_weights([new_kernel, new_bias])
 
     def load_weights(self, weight_path):
         self.model.load_weights(weight_path)
