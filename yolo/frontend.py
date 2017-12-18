@@ -55,6 +55,9 @@ class YOLO(object):
                     debug=False):     
 
         warmup_bs  = warmup_epochs * (train_times*(len(train_imgs)/batch_size+1) + valid_times*(len(valid_imgs)/batch_size+1))
+        
+        # Todo : YoloLoss를 Yolo.__init__ 에서 생성
+        # warmup_bs는 custom_loss 의 arg로 
         yolo_loss = YoloLoss(self._yolo_network.grid_size,
                              self._yolo_network.grid_size,
                              self.anchors,
