@@ -50,6 +50,7 @@ class YoloNetwork(object):
         self.model = model
         self.input_size = input_size
         self.max_box_per_image = max_box_per_image
+        self.nb_box = 5
 
     def load_weights(self, weight_path):
         self.model.load_weights(weight_path)
