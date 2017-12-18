@@ -6,7 +6,6 @@ import cv2
 from keras.models import Model
 from keras.layers import Reshape, Conv2D, Input, Lambda
 
-from yolo.backend import create_feature_extractor
 from yolo.decoder import YoloDecoder
 from yolo.loss import YoloLoss
 from yolo.trainer import YoloTrainer
