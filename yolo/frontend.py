@@ -10,7 +10,7 @@ from yolo.backend import create_feature_extractor
 from yolo.decoder import YoloDecoder
 from yolo.loss import YoloLoss
 from yolo.trainer import YoloTrainer
-
+from yolo.preprocessing import GeneratorConfig
 
 class YOLO(object):
     def __init__(self, architecture,
@@ -110,18 +110,13 @@ class YOLO(object):
                              warmup_bs,
                              self.true_boxes)
         
-        generator_config = {
-            'IMAGE_H'         : self.input_size, 
-            'IMAGE_W'         : self.input_size,
-            'GRID_H'          : self.grid_h,  
-            'GRID_W'          : self.grid_w,
-            'BOX'             : self.nb_box,
-            'LABELS'          : self.labels,
-            'CLASS'           : len(self.labels),
-            'ANCHORS'         : self.anchors,
-            'BATCH_SIZE'      : batch_size,
-            'TRUE_BOX_BUFFER' : self.max_box_per_image,
-        }    
+        generator_config = GeneratorConfig(self.input_size,
+                                           self.grid_size,
+                                           self.nb_box,
+                                           self.labels,
+                                           batch_size,
+                                           self.max_box_per_image,
+                                           self.anchors)
 
         yolo_trainer = YoloTrainer(self.model, yolo_loss.custom_loss, self.feature_extractor.normalize, generator_config)
         yolo_trainer.train(train_imgs,
