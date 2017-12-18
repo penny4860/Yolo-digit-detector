@@ -57,7 +57,6 @@ class YOLO(object):
         warmup_bs  = warmup_epochs * (train_times*(len(train_imgs)/batch_size+1) + valid_times*(len(valid_imgs)/batch_size+1))
         yolo_loss = YoloLoss(self._yolo_network.grid_size,
                              self._yolo_network.grid_size,
-                             batch_size,
                              self.anchors,
                              self._yolo_network.nb_box,
                              self.nb_class,
@@ -80,7 +79,7 @@ class YOLO(object):
         
         # Todo : self.model.model 정리
         yolo_trainer = YoloTrainer(self._yolo_network.model,
-                                   yolo_loss.custom_loss,
+                                   yolo_loss.custom_loss(batch_size),
                                    self._yolo_network._feature_extractor.normalize,
                                    generator_config)
         yolo_trainer.train(train_imgs,
