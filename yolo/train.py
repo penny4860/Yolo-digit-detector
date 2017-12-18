@@ -54,7 +54,6 @@ def train(conf):
                                                  config['model']['input_size'])
 
     yolo = YOLO(feature_extractor   = feature_extractor,
-                input_size          = config['model']['input_size'], 
                 labels              = config['model']['labels'], 
                 max_box_per_image   = config['model']['max_box_per_image'],
                 anchors             = config['model']['anchors'])

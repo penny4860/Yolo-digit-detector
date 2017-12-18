@@ -16,7 +16,6 @@ from yolo.preprocessing import GeneratorConfig
 # client : train.py
 class YOLO(object):
     def __init__(self, feature_extractor,
-                       input_size, 
                        labels, 
                        max_box_per_image,
                        anchors):
@@ -25,7 +24,7 @@ class YOLO(object):
             feature_extractor : BaseFeatureExtractor instance
         """
 
-        self.input_size = input_size
+        self.input_size = feature_extractor.get_input_size()
         
         self.labels   = list(labels)
         self.nb_class = len(self.labels)
