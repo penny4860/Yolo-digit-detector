@@ -6,7 +6,7 @@ from yolo.annotation import parse_annotation
 from yolo import YOLO
 from yolo.network import YoloNetwork
 from yolo.loss import YoloLoss
-
+from yolo.batch_gen import GeneratorConfig, BatchGenerator
 
 def train(conf):
 
@@ -62,18 +62,8 @@ def train(conf):
                          len(config['model']['labels']),
                          yolo_network.true_boxes)
 
-    from yolo.batch_gen import GeneratorConfig
-    generator_config = GeneratorConfig(yolo_network.input_size,
-                                       yolo_network.grid_size,
-                                       yolo_network.nb_box,
-                                       config['model']['labels'],
-                                       config['train']['batch_size'],
-                                       yolo_network.max_box_per_image,
-                                       config['model']['anchors'])
-
     yolo = YOLO(network             = yolo_network,
                 loss                = yolo_loss,
-                generator_config    = generator_config,
                 labels              = config['model']['labels'], 
                 anchors             = config['model']['anchors'])
 
@@ -88,14 +78,33 @@ def train(conf):
     ###############################
     #   Start the training process 
     ###############################
+    generator_config = GeneratorConfig(yolo_network.input_size,
+                                       yolo_network.grid_size,
+                                       yolo_network.nb_box,
+                                       config['model']['labels'],
+                                       config['train']['batch_size'],
+                                       yolo_network.max_box_per_image,
+                                       config['model']['anchors'])
 
-    yolo.train(train_imgs         = train_imgs,
-               valid_imgs         = valid_imgs,
-               train_times        = config['train']['train_times'],
-               valid_times        = config['valid']['valid_times'],
-               nb_epoch           = config['train']['nb_epoch'], 
-               learning_rate      = config['train']['learning_rate'], 
-               batch_size         = config['train']['batch_size'],
-               warmup_epochs      = config['train']['warmup_epochs'],
-               saved_weights_name = config['train']['saved_weights_name'],
-               debug              = config['train']['debug'])
+    train_batch = BatchGenerator(train_imgs, 
+                                 generator_config, 
+                                 norm=yolo_network._feature_extractor.normalize)
+
+    valid_batch = BatchGenerator(valid_imgs, 
+                                 generator_config, 
+                                 norm=yolo_network._feature_extractor.normalize,
+                                 jitter=False)
+
+    from yolo.trainer import YoloTrainer
+    warmup_bs  = config['train']['warmup_epochs'] * (config['train']['train_times']*(len(train_imgs)/config['train']['batch_size']+1) + config['valid']['valid_times']*(len(valid_imgs)/config['train']['batch_size']+1))
+    yolo_trainer = YoloTrainer(yolo_network.model,
+                               yolo_loss.custom_loss(config['train']['batch_size'], warmup_bs),
+                               yolo_network._feature_extractor.normalize,
+                               generator_config)
+    yolo_trainer.train(train_batch,
+                       valid_batch,
+                       train_times        = config['train']['train_times'],
+                       valid_times        = config['valid']['valid_times'],
+                       nb_epoch           = config['train']['nb_epoch'], 
+                       learning_rate      = config['train']['learning_rate'], 
+                       saved_weights_name = config['train']['saved_weights_name'])
