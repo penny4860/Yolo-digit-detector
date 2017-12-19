@@ -9,15 +9,18 @@ from yolo.preprocessing import GeneratorConfig
 # client : predict.py
 # client : train.py
 class YOLO(object):
-    def __init__(self, network,
-                       labels, 
-                       anchors):
+    def __init__(self,
+                 network,
+                 loss,
+                 labels, 
+                 anchors):
         """
         # Args
             feature_extractor : BaseFeatureExtractor instance
         """
         self._yolo_network = network
         self._yolo_decoder = YoloDecoder(anchors)
+        self._yolo_loss = loss
         
         self.labels   = list(labels)
         self.nb_class = len(self.labels)
@@ -54,15 +57,6 @@ class YOLO(object):
 
         warmup_bs  = warmup_epochs * (train_times*(len(train_imgs)/batch_size+1) + valid_times*(len(valid_imgs)/batch_size+1))
         
-        # Todo : YoloLoss를 Yolo.__init__ 에서 생성
-        # warmup_bs는 custom_loss 의 arg로 
-        yolo_loss = YoloLoss(self._yolo_network.grid_size,
-                             self._yolo_network.grid_size,
-                             self.anchors,
-                             self._yolo_network.nb_box,
-                             self.nb_class,
-                             self._yolo_network.true_boxes)
-        
         generator_config = GeneratorConfig(self._yolo_network.input_size,
                                            self._yolo_network.grid_size,
                                            self._yolo_network.nb_box,
@@ -79,7 +73,7 @@ class YOLO(object):
         
         # Todo : self.model.model 정리
         yolo_trainer = YoloTrainer(self._yolo_network.model,
-                                   yolo_loss.custom_loss(batch_size, warmup_bs),
+                                   self._yolo_loss.custom_loss(batch_size, warmup_bs),
                                    self._yolo_network._feature_extractor.normalize,
                                    generator_config)
         yolo_trainer.train(train_imgs,
