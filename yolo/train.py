@@ -61,9 +61,15 @@ def train(conf):
                          yolo_network.nb_box,
                          len(config['model']['labels']),
                          yolo_network.true_boxes)
+    
+    from yolo.trainer import YoloTrainer
+    yolo_trainer = YoloTrainer(yolo_network.model,
+                               yolo_loss.custom_loss,
+                               yolo_network._feature_extractor.normalize)
 
     yolo = YOLO(network             = yolo_network,
                 loss                = yolo_loss,
+                trainer             = yolo_trainer,
                 labels              = config['model']['labels'], 
                 anchors             = config['model']['anchors'])
 
@@ -95,16 +101,11 @@ def train(conf):
                                  norm=yolo_network._feature_extractor.normalize,
                                  jitter=False)
 
-    from yolo.trainer import YoloTrainer
-    warmup_bs  = config['train']['warmup_epochs'] * (config['train']['train_times']*(len(train_imgs)/config['train']['batch_size']+1) + config['valid']['valid_times']*(len(valid_imgs)/config['train']['batch_size']+1))
-    yolo_trainer = YoloTrainer(yolo_network.model,
-                               yolo_loss.custom_loss(config['train']['batch_size'], warmup_bs),
-                               yolo_network._feature_extractor.normalize)
-
-    yolo_trainer.train(train_batch,
+    yolo.train(train_batch,
                        valid_batch,
                        train_times        = config['train']['train_times'],
                        valid_times        = config['valid']['valid_times'],
-                       nb_epoch           = config['train']['nb_epoch'], 
+                       nb_epoch           = config['train']['nb_epoch'],
+                       warmup_epochs      = config['train']['warmup_epochs'],
                        learning_rate      = config['train']['learning_rate'], 
                        saved_weights_name = config['train']['saved_weights_name'])
