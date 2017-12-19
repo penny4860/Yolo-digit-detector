@@ -54,10 +54,15 @@ class BatchGenerator(Sequence):
         self.jitter  = jitter
         self.norm    = norm
         self.counter = 0
-        self.anchors = [BoundBox(0, 0, self.config.anchors[2*i], self.config.anchors[2*i+1]) for i in range(int(len(self.config.anchors)/2))]
+        self.anchors = self._create_anchor_boxes(self.config.anchors)
 
     def __len__(self):
         return self._ann_handler.len_batches()
+
+    def _create_anchor_boxes(self, anchors):
+        n_anchor_boxes = int(len(anchors)/2)
+        return [BoundBox(0, 0, anchors[2*i], anchors[2*i+1]) 
+                for i in range(n_anchor_boxes)]
 
     def _is_valid_obj(self, x1, y1, x2, y2, label, grid_x, grid_y):
         """
