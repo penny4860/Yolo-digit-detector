@@ -4,7 +4,7 @@ import os
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard
 
-from yolo.preprocessing import BatchGenerator
+from yolo.batch_gen import BatchGenerator
 
 
 class YoloTrainer(object):
