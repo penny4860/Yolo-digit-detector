@@ -3,7 +3,7 @@
 from yolo.decoder import YoloDecoder
 from yolo.loss import YoloLoss
 from yolo.trainer import YoloTrainer
-from yolo.preprocessing import GeneratorConfig
+from yolo.batch_gen import GeneratorConfig
 
 # create_feature_extractor(architecture, input_size)
 # client : predict.py
