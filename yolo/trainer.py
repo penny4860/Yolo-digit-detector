@@ -16,14 +16,17 @@ class YoloTrainer(object):
                     train_times,    # the number of time to repeat the training set, often used for small datasets
                     valid_times,    # the number of times to repeat the validation set, often used for small datasets
                     nb_epoch,       # number of epoches
+                    warmup_epochs,
                     learning_rate,  # the learning rate
                     saved_weights_name='best_weights.h5'):
+
+        warmup_bs  = warmup_epochs * (train_times*(len(train_batch)+1) + valid_times*(len(valid_batch)+1))
 
         # 1. create optimizer
         optimizer = Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
         
         # 2. create loss function
-        self.model.compile(loss=self.loss_func, optimizer=optimizer)
+        self.model.compile(loss=self.loss_func(len(train_batch[0]), warmup_bs), optimizer=optimizer)
 
         # 4. training
         self.model.fit_generator(generator        = train_batch, 
