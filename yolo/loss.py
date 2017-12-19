@@ -5,7 +5,7 @@ import numpy as np
 
 class YoloLoss(object):
     
-    def __init__(self, grid_w, grid_h, anchors, nb_box, nb_class, warmup_bs, true_boxes):
+    def __init__(self, grid_w, grid_h, anchors, nb_box, nb_class, true_boxes):
         """
         # Args
             grid_w : int
@@ -14,7 +14,6 @@ class YoloLoss(object):
             anchors : list of floats
             nb_box : int
             nb_class : int
-            warmup_bs
             true_boxes : Tensor instance
         """
         self.grid_w = grid_w
@@ -22,7 +21,6 @@ class YoloLoss(object):
         self.anchors = anchors
         self.nb_box = nb_box
         self.nb_class = nb_class
-        self.warmup_bs = warmup_bs
         self.true_boxes = true_boxes
         self.object_scale    = 5.0
         self.no_object_scale = 1.0
@@ -90,7 +88,7 @@ class YoloLoss(object):
         pred_box_class = y_pred[..., 5:]
         return pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class
     
-    def custom_loss(self, batch_size):
+    def custom_loss(self, batch_size, warmup_bs):
         """
         # Args
             y_true : (N, 13, 13, 5, 6)
@@ -166,7 +164,7 @@ class YoloLoss(object):
             no_boxes_mask = tf.to_float(coord_mask < self.coord_scale/2.)
             seen = tf.assign_add(seen, 1.)
             
-            true_box_xy, true_box_wh, coord_mask = tf.cond(tf.less(seen, self.warmup_bs), 
+            true_box_xy, true_box_wh, coord_mask = tf.cond(tf.less(seen, warmup_bs), 
                                   lambda: [true_box_xy + (0.5 + cell_grid) * no_boxes_mask, 
                                            true_box_wh + tf.ones_like(true_box_wh) * np.reshape(self.anchors, [1,1,1,self.nb_box,2]) * no_boxes_mask, 
                                            tf.ones_like(coord_mask)],
