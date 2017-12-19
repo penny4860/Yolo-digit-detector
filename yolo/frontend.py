@@ -61,7 +61,6 @@ class YOLO(object):
                              self.anchors,
                              self._yolo_network.nb_box,
                              self.nb_class,
-                             warmup_bs,
                              self._yolo_network.true_boxes)
         
         generator_config = GeneratorConfig(self._yolo_network.input_size,
@@ -80,7 +79,7 @@ class YOLO(object):
         
         # Todo : self.model.model 정리
         yolo_trainer = YoloTrainer(self._yolo_network.model,
-                                   yolo_loss.custom_loss(batch_size),
+                                   yolo_loss.custom_loss(batch_size, warmup_bs),
                                    self._yolo_network._feature_extractor.normalize,
                                    generator_config)
         yolo_trainer.train(train_imgs,
