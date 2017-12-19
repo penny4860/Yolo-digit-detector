@@ -50,12 +50,9 @@ class BatchGenerator(Sequence):
         self.generator = None
         self._ann_handler = AnnHandler(images, config.batch_size, shuffle)
 
-        # self.images = images
         self.config = config
-
         self.jitter  = jitter
         self.norm    = norm
-
         self.counter = 0
         self.anchors = [BoundBox(0, 0, self.config.anchors[2*i], self.config.anchors[2*i+1]) for i in range(int(len(self.config.anchors)/2))]
 
