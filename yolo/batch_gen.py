@@ -175,24 +175,25 @@ class BatchGenerator(Sequence):
         b_batch = np.zeros((batch_size, 1     , 1     , 1    ,  self.config.max_box_per_image, 4))   # list of self.config['TRUE_self.config['BOX']_BUFFER'] GT boxes
         y_batch = np.zeros((batch_size, self.config.grid_size,  self.config.grid_size, self.config.nb_box, 4+1+self.config.n_classes))                # desired network output
 
-        # loop over batch
         for i in range(batch_size):
+            # 1. get input file & its annotation
             fname, boxes, labels = self._ann_handler.get_ann(idx, i)
             
-            # augment input image and fix object's position and size
+            # 2. read image in fixed size
             img, boxes = augment.imread(fname,
                                           boxes,
                                           self.config.input_size,
                                           self.config.input_size,
                                           self.jitter)
             
+            # 3. generate x_batch
             x_batch[instance_count] = self._generate_x(img, boxes, labels)
+            
+            # 4. generate y_batch, b_batch
             y_batch[instance_count], b_batch[instance_count] = self._generate_ann_batch(boxes, labels)
             instance_count += 1
 
         self.counter += 1
-        #print ' new batch created', self.counter
-        
         return [x_batch, b_batch], y_batch
 
     def on_epoch_end(self):
