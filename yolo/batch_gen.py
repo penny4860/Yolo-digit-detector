@@ -28,40 +28,25 @@ class GeneratorConfig(object):
         self.n_classes = len(self.labels)
 
 
-class BatchGenerator(Sequence):
-    def __init__(self, images, 
-                       config, 
-                       shuffle=True, 
-                       jitter=True, 
-                       norm=None):
-        """
-        # Args
-            images : list of dictionary including following keys
-                "filename"  : str
-                "width"     : int
-                "height"    : int
-                "object"    : list of dictionary
-                    'name' : str
-                    'xmin' : int
-                    'ymin' : int
-                    'xmax' : int
-                    'ymax' : int
-        """
-        self.generator = None
-        self._ann_handler = AnnHandler(images, config.batch_size, shuffle)
-
-        # self.images = images
+class LabelBatchGenerator(object):
+    
+    def __init__(self, config):
         self.config = config
+        self.anchors = self._create_anchor_boxes(config.anchors)
 
-        self.jitter  = jitter
-        self.norm    = norm
+    def _create_anchor_boxes(self, anchors):
+        n_anchor_boxes = int(len(anchors)/2)
+        return [BoundBox(0, 0, anchors[2*i], anchors[2*i+1]) 
+                for i in range(n_anchor_boxes)]
 
-        self.counter = 0
-        self.anchors = [BoundBox(0, 0, self.config.anchors[2*i], self.config.anchors[2*i+1]) for i in range(int(len(self.config.anchors)/2))]
-
-    def __len__(self):
-        return self._ann_handler.len_batches()
-
+    def _normalize_box(self, cx, cy, w, h):
+        """Noramlize box : 1-grid == 1.0"""
+        norm_cx = cx / (float(self.config.input_size) / self.config.grid_size)
+        norm_cy = cy / (float(self.config.input_size) / self.config.grid_size)
+        norm_w = w / (float(self.config.input_size) / self.config.grid_size) # unit: grid cell
+        norm_h = h / (float(self.config.input_size) / self.config.grid_size) # unit: grid cell
+        return norm_cx, norm_cy, norm_w, norm_h
+    
     def _is_valid_obj(self, x1, y1, x2, y2, label, grid_x, grid_y):
         """
         # Args
@@ -75,30 +60,6 @@ class BatchGenerator(Sequence):
                 if grid_x < self.config.grid_size and grid_y < self.config.grid_size:
                     is_valid = True
         return is_valid
-
-    def _generate_x(self, img, boxes, labels):
-        # assign input image to x_batch
-        if self.norm != None: 
-            x = self.norm(img)
-        else:
-            # plot image and bounding boxes for sanity check
-            for box, label in zip(boxes, labels):
-                x1, y1, x2, y2 = box
-                if x2 > x1 and y2 > y1:
-                    cv2.rectangle(img[:,:,::-1], (x1, y1), (x2, y2), (255,0,0), 3)
-                    cv2.putText(img[:,:,::-1], label, 
-                                (x1+2, y1+12), 
-                                0, 1.2e-3 * img.shape[0], 
-                                (0,255,0), 2)
-            x = img
-        return x
-    
-    def _generate_y(self, grid_x, grid_y, best_anchor, obj_indx, box):
-        y = np.zeros((self.config.grid_size,  self.config.grid_size, self.config.nb_box, 4+1+self.config.n_classes))
-        y[grid_y, grid_x, best_anchor, 0:4] = box
-        y[grid_y, grid_x, best_anchor, 4  ] = 1.
-        y[grid_y, grid_x, best_anchor, 5+obj_indx] = 1
-        return y
 
     def _get_anchor_idx(self, box):
         _, _, center_w, center_h = box
@@ -121,21 +82,25 @@ class BatchGenerator(Sequence):
                 max_iou     = iou
         return best_anchor
     
-    def _normalize_box(self, cx, cy, w, h):
-        """Noramlize box : 1-grid == 1.0"""
-        norm_cx = cx / (float(self.config.input_size) / self.config.grid_size)
-        norm_cy = cy / (float(self.config.input_size) / self.config.grid_size)
-        norm_w = w / (float(self.config.input_size) / self.config.grid_size) # unit: grid cell
-        norm_h = h / (float(self.config.input_size) / self.config.grid_size) # unit: grid cell
-        return norm_cx, norm_cy, norm_w, norm_h
-
+    def _generate_y(self, grid_x, grid_y, best_anchor, obj_indx, box):
+        y = np.zeros((self.config.grid_size,  self.config.grid_size, self.config.nb_box, 4+1+self.config.n_classes))
+        y[grid_y, grid_x, best_anchor, 0:4] = box
+        y[grid_y, grid_x, best_anchor, 4  ] = 1.
+        y[grid_y, grid_x, best_anchor, 5+obj_indx] = 1
+        return y
     
-    def _generate_ann_batch(self, boxes, labels):
+    def generate(self, boxes, labels):
         
         # construct output from object's x, y, w, h
         true_box_index = 0
-        y = np.zeros((13,13,5,6))
-        b_ = np.zeros((1,1,1,10,4))
+        
+        y = np.zeros((self.config.grid_size,
+                      self.config.grid_size,
+                      self.config.nb_box,
+                      4+1+self.config.n_classes))
+        b_ = np.zeros((1,1,1,
+                       self.config.max_box_per_image,
+                       4))
         
         # loop over objects in one image
         for box, label in zip(boxes, labels):
@@ -160,6 +125,42 @@ class BatchGenerator(Sequence):
                 true_box_index = true_box_index % self.config.max_box_per_image
         return y, b_
 
+
+
+class BatchGenerator(Sequence):
+    def __init__(self, images, 
+                       config, 
+                       shuffle=True, 
+                       jitter=True, 
+                       norm=None):
+        """
+        # Args
+            images : list of dictionary including following keys
+                "filename"  : str
+                "width"     : int
+                "height"    : int
+                "object"    : list of dictionary
+                    'name' : str
+                    'xmin' : int
+                    'ymin' : int
+                    'xmax' : int
+                    'ymax' : int
+        """
+        self.generator = None
+        self._ann_handler = AnnHandler(images, config.batch_size, shuffle)
+        self._label_generator = LabelBatchGenerator(config)
+
+        self.config = config
+        self.jitter  = jitter
+        if norm is None:
+            self.norm = lambda x: x
+        else:
+            self.norm = norm
+        self.counter = 0
+
+    def __len__(self):
+        return self._ann_handler.len_batches()
+
     def __getitem__(self, idx):
         """
         # Args
@@ -173,24 +174,25 @@ class BatchGenerator(Sequence):
         b_batch = np.zeros((batch_size, 1     , 1     , 1    ,  self.config.max_box_per_image, 4))   # list of self.config['TRUE_self.config['BOX']_BUFFER'] GT boxes
         y_batch = np.zeros((batch_size, self.config.grid_size,  self.config.grid_size, self.config.nb_box, 4+1+self.config.n_classes))                # desired network output
 
-        # loop over batch
         for i in range(batch_size):
+            # 1. get input file & its annotation
             fname, boxes, labels = self._ann_handler.get_ann(idx, i)
             
-            # augment input image and fix object's position and size
+            # 2. read image in fixed size
             img, boxes = augment.imread(fname,
                                           boxes,
                                           self.config.input_size,
                                           self.config.input_size,
                                           self.jitter)
             
-            x_batch[instance_count] = self._generate_x(img, boxes, labels)
-            y_batch[instance_count], b_batch[instance_count] = self._generate_ann_batch(boxes, labels)
+            # 3. generate x_batch
+            x_batch[instance_count] = self.norm(img)
+            
+            # 4. generate y_batch, b_batch
+            y_batch[instance_count], b_batch[instance_count] = self._label_generator.generate(boxes, labels)
             instance_count += 1
 
         self.counter += 1
-        #print ' new batch created', self.counter
-        
         return [x_batch, b_batch], y_batch
 
     def on_epoch_end(self):
