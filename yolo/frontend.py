@@ -12,6 +12,7 @@ class YOLO(object):
     def __init__(self,
                  network,
                  loss,
+                 generator_config,
                  labels, 
                  anchors):
         """
@@ -22,6 +23,7 @@ class YOLO(object):
         self._yolo_decoder = YoloDecoder(anchors)
         self._yolo_loss = loss
         
+        self.generator_config = generator_config
         self.labels   = list(labels)
         self.nb_class = len(self.labels)
         self.anchors  = anchors
@@ -56,26 +58,10 @@ class YOLO(object):
                     debug=False):     
 
         warmup_bs  = warmup_epochs * (train_times*(len(train_imgs)/batch_size+1) + valid_times*(len(valid_imgs)/batch_size+1))
-        
-        generator_config = GeneratorConfig(self._yolo_network.input_size,
-                                           self._yolo_network.grid_size,
-                                           self._yolo_network.nb_box,
-                                           self.labels,
-                                           batch_size,
-                                           self._yolo_network.max_box_per_image,
-                                           self.anchors)
-
-        # YoloNetwork, YoloTrainer, YoloLoss
-        
-        # 1. Batch Generator 를 여기서 생성
-        
-        # 2. 
-        
-        # Todo : self.model.model 정리
         yolo_trainer = YoloTrainer(self._yolo_network.model,
                                    self._yolo_loss.custom_loss(batch_size, warmup_bs),
                                    self._yolo_network._feature_extractor.normalize,
-                                   generator_config)
+                                   self.generator_config)
         yolo_trainer.train(train_imgs,
                            valid_imgs,
                            train_times,
