@@ -27,6 +27,7 @@ def predict(image_path, weights_path, config_path="config.json"):
 
     yolo = YOLO(network             = yolo_network,
                 loss                = yolo_loss,
+                trainer             = None,
                 labels              = config['model']['labels'], 
                 anchors             = config['model']['anchors'])
 
