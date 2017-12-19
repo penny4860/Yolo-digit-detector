@@ -4,6 +4,8 @@ import os
 import numpy as np
 from yolo.annotation import parse_annotation
 from yolo import YOLO
+from yolo.network import YoloNetwork
+from yolo.loss import YoloLoss
 
 
 def train(conf):
@@ -49,10 +51,20 @@ def train(conf):
     #   Construct the model 
     ###############################
 
-    yolo = YOLO(architecture        = config['model']['architecture'],
-                input_size          = config['model']['input_size'], 
+    yolo_network = YoloNetwork(config['model']['architecture'],
+                               config['model']['input_size'],
+                               len(config['model']['labels']),
+                               max_box_per_image=10)
+    
+    yolo_loss = YoloLoss(yolo_network.grid_size,
+                         config['model']['anchors'],
+                         yolo_network.nb_box,
+                         len(config['model']['labels']),
+                         yolo_network.true_boxes)
+
+    yolo = YOLO(network             = yolo_network,
+                loss                = yolo_loss,
                 labels              = config['model']['labels'], 
-                max_box_per_image   = config['model']['max_box_per_image'],
                 anchors             = config['model']['anchors'])
 
     ###############################

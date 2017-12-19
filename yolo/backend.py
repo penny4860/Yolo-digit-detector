@@ -57,8 +57,15 @@ class BaseFeatureExtractor(object):
     def normalize(self, image):
         raise NotImplementedError("error message")       
 
-    def get_output_shape(self):
-        return self.feature_extractor.get_output_shape_at(-1)[1:3]
+    def get_input_size(self):
+        input_shape = self.feature_extractor.get_input_shape_at(0)
+        assert input_shape[1] == input_shape[2]
+        return input_shape[1]
+
+    def get_output_size(self):
+        output_shape = self.feature_extractor.get_output_shape_at(-1)
+        assert output_shape[1] == output_shape[2]
+        return output_shape[1]
 
     def extract(self, input_image):
         return self.feature_extractor(input_image)

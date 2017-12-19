@@ -7,6 +7,27 @@ from keras.utils import Sequence
 from yolo.box import BoundBox, bbox_iou, to_cxcy_wh
 from yolo.annotation import AnnHandler
 
+
+class GeneratorConfig(object):
+    
+    def __init__(self,
+                 input_size,
+                 grid_size,
+                 nb_box,
+                 labels,
+                 batch_size,
+                 max_box_per_image,
+                 anchors):
+        self.input_size = input_size
+        self.grid_size = grid_size
+        self.nb_box = nb_box
+        self.labels = labels
+        self.anchors = anchors
+        self.batch_size = batch_size
+        self.max_box_per_image = max_box_per_image
+        self.n_classes = len(self.labels)
+
+
 class BatchGenerator(Sequence):
     def __init__(self, images, 
                        config, 
@@ -27,7 +48,7 @@ class BatchGenerator(Sequence):
                     'ymax' : int
         """
         self.generator = None
-        self._ann_handler = AnnHandler(images, config['BATCH_SIZE'], shuffle)
+        self._ann_handler = AnnHandler(images, config.batch_size, shuffle)
 
         # self.images = images
         self.config = config
@@ -35,8 +56,8 @@ class BatchGenerator(Sequence):
         self.jitter  = jitter
         self.norm    = norm
 
-        self.counter = 0        
-        self.anchors = [BoundBox(0, 0, config['ANCHORS'][2*i], config['ANCHORS'][2*i+1]) for i in range(int(len(config['ANCHORS'])/2))]
+        self.counter = 0
+        self.anchors = [BoundBox(0, 0, self.config.anchors[2*i], self.config.anchors[2*i+1]) for i in range(int(len(self.config.anchors)/2))]
 
     def __len__(self):
         return self._ann_handler.len_batches()
@@ -50,8 +71,8 @@ class BatchGenerator(Sequence):
         """
         is_valid = False
         if x2 > x1 and y2 > y1:
-            if label in self.config['LABELS']:
-                if grid_x < self.config['GRID_W'] and grid_y < self.config['GRID_H']:
+            if label in self.config.labels:
+                if grid_x < self.config.grid_size and grid_y < self.config.grid_size:
                     is_valid = True
         return is_valid
 
@@ -73,7 +94,7 @@ class BatchGenerator(Sequence):
         return x
     
     def _generate_y(self, grid_x, grid_y, best_anchor, obj_indx, box):
-        y = np.zeros((self.config['GRID_H'],  self.config['GRID_W'], self.config['BOX'], 4+1+self.config['CLASS']))
+        y = np.zeros((self.config.grid_size,  self.config.grid_size, self.config.nb_box, 4+1+self.config.n_classes))
         y[grid_y, grid_x, best_anchor, 0:4] = box
         y[grid_y, grid_x, best_anchor, 4  ] = 1.
         y[grid_y, grid_x, best_anchor, 5+obj_indx] = 1
@@ -102,10 +123,10 @@ class BatchGenerator(Sequence):
     
     def _normalize_box(self, cx, cy, w, h):
         """Noramlize box : 1-grid == 1.0"""
-        norm_cx = cx / (float(self.config['IMAGE_W']) / self.config['GRID_W'])
-        norm_cy = cy / (float(self.config['IMAGE_H']) / self.config['GRID_H'])
-        norm_w = w / (float(self.config['IMAGE_W']) / self.config['GRID_W']) # unit: grid cell
-        norm_h = h / (float(self.config['IMAGE_H']) / self.config['GRID_H']) # unit: grid cell
+        norm_cx = cx / (float(self.config.input_size) / self.config.grid_size)
+        norm_cy = cy / (float(self.config.input_size) / self.config.grid_size)
+        norm_w = w / (float(self.config.input_size) / self.config.grid_size) # unit: grid cell
+        norm_h = h / (float(self.config.input_size) / self.config.grid_size) # unit: grid cell
         return norm_cx, norm_cy, norm_w, norm_h
 
     
@@ -126,7 +147,7 @@ class BatchGenerator(Sequence):
             grid_y = int(np.floor(norm_box[1]))
 
             if self._is_valid_obj(x1, y1, x2, y2, label, grid_x, grid_y):
-                obj_indx  = self.config['LABELS'].index(label)
+                obj_indx  = self.config.labels.index(label)
                 best_anchor = self._get_anchor_idx(norm_box)
 
                 # assign ground truth x, y, w, h, confidence and class probs to y_batch
@@ -136,7 +157,7 @@ class BatchGenerator(Sequence):
                 b_[0, 0, 0, true_box_index] = norm_box
                 
                 true_box_index += 1
-                true_box_index = true_box_index % self.config['TRUE_BOX_BUFFER']
+                true_box_index = true_box_index % self.config.max_box_per_image
         return y, b_
 
     def __getitem__(self, idx):
@@ -148,9 +169,9 @@ class BatchGenerator(Sequence):
         batch_size = self._ann_handler.get_batch_size(idx)
         instance_count = 0
 
-        x_batch = np.zeros((batch_size, self.config['IMAGE_H'], self.config['IMAGE_W'], 3))                         # input images
-        b_batch = np.zeros((batch_size, 1     , 1     , 1    ,  self.config['TRUE_BOX_BUFFER'], 4))   # list of self.config['TRUE_self.config['BOX']_BUFFER'] GT boxes
-        y_batch = np.zeros((batch_size, self.config['GRID_H'],  self.config['GRID_W'], self.config['BOX'], 4+1+self.config['CLASS']))                # desired network output
+        x_batch = np.zeros((batch_size, self.config.input_size, self.config.input_size, 3))                         # input images
+        b_batch = np.zeros((batch_size, 1     , 1     , 1    ,  self.config.max_box_per_image, 4))   # list of self.config['TRUE_self.config['BOX']_BUFFER'] GT boxes
+        y_batch = np.zeros((batch_size, self.config.grid_size,  self.config.grid_size, self.config.nb_box, 4+1+self.config.n_classes))                # desired network output
 
         # loop over batch
         for i in range(batch_size):
@@ -159,8 +180,8 @@ class BatchGenerator(Sequence):
             # augment input image and fix object's position and size
             img, boxes = augment.imread(fname,
                                           boxes,
-                                          self.config["IMAGE_W"],
-                                          self.config["IMAGE_H"],
+                                          self.config.input_size,
+                                          self.config.input_size,
                                           self.jitter)
             
             x_batch[instance_count] = self._generate_x(img, boxes, labels)
@@ -184,18 +205,15 @@ def setup():
     from yolo.annotation import parse_annotation
     with open("config.json") as config_buffer:    
         config = json.loads(config_buffer.read())
-    generator_config = {
-            'IMAGE_H'         : config["model"]["input_size"], 
-            'IMAGE_W'         : config["model"]["input_size"],
-            'GRID_H'          : int(config["model"]["input_size"]/32),  
-            'GRID_W'          : int(config["model"]["input_size"]/32),
-            'BOX'             : 5,
-            'LABELS'          : config["model"]["labels"],
-            'CLASS'           : len(config["model"]["labels"]),
-            'ANCHORS'         : config["model"]["anchors"],
-            'BATCH_SIZE'      : 8,
-            'TRUE_BOX_BUFFER' : config["model"]["max_box_per_image"],
-    }
+        
+    generator_config = GeneratorConfig(config["model"]["input_size"],
+                                       int(config["model"]["input_size"]/32),
+                                       nb_box = 5,
+                                       labels = config["model"]["labels"],
+                                       batch_size = 8,
+                                       max_box_per_image = config["model"]["max_box_per_image"],
+                                       anchors = config["model"]["anchors"])
+
     train_imgs, train_labels = parse_annotation(config['train']['train_annot_folder'], 
                                                 config['train']['train_image_folder'], 
                                                 config['model']['labels'])

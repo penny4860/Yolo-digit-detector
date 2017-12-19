@@ -3,7 +3,7 @@ import json
 from yolo.box import draw_boxes
 from yolo import YOLO
 import cv2
-
+from yolo.network import YoloNetwork
 
 def predict(image_path, weights_path, config_path="config.json"):
 
@@ -13,11 +13,21 @@ def predict(image_path, weights_path, config_path="config.json"):
     ###############################
     #   Make the model 
     ###############################
+    yolo_network = YoloNetwork(config['model']['architecture'],
+                               config['model']['input_size'],
+                               len(config['model']['labels']),
+                               max_box_per_image=10)
 
-    yolo = YOLO(architecture        = config['model']['architecture'],
-                input_size          = config['model']['input_size'], 
+    from yolo.loss import YoloLoss
+    yolo_loss = YoloLoss(yolo_network.grid_size,
+                         config['model']['anchors'],
+                         yolo_network.nb_box,
+                         len(config['model']['labels']),
+                         yolo_network.true_boxes)
+
+    yolo = YOLO(network             = yolo_network,
+                loss                = yolo_loss,                
                 labels              = config['model']['labels'], 
-                max_box_per_image   = config['model']['max_box_per_image'],
                 anchors             = config['model']['anchors'])
 
     ###############################
