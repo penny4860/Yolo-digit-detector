@@ -5,19 +5,17 @@ import numpy as np
 
 class YoloLoss(object):
     
-    def __init__(self, grid_w, grid_h, anchors, nb_box, nb_class, true_boxes):
+    def __init__(self, grid_size, anchors, nb_box, nb_class, true_boxes):
         """
         # Args
-            grid_w : int
-            grid_h : int
+            grid_size : int
             batch_size : int
             anchors : list of floats
             nb_box : int
             nb_class : int
             true_boxes : Tensor instance
         """
-        self.grid_w = grid_w
-        self.grid_h = grid_h
+        self.grid_size = grid_size
         self.anchors = anchors
         self.nb_box = nb_box
         self.nb_class = nb_class
@@ -29,7 +27,7 @@ class YoloLoss(object):
         
         
     def _create_cell_grid(self, batch_size):
-        cell_x = tf.to_float(tf.reshape(tf.tile(tf.range(self.grid_w), [self.grid_h]), (1, self.grid_h, self.grid_w, 1, 1)))
+        cell_x = tf.to_float(tf.reshape(tf.tile(tf.range(self.grid_size), [self.grid_size]), (1, self.grid_size, self.grid_size, 1, 1)))
         cell_y = tf.transpose(cell_x, (0,2,1,3,4))
         cell_grid = tf.tile(tf.concat([cell_x,cell_y], -1), [batch_size, 1, 1, 5, 1])
         return cell_grid

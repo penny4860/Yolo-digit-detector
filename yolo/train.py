@@ -55,8 +55,16 @@ def train(conf):
                                config['model']['input_size'],
                                len(config['model']['labels']),
                                max_box_per_image=10)
+    
+    from yolo.loss import YoloLoss
+    yolo_loss = YoloLoss(yolo_network.grid_size,
+                         config['model']['anchors'],
+                         yolo_network.nb_box,
+                         len(config['model']['labels']),
+                         yolo_network.true_boxes)
 
     yolo = YOLO(network             = yolo_network,
+                loss                = yolo_loss,
                 labels              = config['model']['labels'], 
                 anchors             = config['model']['anchors'])
 
