@@ -4,8 +4,8 @@ import os
 import numpy as np
 from yolo.annotation import parse_annotation
 from yolo import YOLO
-from yolo.backend import create_feature_extractor
 from yolo.network import YoloNetwork
+from yolo.loss import YoloLoss
 
 
 def train(conf):
@@ -56,7 +56,6 @@ def train(conf):
                                len(config['model']['labels']),
                                max_box_per_image=10)
     
-    from yolo.loss import YoloLoss
     yolo_loss = YoloLoss(yolo_network.grid_size,
                          config['model']['anchors'],
                          yolo_network.nb_box,
