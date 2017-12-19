@@ -44,6 +44,9 @@ class YOLO(object):
         boxes = self._yolo_decoder.run(netout)
         return boxes
 
+    def train(self):
+        pass
+
 #     def train(self, train_generator,     # the list of images to train the model
 #                     valid_generator,     # the list of images used to validate the model
 #                     train_times,    # the number of time to repeat the training set, often used for small datasets

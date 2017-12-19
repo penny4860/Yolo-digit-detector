@@ -99,8 +99,8 @@ def train(conf):
     warmup_bs  = config['train']['warmup_epochs'] * (config['train']['train_times']*(len(train_imgs)/config['train']['batch_size']+1) + config['valid']['valid_times']*(len(valid_imgs)/config['train']['batch_size']+1))
     yolo_trainer = YoloTrainer(yolo_network.model,
                                yolo_loss.custom_loss(config['train']['batch_size'], warmup_bs),
-                               yolo_network._feature_extractor.normalize,
-                               generator_config)
+                               yolo_network._feature_extractor.normalize)
+
     yolo_trainer.train(train_batch,
                        valid_batch,
                        train_times        = config['train']['train_times'],
