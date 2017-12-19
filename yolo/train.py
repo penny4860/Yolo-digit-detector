@@ -62,8 +62,18 @@ def train(conf):
                          len(config['model']['labels']),
                          yolo_network.true_boxes)
 
+    from yolo.batch_gen import GeneratorConfig
+    generator_config = GeneratorConfig(yolo_network.input_size,
+                                       yolo_network.grid_size,
+                                       yolo_network.nb_box,
+                                       config['model']['labels'],
+                                       config['train']['batch_size'],
+                                       yolo_network.max_box_per_image,
+                                       config['model']['anchors'])
+
     yolo = YOLO(network             = yolo_network,
                 loss                = yolo_loss,
+                generator_config    = generator_config,
                 labels              = config['model']['labels'], 
                 anchors             = config['model']['anchors'])
 
