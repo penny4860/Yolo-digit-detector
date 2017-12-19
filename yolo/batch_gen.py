@@ -52,7 +52,10 @@ class BatchGenerator(Sequence):
 
         self.config = config
         self.jitter  = jitter
-        self.norm    = norm
+        if norm is None:
+            self.norm = lambda x: x
+        else:
+            self.norm = norm
         self.counter = 0
         self.anchors = self._create_anchor_boxes(self.config.anchors)
 
@@ -78,14 +81,6 @@ class BatchGenerator(Sequence):
                     is_valid = True
         return is_valid
 
-    def _generate_x(self, img, boxes, labels):
-        # assign input image to x_batch
-        if self.norm != None: 
-            x = self.norm(img)
-        else:
-            x = img
-        return x
-    
     def _generate_y(self, grid_x, grid_y, best_anchor, obj_indx, box):
         y = np.zeros((self.config.grid_size,  self.config.grid_size, self.config.nb_box, 4+1+self.config.n_classes))
         y[grid_y, grid_x, best_anchor, 0:4] = box
@@ -178,7 +173,7 @@ class BatchGenerator(Sequence):
                                           self.jitter)
             
             # 3. generate x_batch
-            x_batch[instance_count] = self._generate_x(img, boxes, labels)
+            x_batch[instance_count] = self.norm(img)
             
             # 4. generate y_batch, b_batch
             y_batch[instance_count], b_batch[instance_count] = self._generate_ann_batch(boxes, labels)
