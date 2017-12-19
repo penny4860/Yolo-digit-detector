@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from keras.layers import Input
-
 from yolo.decoder import YoloDecoder
 from yolo.loss import YoloLoss
 from yolo.trainer import YoloTrainer
