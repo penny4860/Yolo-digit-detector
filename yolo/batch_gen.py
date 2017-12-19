@@ -83,15 +83,6 @@ class BatchGenerator(Sequence):
         if self.norm != None: 
             x = self.norm(img)
         else:
-            # plot image and bounding boxes for sanity check
-            for box, label in zip(boxes, labels):
-                x1, y1, x2, y2 = box
-                if x2 > x1 and y2 > y1:
-                    cv2.rectangle(img[:,:,::-1], (x1, y1), (x2, y2), (255,0,0), 3)
-                    cv2.putText(img[:,:,::-1], label, 
-                                (x1+2, y1+12), 
-                                0, 1.2e-3 * img.shape[0], 
-                                (0,255,0), 2)
             x = img
         return x
     
