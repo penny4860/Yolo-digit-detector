@@ -12,7 +12,6 @@ class YOLO(object):
     def __init__(self,
                  network,
                  loss,
-                 generator_config,
                  labels, 
                  anchors):
         """
@@ -23,7 +22,6 @@ class YOLO(object):
         self._yolo_decoder = YoloDecoder(anchors)
         self._yolo_loss = loss
         
-        self.generator_config = generator_config
         self.labels   = list(labels)
         self.nb_class = len(self.labels)
         self.anchors  = anchors
@@ -46,27 +44,20 @@ class YOLO(object):
         boxes = self._yolo_decoder.run(netout)
         return boxes
 
-    def train(self, train_imgs,     # the list of images to train the model
-                    valid_imgs,     # the list of images used to validate the model
-                    train_times,    # the number of time to repeat the training set, often used for small datasets
-                    valid_times,    # the number of times to repeat the validation set, often used for small datasets
-                    nb_epoch,       # number of epoches
-                    learning_rate,  # the learning rate
-                    batch_size,     # the size of the batch
-                    warmup_epochs,  # number of initial batches to let the model familiarize with the new dataset
-                    saved_weights_name='best_weights.h5',
-                    debug=False):     
-
-        warmup_bs  = warmup_epochs * (train_times*(len(train_imgs)/batch_size+1) + valid_times*(len(valid_imgs)/batch_size+1))
-        yolo_trainer = YoloTrainer(self._yolo_network.model,
-                                   self._yolo_loss.custom_loss(batch_size, warmup_bs),
-                                   self._yolo_network._feature_extractor.normalize,
-                                   self.generator_config)
-        yolo_trainer.train(train_imgs,
-                           valid_imgs,
-                           train_times,
-                           valid_times,
-                           nb_epoch,
-                           learning_rate,
-                           warmup_epochs,
-                           saved_weights_name)
+#     def train(self, train_generator,     # the list of images to train the model
+#                     valid_generator,     # the list of images used to validate the model
+#                     train_times,    # the number of time to repeat the training set, often used for small datasets
+#                     valid_times,    # the number of times to repeat the validation set, often used for small datasets
+#                     nb_epoch,       # number of epoches
+#                     learning_rate,  # the learning rate
+#                     warmup_epochs,  # number of initial batches to let the model familiarize with the new dataset
+#                     saved_weights_name='best_weights.h5'):
+# 
+#         yolo_trainer.train(train_imgs,
+#                            valid_imgs,
+#                            train_times,
+#                            valid_times,
+#                            nb_epoch,
+#                            learning_rate,
+#                            warmup_epochs,
+#                            saved_weights_name)
