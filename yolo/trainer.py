@@ -6,11 +6,10 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard
 
 class YoloTrainer(object):
     
-    def __init__(self, model, loss_func, normalize_func, generator_config):
+    def __init__(self, model, loss_func, normalize_func):
         self.model = model
         self.loss_func = loss_func
         self.normalize_func = normalize_func
-        self.generator_config = generator_config
         
     def train(self, train_batch,     # the list of images to train the model
                     valid_batch,     # the list of images used to validate the model
