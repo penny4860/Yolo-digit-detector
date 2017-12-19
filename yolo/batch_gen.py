@@ -122,8 +122,14 @@ class BatchGenerator(Sequence):
         
         # construct output from object's x, y, w, h
         true_box_index = 0
-        y = np.zeros((13,13,5,6))
-        b_ = np.zeros((1,1,1,10,4))
+        
+        y = np.zeros((self.config.grid_size,
+                      self.config.grid_size,
+                      self.config.nb_box,
+                      4+1+self.config.n_classes))
+        b_ = np.zeros((1,1,1,
+                       self.config.max_box_per_image,
+                       4))
         
         # loop over objects in one image
         for box, label in zip(boxes, labels):
