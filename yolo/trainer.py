@@ -3,21 +3,33 @@ import os
 
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard
+from yolo.batch_gen import BatchGenerator
 
 class YoloTrainer(object):
     
-    def __init__(self, model, loss_func):
+    def __init__(self, model, loss_func, norm_func, config):
         self.model = model
         self.loss_func = loss_func
+        self.norm_func = norm_func
+        self.config = config
         
-    def train(self, train_batch,     # the list of images to train the model
-                    valid_batch,     # the list of images used to validate the model
+    def train(self, train_imgs,     # the list of images to train the model
+                    valid_imgs,     # the list of images used to validate the model
                     train_times,    # the number of time to repeat the training set, often used for small datasets
                     valid_times,    # the number of times to repeat the validation set, often used for small datasets
                     nb_epoch,       # number of epoches
                     warmup_epochs,
                     learning_rate,  # the learning rate
                     saved_weights_name='best_weights.h5'):
+
+        train_batch = BatchGenerator(train_imgs,
+                                     self.config,
+                                     norm=self.norm_func)
+
+        valid_batch = BatchGenerator(valid_imgs,
+                                     self.config,
+                                     norm=self.norm_func,
+                                     jitter=False)
 
         warmup_bs  = warmup_epochs * (train_times*(len(train_batch)+1) + valid_times*(len(valid_batch)+1))
 
