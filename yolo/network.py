@@ -41,6 +41,7 @@ class YoloNetwork(object):
 
         self._norm = feature_extractor.normalize
         self._model = model
+        self._model.summary()
         self._init_layer(grid_size)
 
     def _init_layer(self, grid_size):
@@ -77,7 +78,6 @@ class YoloNetwork(object):
         return self._model
 
     def get_true_box_tensor(self):
-        self._model.summary()
         return self._model.layers[-2].input
 
     def get_input_size(self):
