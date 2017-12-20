@@ -13,14 +13,13 @@ class GeneratorConfig(object):
     def __init__(self,
                  input_size,
                  grid_size,
-                 nb_box,
                  labels,
                  batch_size,
                  max_box_per_image,
                  anchors):
         self.input_size = input_size
         self.grid_size = grid_size
-        self.nb_box = nb_box
+        self.nb_box = int(len(anchors)/2)
         self.labels = labels
         self.anchors = anchors
         self.batch_size = batch_size

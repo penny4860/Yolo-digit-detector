@@ -8,17 +8,8 @@ from yolo.network import YoloNetwork
 from yolo.loss import YoloLoss
 from yolo.batch_gen import GeneratorConfig, BatchGenerator
 
-def train(conf):
 
-    config_path = conf
-
-    with open(config_path) as config_buffer:    
-        config = json.loads(config_buffer.read())
-
-    ###############################
-    #   Parse the annotations 
-    ###############################
-
+def _parse(config):
     # parse annotations of the training set
     train_imgs, train_labels = parse_annotation(config['train']['train_annot_folder'], 
                                                 config['train']['train_image_folder'], 
@@ -46,52 +37,44 @@ def train(conf):
     if len(overlap_labels) < len(config['model']['labels']):
         print('Some labels have no images! Please revise the list of labels in the config.json file!')
         return
-        
-    ###############################
-    #   Construct the model 
-    ###############################
+    
+    return train_imgs, valid_imgs
+
+def train(conf):
+
+    with open(conf) as config_buffer:
+        config = json.loads(config_buffer.read())
+
+    # 1. Construct the model 
     yolo = YOLO(config['model']['architecture'],
                 config['model']['input_size'],
                 len(config['model']['labels']),
                 config['model']['max_box_per_image'],
                 anchors = config['model']['anchors'])
+    # 2. Load the pretrained weights (if any) 
+    yolo.load_weights(config['train']['pretrained_weights'])
 
-    ###############################
-    #   Load the pretrained weights (if any) 
-    ###############################    
-
-    if os.path.exists(config['train']['pretrained_weights']):
-        print("Loading pre-trained weights in", config['train']['pretrained_weights'])
-        yolo.load_weights(config['train']['pretrained_weights'])
-
-    ###############################
-    #   Start the training process 
-    ###############################
+    # 3. Parse the annotations 
+    train_imgs, valid_imgs = _parse(config)
+    
+    # 4. Trainer
+    from yolo.trainer import YoloTrainer
     generator_config = GeneratorConfig(config['model']['input_size'],
                                        yolo.get_grid_size(),
-                                       yolo.get_nb_boxes(),
                                        config['model']['labels'],
                                        config['train']['batch_size'],
                                        config['model']['max_box_per_image'],
                                        config['model']['anchors'])
 
-    train_batch = BatchGenerator(train_imgs,
-                                 generator_config,
-                                 norm=yolo.get_normalize_func())
-
-    valid_batch = BatchGenerator(valid_imgs,
-                                 generator_config,
-                                 norm=yolo.get_normalize_func(),
-                                 jitter=False)
-
-    from yolo.trainer import YoloTrainer
     yolo_trainer = YoloTrainer(yolo.get_model(),
-                               yolo.get_loss_func())
-    yolo_trainer.train(train_batch,
-               valid_batch,
-               train_times        = config['train']['train_times'],
-               valid_times        = config['valid']['valid_times'],
-               nb_epoch           = config['train']['nb_epoch'],
-               warmup_epochs      = config['train']['warmup_epochs'],
-               learning_rate      = config['train']['learning_rate'], 
-               saved_weights_name = config['train']['saved_weights_name'])
+                               yolo.get_loss_func(),
+                               yolo.get_normalize_func(),
+                               generator_config)
+    yolo_trainer.train(train_imgs,
+                       valid_imgs,
+                       train_times        = config['train']['train_times'],
+                       valid_times        = config['valid']['valid_times'],
+                       nb_epoch           = config['train']['nb_epoch'],
+                       warmup_epochs      = config['train']['warmup_epochs'],
+                       learning_rate      = config['train']['learning_rate'], 
+                       saved_weights_name = config['train']['saved_weights_name'])
