@@ -34,3 +34,19 @@ class YOLO(object):
         netout = self._yolo_network.forward(image)
         boxes = self._yolo_decoder.run(netout)
         return boxes
+
+    def get_grid_size(self):
+        return self._yolo_network.get_grid_size()
+
+    def get_nb_boxes(self):
+        return self._yolo_network.get_nb_boxes()
+        
+    def get_model(self):
+        return self._yolo_network.get_model()
+
+    def get_normalize_func(self):
+        return self._yolo_network.get_normalize_func()
+
+    def get_loss_func(self):
+        return self._yolo_network.get_loss_func()
+        
