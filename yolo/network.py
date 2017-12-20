@@ -39,13 +39,12 @@ class YoloNetwork(object):
     
         model = Model([input_tensor, true_boxes], output_tensor)
 
-        self.model = model
-        self.true_boxes = true_boxes
-        self._init_layer(grid_size)
         self._norm = feature_extractor.normalize
+        self._model = model
+        self._init_layer(grid_size)
 
     def _init_layer(self, grid_size):
-        layer = self.model.layers[-4]
+        layer = self._model.layers[-4]
         weights = layer.get_weights()
 
         new_kernel = np.random.normal(size=weights[0].shape)/(grid_size*grid_size)
@@ -54,11 +53,11 @@ class YoloNetwork(object):
         layer.set_weights([new_kernel, new_bias])
 
     def load_weights(self, weight_path):
-        self.model.load_weights(weight_path)
+        self._model.load_weights(weight_path)
         
     def forward(self, image):
         def _get_dummy_true_boxes():
-            _, true_boxes_shape = self.model.get_input_shape_at(0)
+            _, true_boxes_shape = self._model.get_input_shape_at(0)
             array = np.zeros(true_boxes_shape[1:])
             return np.expand_dims(array, 0)
             
@@ -71,40 +70,37 @@ class YoloNetwork(object):
         dummy_array = _get_dummy_true_boxes()
 
         # (13,13,5,6)
-        netout = self.model.predict([input_image, dummy_array])[0]
+        netout = self._model.predict([input_image, dummy_array])[0]
         return netout
 
+    def get_model(self):
+        return self._model
+
+    def get_true_box_tensor(self):
+        self._model.summary()
+        return self._model.layers[-2].input
+
     def get_input_size(self):
-        image_shape, _ = self.model.get_input_shape_at(0)
+        image_shape, _ = self._model.get_input_shape_at(0)
         _, h, w, _ = image_shape
         assert h == w
         return h
     
     def get_max_box_per_image(self):
-        _, true_boxes_shape = self.model.get_input_shape_at(0)
+        _, true_boxes_shape = self._model.get_input_shape_at(0)
         _, _, _, _, max_box_per_image, _ = true_boxes_shape
         return max_box_per_image
 
     def get_grid_size(self):
-        _, h, w, _, _ = self.model.get_output_shape_at(-1)
+        _, h, w, _, _ = self._model.get_output_shape_at(-1)
         assert h == w
         return h
 
     def get_nb_boxes(self):
-        _, _, _, nb_boxes, _ = self.model.get_output_shape_at(-1)
+        _, _, _, nb_boxes, _ = self._model.get_output_shape_at(-1)
         return nb_boxes
 
     def get_normalize_func(self):
         return self._norm
-
-#     true_boxes : tensor
-#     model
-
-
-
-
-
-
-
 
     
