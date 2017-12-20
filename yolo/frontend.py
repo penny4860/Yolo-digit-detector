@@ -19,13 +19,17 @@ class YOLO(object):
         # Args
             feature_extractor : BaseFeatureExtractor instance
         """
+        
+        # 1. inference model
         self._yolo_network = YoloNetwork(architecture, input_size, n_classes, max_box_per_image, anchors)
-        # 3. set loss fucntion
+        
+        # 2. loss function
         self._yolo_loss = YoloLoss(self._yolo_network.get_true_boxes(),
                                    self._yolo_network.get_grid_size(),
                                    n_classes,
                                    anchors)
 
+        # 3. decoding
         self._yolo_decoder = YoloDecoder(anchors)
         self._anchors = anchors
 
