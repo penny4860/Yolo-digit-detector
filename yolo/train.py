@@ -56,14 +56,16 @@ def train(conf):
                                len(config['model']['labels']),
                                max_box_per_image=10)
     
+    true_boxes = yolo_network.get_true_box_tensor()
+    
     yolo_loss = YoloLoss(yolo_network.get_grid_size(),
                          config['model']['anchors'],
                          yolo_network.get_nb_boxes(),
                          len(config['model']['labels']),
-                         yolo_network.true_boxes)
+                         true_boxes)
     
     from yolo.trainer import YoloTrainer
-    yolo_trainer = YoloTrainer(yolo_network.model,
+    yolo_trainer = YoloTrainer(yolo_network.get_model(),
                                yolo_loss.custom_loss)
 
     yolo = YOLO(network             = yolo_network,
