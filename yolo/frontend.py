@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 from yolo.decoder import YoloDecoder
 from yolo.network import YoloNetwork
 
@@ -22,7 +23,11 @@ class YOLO(object):
         self._anchors = anchors
 
     def load_weights(self, weight_path):
-        self._yolo_network.load_weights(weight_path)
+        if os.path.exists(weight_path):
+            print("Loading pre-trained weights in", weight_path)
+            self._yolo_network.load_weights(weight_path)
+        else:
+            print("Fail to load pre-trained weights. Make sure weight file path.")
 
     def predict(self, image):
         """
