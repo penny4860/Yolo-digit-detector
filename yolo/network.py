@@ -8,8 +8,6 @@ from yolo.backend import create_feature_extractor
 from yolo.loss import YoloLoss
 
 
-nb_box = 5
-
 class YoloNetwork(object):
     
     def __init__(self,
@@ -31,6 +29,7 @@ class YoloNetwork(object):
         true_boxes = Input(shape=(1, 1, 1, max_box_per_image , 4))
     
         # make the object detection layer
+        nb_box = int(len(anchors)/2)
         output_tensor = Conv2D(nb_box * (4 + 1 + nb_classes), 
                         (1,1), strides=(1,1), 
                         padding='same', 
@@ -82,31 +81,10 @@ class YoloNetwork(object):
     def get_model(self):
         return self._model
 
-    def get_input_size(self):
-        image_shape, _ = self._model.get_input_shape_at(0)
-        _, h, w, _ = image_shape
-        assert h == w
-        return h
-    
-    def get_max_box_per_image(self):
-        _, true_boxes_shape = self._model.get_input_shape_at(0)
-        _, _, _, _, max_box_per_image, _ = true_boxes_shape
-        return max_box_per_image
-
     def get_grid_size(self):
         _, h, w, _, _ = self._model.get_output_shape_at(-1)
         assert h == w
         return h
-
-    def get_nb_boxes(self):
-        _, _, _, nb_boxes, _ = self._model.get_output_shape_at(-1)
-        return nb_boxes
-
-    def get_nb_classes(self):
-        _, _, _, _, t = self._model.get_output_shape_at(-1)
-        nb_box_coords = 4
-        nb_confidence = 1
-        return t - (nb_box_coords+nb_confidence)
 
     def get_normalize_func(self):
         return self._norm
