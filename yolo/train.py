@@ -59,7 +59,7 @@ def train(conf):
     yolo_loss = YoloLoss(yolo_network.get_grid_size(),
                          config['model']['anchors'],
                          yolo_network.get_nb_boxes(),
-                         len(config['model']['labels']),
+                         yolo_network.get_nb_classes(),
                          yolo_network.get_true_box_tensor())
     
     from yolo.trainer import YoloTrainer

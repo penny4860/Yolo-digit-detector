@@ -100,6 +100,12 @@ class YoloNetwork(object):
         _, _, _, nb_boxes, _ = self._model.get_output_shape_at(-1)
         return nb_boxes
 
+    def get_nb_classes(self):
+        _, _, _, _, t = self._model.get_output_shape_at(-1)
+        nb_box_coords = 4
+        nb_confidence = 1
+        return t - (nb_box_coords+nb_confidence)
+
     def get_normalize_func(self):
         return self._norm
 
