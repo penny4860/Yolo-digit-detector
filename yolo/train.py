@@ -64,8 +64,7 @@ def train(conf):
     
     from yolo.trainer import YoloTrainer
     yolo_trainer = YoloTrainer(yolo_network.model,
-                               yolo_loss.custom_loss,
-                               yolo_network._feature_extractor.normalize)
+                               yolo_loss.custom_loss)
 
     yolo = YOLO(network             = yolo_network,
                 loss                = yolo_loss,
@@ -107,10 +106,10 @@ def train(conf):
                                  jitter=False)
 
     yolo.train(train_batch,
-                       valid_batch,
-                       train_times        = config['train']['train_times'],
-                       valid_times        = config['valid']['valid_times'],
-                       nb_epoch           = config['train']['nb_epoch'],
-                       warmup_epochs      = config['train']['warmup_epochs'],
-                       learning_rate      = config['train']['learning_rate'], 
-                       saved_weights_name = config['train']['saved_weights_name'])
+               valid_batch,
+               train_times        = config['train']['train_times'],
+               valid_times        = config['valid']['valid_times'],
+               nb_epoch           = config['train']['nb_epoch'],
+               warmup_epochs      = config['train']['warmup_epochs'],
+               learning_rate      = config['train']['learning_rate'], 
+               saved_weights_name = config['train']['saved_weights_name'])
