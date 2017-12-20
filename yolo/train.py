@@ -56,19 +56,16 @@ def train(conf):
 
     # 3. Parse the annotations 
     train_imgs, valid_imgs = _parse(config)
-
-    ###############################
-    #   Start the training process 
-    ###############################
+    
+    # 4. Trainer
+    from yolo.trainer import YoloTrainer
     generator_config = GeneratorConfig(config['model']['input_size'],
                                        yolo.get_grid_size(),
-                                       yolo.get_nb_boxes(),
                                        config['model']['labels'],
                                        config['train']['batch_size'],
                                        config['model']['max_box_per_image'],
                                        config['model']['anchors'])
 
-    from yolo.trainer import YoloTrainer
     yolo_trainer = YoloTrainer(yolo.get_model(),
                                yolo.get_loss_func(),
                                yolo.get_normalize_func(),
