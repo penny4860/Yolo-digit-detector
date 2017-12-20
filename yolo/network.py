@@ -17,12 +17,12 @@ class YoloNetwork(object):
                  max_box_per_image=10):
         
         # 1. create feature extractor
-        self._feature_extractor = create_feature_extractor(architecture, input_size)
+        feature_extractor = create_feature_extractor(architecture, input_size)
         
         # 2. create full network
         input_tensor = Input(shape=(input_size, input_size, 3))
-        features = self._feature_extractor.extract(input_tensor)
-        grid_size = self._feature_extractor.get_output_size()
+        features = feature_extractor.extract(input_tensor)
+        grid_size = feature_extractor.get_output_size()
         
         # truth tensor
         true_boxes = Input(shape=(1, 1, 1, max_box_per_image , 4))
@@ -41,6 +41,7 @@ class YoloNetwork(object):
         self.model = model
         self.true_boxes = true_boxes
         self._init_layer(grid_size)
+        self._norm = feature_extractor.normalize
 
     def _init_layer(self, grid_size):
         layer = self.model.layers[-4]
@@ -56,8 +57,9 @@ class YoloNetwork(object):
         
     def forward(self, image):
         import cv2
-        image = cv2.resize(image, (self.input_size, self.input_size))
-        image = self._feature_extractor.normalize(image)
+        input_size = self.get_input_size()
+        image = cv2.resize(image, (input_size, input_size))
+        image = self._norm(image)
 
         input_image = image[:,:,::-1]
         input_image = np.expand_dims(input_image, 0)
@@ -88,8 +90,7 @@ class YoloNetwork(object):
         return nb_boxes
 
     def get_normalize_func(self):
-        return self._feature_extractor.normalize
-
+        return self._norm
 
 #     true_boxes : tensor
 #     model
