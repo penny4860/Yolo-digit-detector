@@ -16,8 +16,8 @@ class YoloNetwork(object):
                  architecture,
                  input_size,
                  nb_classes,
-                 anchors,
-                 max_box_per_image=10):
+                 max_box_per_image,
+                 anchors):
         
         # 1. create feature extractor
         feature_extractor = create_feature_extractor(architecture, input_size)
