@@ -56,16 +56,15 @@ def train(conf):
                                len(config['model']['labels']),
                                max_box_per_image=10)
     
-    yolo_loss = YoloLoss(yolo_network.grid_size,
+    yolo_loss = YoloLoss(yolo_network.get_grid_size(),
                          config['model']['anchors'],
-                         yolo_network.nb_box,
+                         yolo_network.get_nb_boxes(),
                          len(config['model']['labels']),
-                         yolo_network.true_boxes)
+                         yolo_network.get_true_box_tensor())
     
     from yolo.trainer import YoloTrainer
-    yolo_trainer = YoloTrainer(yolo_network.model,
-                               yolo_loss.custom_loss,
-                               yolo_network._feature_extractor.normalize)
+    yolo_trainer = YoloTrainer(yolo_network.get_model(),
+                               yolo_loss.custom_loss)
 
     yolo = YOLO(network             = yolo_network,
                 loss                = yolo_loss,
@@ -84,28 +83,33 @@ def train(conf):
     ###############################
     #   Start the training process 
     ###############################
-    generator_config = GeneratorConfig(yolo_network.input_size,
-                                       yolo_network.grid_size,
-                                       yolo_network.nb_box,
+    input_size = yolo_network.get_input_size()
+    grid_size = yolo_network.get_grid_size()
+    nb_box = yolo_network.get_nb_boxes()
+    max_box_per_image = yolo_network.get_max_box_per_image()
+    
+    generator_config = GeneratorConfig(input_size,
+                                       grid_size,
+                                       nb_box,
                                        config['model']['labels'],
                                        config['train']['batch_size'],
-                                       yolo_network.max_box_per_image,
+                                       max_box_per_image,
                                        config['model']['anchors'])
 
-    train_batch = BatchGenerator(train_imgs, 
-                                 generator_config, 
-                                 norm=yolo_network._feature_extractor.normalize)
+    train_batch = BatchGenerator(train_imgs,
+                                 generator_config,
+                                 norm=yolo_network.get_normalize_func())
 
-    valid_batch = BatchGenerator(valid_imgs, 
-                                 generator_config, 
-                                 norm=yolo_network._feature_extractor.normalize,
+    valid_batch = BatchGenerator(valid_imgs,
+                                 generator_config,
+                                 norm=yolo_network.get_normalize_func(),
                                  jitter=False)
 
     yolo.train(train_batch,
-                       valid_batch,
-                       train_times        = config['train']['train_times'],
-                       valid_times        = config['valid']['valid_times'],
-                       nb_epoch           = config['train']['nb_epoch'],
-                       warmup_epochs      = config['train']['warmup_epochs'],
-                       learning_rate      = config['train']['learning_rate'], 
-                       saved_weights_name = config['train']['saved_weights_name'])
+               valid_batch,
+               train_times        = config['train']['train_times'],
+               valid_times        = config['valid']['valid_times'],
+               nb_epoch           = config['train']['nb_epoch'],
+               warmup_epochs      = config['train']['warmup_epochs'],
+               learning_rate      = config['train']['learning_rate'], 
+               saved_weights_name = config['train']['saved_weights_name'])
