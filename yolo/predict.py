@@ -16,6 +16,7 @@ def predict(image_path, weights_path, config_path="config.json"):
     yolo_network = YoloNetwork(config['model']['architecture'],
                                config['model']['input_size'],
                                len(config['model']['labels']),
+                               config['model']['anchors'],
                                max_box_per_image=10)
 
     yolo = YOLO(network             = yolo_network,
