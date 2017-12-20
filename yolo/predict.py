@@ -19,7 +19,7 @@ def predict(image_path, weights_path, config_path="config.json"):
                                max_box_per_image=10)
 
     from yolo.loss import YoloLoss
-    yolo_loss = YoloLoss(yolo_network.grid_size,
+    yolo_loss = YoloLoss(yolo_network.get_grid_size(),
                          config['model']['anchors'],
                          yolo_network.nb_box,
                          len(config['model']['labels']),
