@@ -5,6 +5,7 @@ import numpy as np
 import cv2
 
 from yolo.backend import create_feature_extractor
+from yolo.loss import YoloLoss
 
 
 nb_box = 5
@@ -15,6 +16,7 @@ class YoloNetwork(object):
                  architecture,
                  input_size,
                  nb_classes,
+                 anchors,
                  max_box_per_image=10):
         
         # 1. create feature extractor
@@ -43,6 +45,9 @@ class YoloNetwork(object):
         self._model = model
         self._model.summary()
         self._init_layer(grid_size)
+        
+        # 3. set loss fucntion
+        self._yolo_loss = YoloLoss(true_boxes, grid_size, nb_box, nb_classes, anchors)
 
     def _init_layer(self, grid_size):
         layer = self._model.layers[-4]
@@ -77,9 +82,6 @@ class YoloNetwork(object):
     def get_model(self):
         return self._model
 
-    def get_true_box_tensor(self):
-        return self._model.layers[-2].input
-
     def get_input_size(self):
         image_shape, _ = self._model.get_input_shape_at(0)
         _, h, w, _ = image_shape
@@ -100,7 +102,14 @@ class YoloNetwork(object):
         _, _, _, nb_boxes, _ = self._model.get_output_shape_at(-1)
         return nb_boxes
 
+    def get_nb_classes(self):
+        _, _, _, _, t = self._model.get_output_shape_at(-1)
+        nb_box_coords = 4
+        nb_confidence = 1
+        return t - (nb_box_coords+nb_confidence)
+
     def get_normalize_func(self):
         return self._norm
 
-    
+    def get_loss_func(self):
+        return self._yolo_loss.custom_loss
