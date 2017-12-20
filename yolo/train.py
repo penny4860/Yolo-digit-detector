@@ -67,7 +67,6 @@ def train(conf):
                                yolo_loss.custom_loss)
 
     yolo = YOLO(network             = yolo_network,
-                loss                = yolo_loss,
                 trainer             = yolo_trainer,
                 labels              = config['model']['labels'], 
                 anchors             = config['model']['anchors'])
