@@ -3,6 +3,7 @@
 import os
 from yolo.decoder import YoloDecoder
 from yolo.network import YoloNetwork
+from yolo.loss import YoloLoss
 
 # create_feature_extractor(architecture, input_size)
 # client : predict.py
@@ -19,6 +20,12 @@ class YOLO(object):
             feature_extractor : BaseFeatureExtractor instance
         """
         self._yolo_network = YoloNetwork(architecture, input_size, n_classes, max_box_per_image, anchors)
+        # 3. set loss fucntion
+        self._yolo_loss = YoloLoss(self._yolo_network.get_true_boxes(),
+                                   self._yolo_network.get_grid_size(),
+                                   n_classes,
+                                   anchors)
+
         self._yolo_decoder = YoloDecoder(anchors)
         self._anchors = anchors
 
@@ -54,5 +61,5 @@ class YOLO(object):
         return self._yolo_network.get_normalize_func()
 
     def get_loss_func(self):
-        return self._yolo_network.get_loss_func()
+        return self._yolo_loss.custom_loss
         

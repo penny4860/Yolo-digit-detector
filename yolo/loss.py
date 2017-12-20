@@ -5,7 +5,7 @@ import numpy as np
 
 class YoloLoss(object):
     
-    def __init__(self, true_boxes, grid_size, nb_box, nb_class, anchors):
+    def __init__(self, true_boxes, grid_size, nb_class, anchors):
         """
         # Args
             grid_size : int
@@ -17,7 +17,7 @@ class YoloLoss(object):
         """
         self.grid_size = grid_size
         self.anchors = anchors
-        self.nb_box = nb_box
+        self.nb_box = int(len(anchors)/2)
         self.nb_class = nb_class
         self.true_boxes = true_boxes
         self.object_scale    = 5.0
