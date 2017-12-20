@@ -56,9 +56,9 @@ def train(conf):
                                len(config['model']['labels']),
                                max_box_per_image=10)
     
-    yolo_loss = YoloLoss(yolo_network.grid_size,
+    yolo_loss = YoloLoss(yolo_network.get_grid_size(),
                          config['model']['anchors'],
-                         yolo_network.nb_box,
+                         yolo_network.get_nb_boxes(),
                          len(config['model']['labels']),
                          yolo_network.true_boxes)
     
@@ -84,12 +84,17 @@ def train(conf):
     ###############################
     #   Start the training process 
     ###############################
-    generator_config = GeneratorConfig(yolo_network.input_size,
-                                       yolo_network.grid_size,
-                                       yolo_network.nb_box,
+    input_size = yolo_network.get_input_size()
+    grid_size = yolo_network.get_grid_size()
+    nb_box = yolo_network.get_nb_boxes()
+    max_box_per_image = yolo_network.get_max_box_per_image()
+    
+    generator_config = GeneratorConfig(input_size,
+                                       grid_size,
+                                       nb_box,
                                        config['model']['labels'],
                                        config['train']['batch_size'],
-                                       yolo_network.max_box_per_image,
+                                       max_box_per_image,
                                        config['model']['anchors'])
 
     train_batch = BatchGenerator(train_imgs, 
