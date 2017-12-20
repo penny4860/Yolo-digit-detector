@@ -56,6 +56,11 @@ class YoloNetwork(object):
         self.model.load_weights(weight_path)
         
     def forward(self, image):
+        def _get_dummy_true_boxes():
+            _, true_boxes_shape = self.model.get_input_shape_at(0)
+            array = np.zeros(true_boxes_shape[1:])
+            return np.expand_dims(array, 0)
+            
         import cv2
         input_size = self.get_input_size()
         image = cv2.resize(image, (input_size, input_size))
@@ -63,12 +68,12 @@ class YoloNetwork(object):
 
         input_image = image[:,:,::-1]
         input_image = np.expand_dims(input_image, 0)
-        dummy_array = np.zeros((1,1,1,1,self.max_box_per_image,4))
+        dummy_array = _get_dummy_true_boxes()
 
         # (13,13,5,6)
         netout = self.model.predict([input_image, dummy_array])[0]
         return netout
-    
+
     def get_input_size(self):
         image_shape, _ = self.model.get_input_shape_at(0)
         _, h, w, _ = image_shape
