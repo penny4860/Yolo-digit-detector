@@ -19,6 +19,7 @@ class YOLO(object):
         """
         self._yolo_network = YoloNetwork(architecture, input_size, n_classes, max_box_per_image, anchors)
         self._yolo_decoder = YoloDecoder(anchors)
+        self._anchors = anchors
 
     def load_weights(self, weight_path):
         self._yolo_network.load_weights(weight_path)
@@ -35,15 +36,15 @@ class YOLO(object):
         boxes = self._yolo_decoder.run(netout)
         return boxes
 
+    def get_model(self):
+        return self._yolo_network.get_model()
+
     def get_grid_size(self):
         return self._yolo_network.get_grid_size()
 
     def get_nb_boxes(self):
-        return self._yolo_network.get_nb_boxes()
+        return int(len(self._anchors)/2)
         
-    def get_model(self):
-        return self._yolo_network.get_model()
-
     def get_normalize_func(self):
         return self._yolo_network.get_normalize_func()
 
