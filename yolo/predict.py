@@ -21,7 +21,7 @@ def predict(image_path, weights_path, config_path="config.json"):
     from yolo.loss import YoloLoss
     yolo_loss = YoloLoss(yolo_network.get_grid_size(),
                          config['model']['anchors'],
-                         yolo_network.nb_box,
+                         yolo_network.get_nb_boxes(),
                          len(config['model']['labels']),
                          yolo_network.true_boxes)
 
