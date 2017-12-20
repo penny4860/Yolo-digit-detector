@@ -65,8 +65,13 @@ class YoloNetwork(object):
             _, true_boxes_shape = self._model.get_input_shape_at(0)
             array = np.zeros(true_boxes_shape[1:])
             return np.expand_dims(array, 0)
+        
+        def _get_input_size():
+            input_shape, _ = self._model.get_input_shape_at(0)
+            _, h, w, _ = input_shape
+            return h
             
-        input_size = self.get_input_size()
+        input_size = _get_input_size()
         image = cv2.resize(image, (input_size, input_size))
         image = self._norm(image)
 

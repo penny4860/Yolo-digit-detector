@@ -13,17 +13,12 @@ def predict(image_path, weights_path, config_path="config.json"):
     ###############################
     #   Make the model 
     ###############################
-    yolo_network = YoloNetwork(config['model']['architecture'],
-                               config['model']['input_size'],
-                               len(config['model']['labels']),
-                               config['model']['anchors'],
-                               max_box_per_image=10)
-
-    yolo = YOLO(network             = yolo_network,
-                trainer             = None,
-                labels              = config['model']['labels'], 
-                anchors             = config['model']['anchors'])
-
+    yolo = YOLO(config['model']['architecture'],
+                config['model']['input_size'],
+                len(config['model']['labels']),
+                config['model']['max_box_per_image'],
+                anchors = config['model']['anchors'])
+    
     ###############################
     #   Load trained weights
     ###############################    
