@@ -1,30 +1,25 @@
 # -*- coding: utf-8 -*-
 
 from yolo.decoder import YoloDecoder
-from yolo.loss import YoloLoss
-from yolo.trainer import YoloTrainer
-from yolo.batch_gen import GeneratorConfig
+from yolo.network import YoloNetwork
 
 # create_feature_extractor(architecture, input_size)
 # client : predict.py
 # client : train.py
 class YOLO(object):
     def __init__(self,
-                 network,
-                 trainer,
-                 labels, 
-                 anchors):
+                 architecture,
+                 input_size = 416,
+                 n_classes = 1,
+                 max_box_per_image = 10,
+                 anchors = [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828]):
         """
         # Args
             feature_extractor : BaseFeatureExtractor instance
         """
-        self._yolo_network = network
+        self._yolo_network = YoloNetwork(architecture, input_size, n_classes, max_box_per_image, anchors)
         self._yolo_decoder = YoloDecoder(anchors)
-        self._yolo_trainer = trainer
-        
-        self.labels   = list(labels)
-        self.nb_class = len(self.labels)
-        self.anchors  = anchors
+        self._anchors = anchors
 
     def load_weights(self, weight_path):
         self._yolo_network.load_weights(weight_path)
@@ -41,20 +36,18 @@ class YOLO(object):
         boxes = self._yolo_decoder.run(netout)
         return boxes
 
-    def train(self,
-              train_batch,
-              valid_batch,
-              train_times,
-              valid_times,
-              nb_epoch,
-              warmup_epochs,
-              learning_rate,
-              saved_weights_name='best_weights.h5'):
-        self._yolo_trainer.train(train_batch,
-                                 valid_batch,
-                                 train_times,
-                                 valid_times,
-                                 nb_epoch,
-                                 warmup_epochs,
-                                 learning_rate,
-                                 saved_weights_name)
+    def get_model(self):
+        return self._yolo_network.get_model()
+
+    def get_grid_size(self):
+        return self._yolo_network.get_grid_size()
+
+    def get_nb_boxes(self):
+        return int(len(self._anchors)/2)
+        
+    def get_normalize_func(self):
+        return self._yolo_network.get_normalize_func()
+
+    def get_loss_func(self):
+        return self._yolo_network.get_loss_func()
+        

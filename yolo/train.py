@@ -50,21 +50,11 @@ def train(conf):
     ###############################
     #   Construct the model 
     ###############################
-
-    yolo_network = YoloNetwork(config['model']['architecture'],
-                               config['model']['input_size'],
-                               len(config['model']['labels']),
-                               config['model']['anchors'],
-                               max_box_per_image=10)
-    
-    from yolo.trainer import YoloTrainer
-    yolo_trainer = YoloTrainer(yolo_network.get_model(),
-                               yolo_network.get_loss_func())
-
-    yolo = YOLO(network             = yolo_network,
-                trainer             = yolo_trainer,
-                labels              = config['model']['labels'], 
-                anchors             = config['model']['anchors'])
+    yolo = YOLO(config['model']['architecture'],
+                config['model']['input_size'],
+                len(config['model']['labels']),
+                config['model']['max_box_per_image'],
+                anchors = config['model']['anchors'])
 
     ###############################
     #   Load the pretrained weights (if any) 
@@ -77,29 +67,27 @@ def train(conf):
     ###############################
     #   Start the training process 
     ###############################
-    input_size = yolo_network.get_input_size()
-    grid_size = yolo_network.get_grid_size()
-    nb_box = yolo_network.get_nb_boxes()
-    max_box_per_image = yolo_network.get_max_box_per_image()
-    
-    generator_config = GeneratorConfig(input_size,
-                                       grid_size,
-                                       nb_box,
+    generator_config = GeneratorConfig(config['model']['input_size'],
+                                       yolo.get_grid_size(),
+                                       yolo.get_nb_boxes(),
                                        config['model']['labels'],
                                        config['train']['batch_size'],
-                                       max_box_per_image,
+                                       config['model']['max_box_per_image'],
                                        config['model']['anchors'])
 
     train_batch = BatchGenerator(train_imgs,
                                  generator_config,
-                                 norm=yolo_network.get_normalize_func())
+                                 norm=yolo.get_normalize_func())
 
     valid_batch = BatchGenerator(valid_imgs,
                                  generator_config,
-                                 norm=yolo_network.get_normalize_func(),
+                                 norm=yolo.get_normalize_func(),
                                  jitter=False)
 
-    yolo.train(train_batch,
+    from yolo.trainer import YoloTrainer
+    yolo_trainer = YoloTrainer(yolo.get_model(),
+                               yolo.get_loss_func())
+    yolo_trainer.train(train_batch,
                valid_batch,
                train_times        = config['train']['train_times'],
                valid_times        = config['valid']['valid_times'],
