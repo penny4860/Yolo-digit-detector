@@ -28,9 +28,6 @@ class YOLO(object):
         self.nb_class = len(self.labels)
         self.anchors  = anchors
 
-        # print a summary of the whole model
-        self._yolo_network.model.summary()
-
     def load_weights(self, weight_path):
         self._yolo_network.load_weights(weight_path)
 
