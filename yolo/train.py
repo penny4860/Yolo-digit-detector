@@ -96,12 +96,12 @@ def train(conf):
                                        max_box_per_image,
                                        config['model']['anchors'])
 
-    train_batch = BatchGenerator(train_imgs, 
-                                 generator_config, 
+    train_batch = BatchGenerator(train_imgs,
+                                 generator_config,
                                  norm=yolo_network.get_normalize_func())
 
-    valid_batch = BatchGenerator(valid_imgs, 
-                                 generator_config, 
+    valid_batch = BatchGenerator(valid_imgs,
+                                 generator_config,
                                  norm=yolo_network.get_normalize_func(),
                                  jitter=False)
 
