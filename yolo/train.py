@@ -57,13 +57,7 @@ def train(conf):
                                config['model']['anchors'],
                                max_box_per_image=10)
     
-    from yolo.trainer import YoloTrainer
-    yolo_trainer = YoloTrainer(yolo_network.get_model(),
-                               yolo_network.get_loss_func())
-
     yolo = YOLO(network             = yolo_network,
-                trainer             = yolo_trainer,
-                labels              = config['model']['labels'], 
                 anchors             = config['model']['anchors'])
 
     ###############################
@@ -99,7 +93,10 @@ def train(conf):
                                  norm=yolo_network.get_normalize_func(),
                                  jitter=False)
 
-    yolo.train(train_batch,
+    from yolo.trainer import YoloTrainer
+    yolo_trainer = YoloTrainer(yolo_network.get_model(),
+                               yolo_network.get_loss_func())
+    yolo_trainer.train(train_batch,
                valid_batch,
                train_times        = config['train']['train_times'],
                valid_times        = config['valid']['valid_times'],
