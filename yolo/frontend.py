@@ -11,7 +11,6 @@ from yolo.batch_gen import GeneratorConfig
 class YOLO(object):
     def __init__(self,
                  network,
-                 loss,
                  trainer,
                  labels, 
                  anchors):
@@ -21,7 +20,6 @@ class YOLO(object):
         """
         self._yolo_network = network
         self._yolo_decoder = YoloDecoder(anchors)
-        self._yolo_loss = loss
         self._yolo_trainer = trainer
         
         self.labels   = list(labels)
