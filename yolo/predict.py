@@ -3,27 +3,19 @@ import json
 from yolo.box import draw_boxes
 from yolo import YOLO
 import cv2
-from yolo.network import YoloNetwork
 
-def predict(image_path, weights_path, config_path="config.json"):
+def predict(image_path, weights_path, conf="config.json"):
 
-    with open(config_path) as config_buffer:    
-        config = json.load(config_buffer)
+    with open(conf) as config_buffer:
+        config = json.loads(config_buffer.read())
 
-    ###############################
-    #   Make the model 
-    ###############################
+    # 1. Construct the model 
     yolo = YOLO(config['model']['architecture'],
                 config['model']['input_size'],
                 len(config['model']['labels']),
                 config['model']['max_box_per_image'],
                 anchors = config['model']['anchors'])
-    
-    ###############################
-    #   Load trained weights
-    ###############################    
-
-    print(weights_path)
+    # 2. Load the pretrained weights (if any) 
     yolo.load_weights(weights_path)
 
     ###############################
