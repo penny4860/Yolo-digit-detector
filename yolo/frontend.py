@@ -11,8 +11,6 @@ from yolo.batch_gen import GeneratorConfig
 class YOLO(object):
     def __init__(self,
                  network,
-                 trainer,
-                 labels, 
                  anchors):
         """
         # Args
@@ -20,11 +18,6 @@ class YOLO(object):
         """
         self._yolo_network = network
         self._yolo_decoder = YoloDecoder(anchors)
-        self._yolo_trainer = trainer
-        
-        self.labels   = list(labels)
-        self.nb_class = len(self.labels)
-        self.anchors  = anchors
 
     def load_weights(self, weight_path):
         self._yolo_network.load_weights(weight_path)
@@ -40,21 +33,3 @@ class YOLO(object):
         netout = self._yolo_network.forward(image)
         boxes = self._yolo_decoder.run(netout)
         return boxes
-
-    def train(self,
-              train_batch,
-              valid_batch,
-              train_times,
-              valid_times,
-              nb_epoch,
-              warmup_epochs,
-              learning_rate,
-              saved_weights_name='best_weights.h5'):
-        self._yolo_trainer.train(train_batch,
-                                 valid_batch,
-                                 train_times,
-                                 valid_times,
-                                 nb_epoch,
-                                 warmup_epochs,
-                                 learning_rate,
-                                 saved_weights_name)
