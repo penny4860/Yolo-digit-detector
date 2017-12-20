@@ -98,11 +98,11 @@ def train(conf):
 
     train_batch = BatchGenerator(train_imgs, 
                                  generator_config, 
-                                 norm=yolo_network._feature_extractor.normalize)
+                                 norm=yolo_network.get_normalize_func())
 
     valid_batch = BatchGenerator(valid_imgs, 
                                  generator_config, 
-                                 norm=yolo_network._feature_extractor.normalize,
+                                 norm=yolo_network.get_normalize_func(),
                                  jitter=False)
 
     yolo.train(train_batch,

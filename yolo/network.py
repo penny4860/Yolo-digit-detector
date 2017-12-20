@@ -87,6 +87,8 @@ class YoloNetwork(object):
         _, _, _, nb_boxes, _ = self.model.get_output_shape_at(-1)
         return nb_boxes
 
+    def get_normalize_func(self):
+        return self._feature_extractor.normalize
 
 
 #     true_boxes : tensor
