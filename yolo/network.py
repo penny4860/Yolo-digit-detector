@@ -15,6 +15,7 @@ class YoloNetwork(object):
                  architecture,
                  input_size,
                  nb_classes,
+                 anchors,
                  max_box_per_image=10):
         
         # 1. create feature extractor
@@ -43,6 +44,10 @@ class YoloNetwork(object):
         self._model = model
         self._model.summary()
         self._init_layer(grid_size)
+        
+        # 3. set loss fucntion
+        from yolo.loss import YoloLoss
+        self._yolo_loss = YoloLoss(true_boxes, grid_size, nb_box, nb_classes, anchors)
 
     def _init_layer(self, grid_size):
         layer = self._model.layers[-4]
@@ -109,4 +114,8 @@ class YoloNetwork(object):
     def get_normalize_func(self):
         return self._norm
 
+    def get_loss_func(self):
+        return self._yolo_loss.custom_loss
+        
+        
     
