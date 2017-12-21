@@ -60,8 +60,13 @@ class YOLO(object):
     def get_model(self):
         return self._yolo_network.get_model()
 
-    def get_loss_func(self):
-        return self._yolo_loss.custom_loss
+    def get_loss_func(self,
+                      batch_size,
+                      warmup_epochs,
+                      train_times = 1,
+                      valid_times = 1):
+        warmup_bs  = warmup_epochs * (train_times*(batch_size+1) + valid_times*(batch_size+1))
+        return self._yolo_loss.custom_loss(batch_size, warmup_bs)
 
     def get_normalize_func(self):
         return self._yolo_network.get_normalize_func()

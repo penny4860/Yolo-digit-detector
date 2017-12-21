@@ -23,7 +23,7 @@ def train_yolo(model,
     optimizer = Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
     
     # 2. create loss function
-    model.compile(loss=loss_func(len(train_batch_gen[0]), warmup_bs),
+    model.compile(loss=loss_func,
                   optimizer=optimizer)
 
     # 4. training

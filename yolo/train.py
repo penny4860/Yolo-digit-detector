@@ -64,11 +64,14 @@ def train(conf):
     valid_batch_generator = yolo.get_batch_generator(valid_imgs,
                                                     config["train"]["batch_size"],
                                                     jitter=False)
-    
     # 5. Trainer
     from yolo.trainer import train_yolo
     train_yolo(yolo.get_model(),
-               yolo.get_loss_func(),
+               yolo.get_loss_func(config['train']['batch_size'],
+                                  config['train']['warmup_epochs'],
+                                  config['train']['train_times'],
+                                  config['valid']['valid_times'],
+                                  ),
                train_batch_generator,
                valid_batch_generator,
                learning_rate      = config['train']['learning_rate'], 
