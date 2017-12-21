@@ -209,7 +209,6 @@ def setup():
         
     generator_config = GeneratorConfig(config["model"]["input_size"],
                                        int(config["model"]["input_size"]/32),
-                                       nb_box = 5,
                                        labels = config["model"]["labels"],
                                        batch_size = 8,
                                        max_box_per_image = config["model"]["max_box_per_image"],
