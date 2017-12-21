@@ -56,25 +56,24 @@ def train(conf):
 
     # 3. Parse the annotations 
     train_imgs, valid_imgs = _parse(config)
-    
-    # 4. Trainer
-    from yolo.trainer import YoloTrainer
-    generator_config = GeneratorConfig(config['model']['input_size'],
-                                       yolo.get_grid_size(),
-                                       config['model']['labels'],
-                                       config['train']['batch_size'],
-                                       config['model']['max_box_per_image'],
-                                       config['model']['anchors'])
 
-    yolo_trainer = YoloTrainer(yolo.get_model(),
-                               yolo.get_loss_func(),
-                               yolo.get_normalize_func(),
-                               generator_config)
-    yolo_trainer.train(train_imgs,
-                       valid_imgs,
-                       train_times        = config['train']['train_times'],
-                       valid_times        = config['valid']['valid_times'],
-                       nb_epoch           = config['train']['nb_epoch'],
-                       warmup_epochs      = config['train']['warmup_epochs'],
-                       learning_rate      = config['train']['learning_rate'], 
-                       saved_weights_name = config['train']['saved_weights_name'])
+    # 4. get batch generator
+    train_batch_generator = yolo.get_batch_generator(train_imgs)
+    valid_batch_generator = yolo.get_batch_generator(valid_imgs)
+    
+#     # 5. Trainer
+#     from yolo.trainer import Trainer, train
+#     train(yolo,
+#           generator_config,
+#           train_imgs,
+#           valid_imgs,
+#           train_times        = config['train']['train_times'],
+#           valid_times        = config['valid']['valid_times'],
+#           nb_epoch           = config['train']['nb_epoch'],
+#           warmup_epochs      = config['train']['warmup_epochs'],
+#           learning_rate      = config['train']['learning_rate'], 
+#           saved_weights_name = config['train']['saved_weights_name'])
+
+    
+    
+
