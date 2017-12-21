@@ -64,21 +64,17 @@ def train(conf):
     valid_batch_generator = yolo.get_batch_generator(valid_imgs,
                                                     config["train"]["batch_size"],
                                                     jitter=False)
-    print(train_batch_generator)
     
-#     # 5. Trainer
-#     from yolo.trainer import Trainer, train
-#     train(yolo,
-#           generator_config,
-#           train_imgs,
-#           valid_imgs,
-#           train_times        = config['train']['train_times'],
-#           valid_times        = config['valid']['valid_times'],
-#           nb_epoch           = config['train']['nb_epoch'],
-#           warmup_epochs      = config['train']['warmup_epochs'],
-#           learning_rate      = config['train']['learning_rate'], 
-#           saved_weights_name = config['train']['saved_weights_name'])
-
-    
-    
-
+    # 5. Trainer
+    from yolo.trainer import train_yolo
+    train_yolo(yolo.get_model(),
+               yolo.get_loss_func(),
+               train_batch_generator,
+               valid_batch_generator,
+               learning_rate      = config['train']['learning_rate'], 
+               nb_epoch           = config['train']['nb_epoch'],
+               warmup_epochs      = config['train']['warmup_epochs'],
+               train_times        = config['train']['train_times'],
+               valid_times        = config['valid']['valid_times'],
+               saved_weights_name = config['train']['saved_weights_name'],
+               )
