@@ -63,9 +63,6 @@ class YOLO(object):
     def get_grid_size(self):
         return self._yolo_network.get_grid_size()
 
-    def get_nb_boxes(self):
-        return int(len(self._anchors)/2)
-        
     def get_normalize_func(self):
         return self._yolo_network.get_normalize_func()
 
