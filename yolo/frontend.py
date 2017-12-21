@@ -7,8 +7,8 @@ from yolo.loss import YoloLoss
 from yolo.batch_gen import BatchGenerator, GeneratorConfig
 
 # create_feature_extractor(architecture, input_size)
-# client : predict.py
-# client : train.py
+# client : predict_driver.py
+# client : train_driver.py
 class YOLO(object):
     def __init__(self,
                  architecture,
