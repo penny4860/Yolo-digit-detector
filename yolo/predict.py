@@ -11,10 +11,10 @@ def predict(image_path, weights_path, conf="config.json"):
 
     # 1. Construct the model 
     yolo = YOLO(config['model']['architecture'],
+                config['model']['labels'],
                 config['model']['input_size'],
-                len(config['model']['labels']),
                 config['model']['max_box_per_image'],
-                anchors = config['model']['anchors'])
+                config['model']['anchors'])
     # 2. Load the pretrained weights (if any) 
     yolo.load_weights(weights_path)
 
