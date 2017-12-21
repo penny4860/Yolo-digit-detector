@@ -47,34 +47,34 @@ def train(conf):
 
     # 1. Construct the model 
     yolo = YOLO(config['model']['architecture'],
+                config['model']['labels'],
                 config['model']['input_size'],
-                len(config['model']['labels']),
                 config['model']['max_box_per_image'],
-                anchors = config['model']['anchors'])
+                config['model']['anchors'])
     # 2. Load the pretrained weights (if any) 
     yolo.load_weights(config['train']['pretrained_weights'])
 
     # 3. Parse the annotations 
     train_imgs, valid_imgs = _parse(config)
-    
-    # 4. Trainer
-    from yolo.trainer import YoloTrainer
-    generator_config = GeneratorConfig(config['model']['input_size'],
-                                       yolo.get_grid_size(),
-                                       config['model']['labels'],
-                                       config['train']['batch_size'],
-                                       config['model']['max_box_per_image'],
-                                       config['model']['anchors'])
 
-    yolo_trainer = YoloTrainer(yolo.get_model(),
-                               yolo.get_loss_func(),
-                               yolo.get_normalize_func(),
-                               generator_config)
-    yolo_trainer.train(train_imgs,
-                       valid_imgs,
-                       train_times        = config['train']['train_times'],
-                       valid_times        = config['valid']['valid_times'],
-                       nb_epoch           = config['train']['nb_epoch'],
-                       warmup_epochs      = config['train']['warmup_epochs'],
-                       learning_rate      = config['train']['learning_rate'], 
-                       saved_weights_name = config['train']['saved_weights_name'])
+    # 4. get batch generator
+    # Todo : train_imgs 를 class 로 정의하자.
+    train_batch_generator = yolo.get_batch_generator(train_imgs,
+                                                    config["train"]["batch_size"])
+    valid_batch_generator = yolo.get_batch_generator(valid_imgs,
+                                                    config["train"]["batch_size"],
+                                                    jitter=False)
+    
+    # 5. Trainer
+    from yolo.trainer import train_yolo
+    train_yolo(yolo.get_model(),
+               yolo.get_loss_func(),
+               train_batch_generator,
+               valid_batch_generator,
+               learning_rate      = config['train']['learning_rate'], 
+               nb_epoch           = config['train']['nb_epoch'],
+               warmup_epochs      = config['train']['warmup_epochs'],
+               train_times        = config['train']['train_times'],
+               valid_times        = config['valid']['valid_times'],
+               saved_weights_name = config['train']['saved_weights_name'],
+               )
