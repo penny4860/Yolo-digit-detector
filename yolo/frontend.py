@@ -68,7 +68,7 @@ class YOLO(object):
     def get_loss_func(self):
         return self._yolo_loss.custom_loss
     
-    def to_batch_generator(self, images, batch_size, labels, jitter=True):
+    def get_batch_generator(self, images, batch_size, labels, jitter=True):
         
         # Todo : hard-coding 삭제
         config = GeneratorConfig(416, self.get_grid_size(), labels, batch_size, 10, self._anchors)
