@@ -4,9 +4,6 @@ import os
 import numpy as np
 from yolo.annotation import parse_annotation
 from yolo import YOLO
-from yolo.network import YoloNetwork
-from yolo.loss import YoloLoss
-from yolo.batch_gen import GeneratorConfig, BatchGenerator
 
 
 def _parse(config):
