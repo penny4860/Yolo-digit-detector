@@ -12,13 +12,10 @@ def train_yolo(model,
                valid_batch_gen,
                learning_rate = 1e-4,
                nb_epoch = 300,
-               warmup_epochs = 300,
                train_times = 1,
                valid_times = 1,
                saved_weights_name = 'best_weights.h5',
                ):
-    warmup_bs  = warmup_epochs * (train_times*(len(train_batch_gen)+1) + valid_times*(len(valid_batch_gen)+1))
-
     # 1. create optimizer
     optimizer = Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
     

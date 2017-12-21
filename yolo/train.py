@@ -77,7 +77,6 @@ def train(conf):
                valid_batch_generator,
                learning_rate      = config['train']['learning_rate'], 
                nb_epoch           = config['train']['nb_epoch'],
-               warmup_epochs      = config['train']['warmup_epochs'],
                train_times        = config['train']['train_times'],
                valid_times        = config['valid']['valid_times'],
                saved_weights_name = config['train']['saved_weights_name'],
