@@ -47,10 +47,10 @@ def train(conf):
 
     # 1. Construct the model 
     yolo = YOLO(config['model']['architecture'],
+                config['model']['labels'],
                 config['model']['input_size'],
-                len(config['model']['labels']),
                 config['model']['max_box_per_image'],
-                anchors = config['model']['anchors'])
+                config['model']['anchors'])
     # 2. Load the pretrained weights (if any) 
     yolo.load_weights(config['train']['pretrained_weights'])
 
@@ -60,11 +60,10 @@ def train(conf):
     # 4. get batch generator
     # Todo : train_imgs 를 class 로 정의하자.
     train_batch_generator = yolo.get_batch_generator(train_imgs,
-                                                    config["train"]["batch_size"],
-                                                    config['model']['labels'])
+                                                    config["train"]["batch_size"])
     valid_batch_generator = yolo.get_batch_generator(valid_imgs,
                                                     config["train"]["batch_size"],
-                                                    config['model']['labels'], jitter=False)
+                                                    jitter=False)
     print(train_batch_generator)
     
 #     # 5. Trainer
