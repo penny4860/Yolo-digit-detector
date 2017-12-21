@@ -4,6 +4,7 @@ import os
 from yolo.decoder import YoloDecoder
 from yolo.network import YoloNetwork
 from yolo.loss import YoloLoss
+from yolo.batch_gen import BatchGenerator, GeneratorConfig
 
 # create_feature_extractor(architecture, input_size)
 # client : predict.py
@@ -66,4 +67,17 @@ class YOLO(object):
 
     def get_loss_func(self):
         return self._yolo_loss.custom_loss
+    
+    def to_batch_generator(self, images, batch_size, labels, jitter=True):
+        
+        # Todo : hard-coding 삭제
+        config = GeneratorConfig(416, self.get_grid_size(), labels, batch_size, 10, self._anchors)
+        
+        batch_generator = BatchGenerator(images,
+                                         config,
+                                         jitter=jitter,
+                                         norm=self.get_normalize_func())
+        return batch_generator
+        
+        
         
