@@ -60,14 +60,14 @@ class YOLO(object):
     def get_model(self):
         return self._yolo_network.get_model()
 
-    def get_grid_size(self):
-        return self._yolo_network.get_grid_size()
+    def get_loss_func(self):
+        return self._yolo_loss.custom_loss
 
     def get_normalize_func(self):
         return self._yolo_network.get_normalize_func()
 
-    def get_loss_func(self):
-        return self._yolo_loss.custom_loss
+    def get_grid_size(self):
+        return self._yolo_network.get_grid_size()
     
     def get_batch_generator(self, images, batch_size, jitter=True):
         config = GeneratorConfig(self._input_size,
