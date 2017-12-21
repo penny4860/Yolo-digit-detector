@@ -65,10 +65,17 @@ def train(conf):
                                                     config["train"]["batch_size"],
                                                     jitter=False)
     
-    # 5. Trainer
+    # 5. To train model get keras model instance & loss fucntion
+    model = yolo.get_model()
+    loss = yolo.get_loss_func(config['train']['batch_size'],
+                              config['train']['warmup_epochs'],
+                              config['train']['train_times'],
+                              config['valid']['valid_times'])
+    
+    # 6. Run training loop
     from yolo.trainer import train_yolo
-    train_yolo(yolo.get_model(),
-               yolo.get_loss_func(),
+    train_yolo(model,
+               loss,
                train_batch_generator,
                valid_batch_generator,
                learning_rate      = config['train']['learning_rate'], 
