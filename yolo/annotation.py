@@ -126,8 +126,6 @@ def parse_annotation(ann_dir, img_dir, labels=[]):
         
         fname = parser.get_fname(annotation_file)
         img['filename'] = os.path.join(img_dir, fname)
-        img['width'] = parser.get_width(annotation_file)
-        img['height'] = parser.get_height(annotation_file)
 
         labels = parser.get_labels(annotation_file)
         boxes = parser.get_boxes(annotation_file)
@@ -156,8 +154,6 @@ class AnnHandler(object):
         # Args
             image_anns : list of dictionary including following keys
                 "filename"  : str
-                "width"     : int
-                "height"    : int
                 "object"    : list of dictionary
                     'name' : str
                     'xmin' : int
