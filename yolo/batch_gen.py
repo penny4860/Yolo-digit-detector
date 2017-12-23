@@ -27,8 +27,7 @@ class GeneratorConfig(object):
 
 class LabelBatchGenerator(object):
     
-    def __init__(self, input_size, anchors):
-        self.input_size = input_size
+    def __init__(self, anchors):
         self.anchors = self._create_anchor_boxes(anchors)
 
     def _create_anchor_boxes(self, anchors):
@@ -126,8 +125,7 @@ class BatchGenerator(Sequence):
         self.batch_size = config.batch_size
         
         #def __init__(self, input_size, grid_size, nb_box, n_classes, anchors):
-        self._label_generator = LabelBatchGenerator(config.input_size,
-                                                    config.anchors)
+        self._label_generator = LabelBatchGenerator(config.anchors)
 
         self.config = config
         self.jitter  = jitter
