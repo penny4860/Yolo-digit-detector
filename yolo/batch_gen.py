@@ -141,9 +141,6 @@ class BatchGenerator(Sequence):
             idx : int
                 batch index
         """
-        # batch_size = self._ann_handler.get_batch_size(idx)
-        instance_count = 0
-
         x_batch = np.zeros((self.batch_size, self.config.input_size, self.config.input_size, 3))                         # input images
         b_batch = np.zeros((self.batch_size, 1     , 1     , 1    ,  self.config.max_box_per_image, 4))   # list of self.config['TRUE_self.config['BOX']_BUFFER'] GT boxes
         y_batch = np.zeros((self.batch_size, self.config.grid_size,  self.config.grid_size, self.config.nb_box, 4+1+self.config.n_classes))                # desired network output
@@ -160,19 +157,22 @@ class BatchGenerator(Sequence):
                                         self.config.input_size,
                                         self.config.input_size,
                                         self.jitter)
-            centroid_boxes = to_centroid(boxes)
-            norm_boxes = to_normalize(centroid_boxes, self.config.input_size/self.config.grid_size)
+            norm_boxes = self._centroid_scale_box(boxes)
             
             # 3. generate x_batch
-            x_batch[instance_count] = self.norm(img)
+            x_batch[i] = self.norm(img)
             
             y_shape = y_batch.shape[1:]
             b_shape = b_batch.shape[1:]
-            y_batch[instance_count], b_batch[instance_count] = self._label_generator.generate(norm_boxes, labels, y_shape, b_shape)
-            instance_count += 1
+            y_batch[i], b_batch[i] = self._label_generator.generate(norm_boxes, labels, y_shape, b_shape)
 
         self.counter += 1
         return [x_batch, b_batch], y_batch
+
+    def _centroid_scale_box(self, boxes):
+        centroid_boxes = to_centroid(boxes)
+        norm_boxes = to_normalize(centroid_boxes, self.config.input_size/self.config.grid_size)
+        return norm_boxes
 
     def on_epoch_end(self):
         self.annotations.shuffle()
