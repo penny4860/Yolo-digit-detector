@@ -44,20 +44,6 @@ class LabelBatchGenerator(object):
         norm_h = h / (float(self.config.input_size) / self.config.grid_size) # unit: grid cell
         return norm_cx, norm_cy, norm_w, norm_h
     
-    def _is_valid_obj(self, x1, y1, x2, y2, label, grid_x, grid_y):
-        """
-        # Args
-            x1, y1, x2, y2 : int
-            label : str
-            grid_x, grid_y : float
-        """
-        is_valid = False
-        if x2 > x1 and y2 > y1:
-            if label in self.config.labels:
-                if grid_x < self.config.grid_size and grid_y < self.config.grid_size:
-                    is_valid = True
-        return is_valid
-
     def _get_anchor_idx(self, box):
         _, _, center_w, center_h = box
         
