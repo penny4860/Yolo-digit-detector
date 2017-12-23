@@ -114,20 +114,18 @@ def parse_annotation(ann_dir, img_dir, labels=[]):
         seen_labels : dict
             {'raccoon': 1, ...}
     """
-    all_imgs = []
     seen_labels = {}
     
     parser = PascalVocXmlParser()
     
+    annotations = Annotations()
     for ann in sorted(os.listdir(ann_dir)):
-        img = {'object':[]}
-        
         annotation_file = os.path.join(ann_dir, ann)
-        
         fname = parser.get_fname(annotation_file)
-        img['filename'] = os.path.join(img_dir, fname)
-        img['width'] = parser.get_width(annotation_file)
-        img['height'] = parser.get_height(annotation_file)
+
+        ##################################################################################
+        annotation = Annotation(os.path.join(img_dir, fname))
+        ##################################################################################
 
         labels = parser.get_labels(annotation_file)
         boxes = parser.get_boxes(annotation_file)
@@ -136,82 +134,73 @@ def parse_annotation(ann_dir, img_dir, labels=[]):
         for label, box in zip(labels, boxes):
             x1, y1, x2, y2 = box
             objects.append({'name': label, 'xmin': x1, 'ymin': y1, 'xmax': x2, 'ymax': y2})
+
+            ##################################################################################
+            annotation.add_object(x1, y1, x2, y2, name=label)
+            ##################################################################################
             
             if label in seen_labels:
                 seen_labels[label] += 1
             else:
                 seen_labels[label] = 1
-        img['object'] = objects
-        
-        if len(img['object']) > 0:
-            all_imgs += [img]
+
+        ##################################################################################
+        annotations.add(annotation)
+        ##################################################################################
                         
-    return all_imgs, seen_labels
+    return annotations, seen_labels
+            
 
+class Annotation(object):
+    """
+    # Attributes
+        fname : image file path
+        labels : list of strings
+        boxes : Boxes instance
+    """
+    def __init__(self, filename):
+        self.fname = filename
+        self.labels = []
+        self.boxes = None
 
-# Todo : parse_annotatiaon의 리턴을 이 객체로하자.
-class AnnHandler(object):
-    def __init__(self, image_anns, batch_size, shuffle):
-        """
-        # Args
-            image_anns : list of dictionary including following keys
-                "filename"  : str
-                "width"     : int
-                "height"    : int
-                "object"    : list of dictionary
-                    'name' : str
-                    'xmin' : int
-                    'ymin' : int
-                    'xmax' : int
-                    'ymax' : int
-        """
-        self.image_anns = image_anns
-        self.batch_size = batch_size
-        self.shuffle = shuffle
+    def add_object(self, x1, y1, x2, y2, name):
+        self.labels.append(name)
+        if self.boxes is None:
+            self.boxes = np.array([x1, y1, x2, y2]).reshape(-1,4)
+        else:
+            box = np.array([x1, y1, x2, y2]).reshape(-1,4)
+            self.boxes = np.concatenate([self.boxes, box])
 
-        if shuffle:
-            np.random.shuffle(self.image_anns)
+class Annotations(object):
+    def __init__(self, filename=None):
+        if filename is None:
+            self._components = []
+        else:
+            ann = Annotation(filename)
+            self._components = [ann]
 
-    def get_ann(self, batch_idx, index):
-        batch_anns = self._get_batch(batch_idx)
-        fname = self._get_fname(batch_anns, index)        
-        labels = self._get_labels(batch_anns, index)        
-        boxes = self._get_boxes(batch_anns, index)        
-        return fname, boxes, labels
+    def add(self, annotation):
+        self._components.append(annotation)
 
-    def get_batch_size(self, batch_idx):
-        batch_anns = self._get_batch(batch_idx)
-        return len(batch_anns)
+    def shuffle(self):
+        np.random.shuffle(self._components)
+    
+    def get_fname(self, i):
+        index = self._valid_index(i)
+        return self._components[index].fname
+    
+    def get_boxes(self, i):
+        index = self._valid_index(i)
+        return self._components[index].boxes
 
-    def len_batches(self):
-        return int(np.ceil(float(len(self.image_anns))/self.batch_size))
+    def get_labels(self, i):
+        index = self._valid_index(i)
+        return self._components[index].labels
 
-    def end_epoch(self):
-        if self.shuffle:
-            np.random.shuffle(self.image_anns)
+    def _valid_index(self, i):
+        if i >= len(self._components):
+            valid_index = i - len(self._components)
+        else:
+            valid_index = i
+        return valid_index
 
-    def _get_fname(self, batch_anns, index):
-        return batch_anns[index]["filename"]
-
-    def _get_labels(self, batch_anns, index):
-        labels = []
-        for obj in batch_anns[index]["object"]:
-            labels.append(obj["name"])
-        return labels
-
-    def _get_boxes(self, batch_anns, index):
-        boxes = []
-        for obj in batch_anns[index]["object"]:
-            x1, y1, x2, y2 = obj["xmin"], obj["ymin"], obj["xmax"], obj["ymax"]
-            boxes.append([x1, y1, x2, y2])
-        boxes = np.array(boxes)
-        return boxes
-
-    def _get_batch(self, batch_idx):
-        l_bound = batch_idx * self.batch_size
-        r_bound = (batch_idx+1) * self.batch_size
-
-        if r_bound > len(self.image_anns):
-            r_bound = len(self.image_anns)
-            l_bound = r_bound - self.batch_size
-        return self.image_anns[l_bound:r_bound]

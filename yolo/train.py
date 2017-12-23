@@ -4,9 +4,6 @@ import os
 import numpy as np
 from yolo.annotation import parse_annotation
 from yolo import YOLO
-from yolo.network import YoloNetwork
-from yolo.loss import YoloLoss
-from yolo.batch_gen import GeneratorConfig, BatchGenerator
 
 
 def _parse(config):
@@ -80,7 +77,6 @@ def train(conf):
                valid_batch_generator,
                learning_rate      = config['train']['learning_rate'], 
                nb_epoch           = config['train']['nb_epoch'],
-               warmup_epochs      = config['train']['warmup_epochs'],
                train_times        = config['train']['train_times'],
                valid_times        = config['valid']['valid_times'],
                saved_weights_name = config['train']['saved_weights_name'],
