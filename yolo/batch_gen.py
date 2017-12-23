@@ -65,7 +65,7 @@ class LabelBatchGenerator(object):
         y[grid_y, grid_x, best_anchor, 5+obj_indx] = 1
         return y
     
-    def generate(self, boxes, labels, y_shape, b_shape):
+    def generate(self, boxes, labels, y_shape, b_shape, coord_scale=32):
         """
         # Args
             labels : list of integers
@@ -83,9 +83,7 @@ class LabelBatchGenerator(object):
         b_ = np.zeros(b_shape)
         
         centroid_boxes = to_centroid(boxes)
-        
-        grid_size = y_shape[0]
-        norm_boxes = to_normalize(centroid_boxes, self.input_size, grid_size)
+        norm_boxes = to_normalize(centroid_boxes, coord_scale)
         
         # loop over objects in one image
         for norm_box, label in zip(norm_boxes, labels):
