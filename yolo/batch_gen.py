@@ -218,8 +218,8 @@ def setup():
                                        anchors = config["model"]["anchors"])
 
     train_annotations, train_labels = parse_annotation(config['train']['train_annot_folder'], 
-                                                config['train']['train_image_folder'], 
-                                                config['model']['labels'])
+                                                       config['train']['train_image_folder'], 
+                                                       config['model']['labels'])
     return train_annotations, generator_config
 
 @pytest.fixture(scope='function')
