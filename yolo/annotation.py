@@ -150,7 +150,7 @@ def parse_annotation(ann_dir, img_dir, labels=[]):
                 seen_labels[label] = 1
 
         ##################################################################################
-        annotations.append(annotation)
+        annotations.add(annotation)
         ##################################################################################
         
         img['object'] = objects
@@ -254,10 +254,7 @@ class Annotations(object):
         self._components = [ann]
         self._comp_idx = 0
 
-#     def add_object(self, x1, y1, x2, y2, name):
-#         self._components[self._comp_idx].add_object(x1, y1, x2, y2, name)
-
-    def append(self, annotation):
+    def add(self, annotation):
         self._components.append(annotation)
         self._comp_idx += 1
 
