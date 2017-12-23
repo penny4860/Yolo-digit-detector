@@ -3,7 +3,7 @@ import numpy as np
 np.random.seed(1337)
 import yolo.augment as augment
 from keras.utils import Sequence
-from yolo.box import BoundBox, bbox_iou, to_cxcy_wh
+from yolo.box import BoundBox, bbox_iou, to_centroid, to_normalize
 
 
 class GeneratorConfig(object):
@@ -36,28 +36,6 @@ class LabelBatchGenerator(object):
         return [BoundBox(0, 0, anchors[2*i], anchors[2*i+1]) 
                 for i in range(n_anchor_boxes)]
 
-    def _normalize_box(self, cx, cy, w, h):
-        """Noramlize box : 1-grid == 1.0"""
-        norm_cx = cx / (float(self.config.input_size) / self.config.grid_size)
-        norm_cy = cy / (float(self.config.input_size) / self.config.grid_size)
-        norm_w = w / (float(self.config.input_size) / self.config.grid_size) # unit: grid cell
-        norm_h = h / (float(self.config.input_size) / self.config.grid_size) # unit: grid cell
-        return norm_cx, norm_cy, norm_w, norm_h
-    
-    def _is_valid_obj(self, x1, y1, x2, y2, label, grid_x, grid_y):
-        """
-        # Args
-            x1, y1, x2, y2 : int
-            label : str
-            grid_x, grid_y : float
-        """
-        is_valid = False
-        if x2 > x1 and y2 > y1:
-            if label in self.config.labels:
-                if grid_x < self.config.grid_size and grid_y < self.config.grid_size:
-                    is_valid = True
-        return is_valid
-
     def _get_anchor_idx(self, box):
         _, _, center_w, center_h = box
         
@@ -79,8 +57,9 @@ class LabelBatchGenerator(object):
                 max_iou     = iou
         return best_anchor
     
-    def _generate_y(self, grid_x, grid_y, best_anchor, obj_indx, box):
+    def _generate_y(self, best_anchor, obj_indx, box):
         y = np.zeros((self.config.grid_size,  self.config.grid_size, self.config.nb_box, 4+1+self.config.n_classes))
+        grid_x, grid_y, _, _ = box.astype(int)
         y[grid_y, grid_x, best_anchor, 0:4] = box
         y[grid_y, grid_x, best_anchor, 4  ] = 1.
         y[grid_y, grid_x, best_anchor, 5+obj_indx] = 1
@@ -99,27 +78,22 @@ class LabelBatchGenerator(object):
                        self.config.max_box_per_image,
                        4))
         
+        centroid_boxes = to_centroid(boxes)
+        norm_boxes = to_normalize(centroid_boxes, self.config.input_size, self.config.grid_size)
+        
         # loop over objects in one image
-        for box, label in zip(boxes, labels):
-            x1, y1, x2, y2 = box
-            cx, cy, w, h = to_cxcy_wh(x1, y1, x2, y2)
-            norm_box = self._normalize_box(cx, cy, w, h)
+        for norm_box, label in zip(norm_boxes, labels):
+            obj_indx  = self.config.labels.index(label)
+            best_anchor = self._get_anchor_idx(norm_box)
+
+            # assign ground truth x, y, w, h, confidence and class probs to y_batch
+            y += self._generate_y(best_anchor, obj_indx, norm_box)
             
-            grid_x = int(np.floor(norm_box[0]))
-            grid_y = int(np.floor(norm_box[1]))
-
-            if self._is_valid_obj(x1, y1, x2, y2, label, grid_x, grid_y):
-                obj_indx  = self.config.labels.index(label)
-                best_anchor = self._get_anchor_idx(norm_box)
-
-                # assign ground truth x, y, w, h, confidence and class probs to y_batch
-                y += self._generate_y(grid_x, grid_y, best_anchor, obj_indx, norm_box)
-                
-                # assign the true box to b_batch
-                b_[0, 0, 0, true_box_index] = norm_box
-                
-                true_box_index += 1
-                true_box_index = true_box_index % self.config.max_box_per_image
+            # assign the true box to b_batch
+            b_[0, 0, 0, true_box_index] = norm_box
+            
+            true_box_index += 1
+            true_box_index = true_box_index % self.config.max_box_per_image
         return y, b_
 
 
