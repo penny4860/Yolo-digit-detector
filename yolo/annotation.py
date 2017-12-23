@@ -252,11 +252,29 @@ class Annotations(object):
     def __init__(self, filename):
         ann = Annotation(filename)
         self._components = [ann]
-        self._comp_idx = 0
 
     def add(self, annotation):
         self._components.append(annotation)
-        self._comp_idx += 1
 
+    def shuffle(self):
+        np.random.shuffle(self._components)
+    
+    def get_fname(self, i):
+        index = self._valid_index(i)
+        return self._components[index].fname
+    
+    def get_boxes(self, i):
+        index = self._valid_index(i)
+        return self._components[index].boxes
 
+    def get_labels(self, i):
+        index = self._valid_index(i)
+        return self._components[index].labels
+
+    def _valid_index(self, i):
+        if i >= len(self._components):
+            valid_index = i - len(self._components)
+        else:
+            valid_index = i
+        return valid_index
 
