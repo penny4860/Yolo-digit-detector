@@ -16,7 +16,6 @@ class GeneratorConfig(object):
                  anchors):
         self.input_size = input_size
         self.grid_size = grid_size
-        self.nb_box = int(len(anchors)/2)
         self.anchors = anchors
         self.batch_size = batch_size
         self.max_box_per_image = max_box_per_image
@@ -94,35 +93,29 @@ class LabelBatchGenerator(object):
         return y, b_
 
 
-
 class BatchGenerator(Sequence):
     def __init__(self, annotations, 
-                       config, 
+                       input_size,
+                       grid_size,
+                       batch_size,
+                       max_box_per_image,
+                       anchors, 
                        jitter=True, 
                        norm=None):
         """
         # Args
             annotations : Annotations instance
         
-            images : list of dictionary including following keys
-                "filename"  : str
-                "width"     : int
-                "height"    : int
-                "object"    : list of dictionary
-                    'name' : str
-                    'xmin' : int
-                    'ymin' : int
-                    'xmax' : int
-                    'ymax' : int
         """
         self.annotations = annotations
-        self.batch_size = config.batch_size
+        self.input_size = input_size
+        self.grid_size = grid_size
+        self.batch_size = batch_size
+        self.max_box_per_image = max_box_per_image
         self.n_classes = annotations.n_classes()
-        
-        #def __init__(self, input_size, grid_size, nb_box, n_classes, anchors):
-        self._label_generator = LabelBatchGenerator(config.anchors)
+        self.nb_box = int(len(anchors) / 2)
+        self._label_generator = LabelBatchGenerator(anchors)
 
-        self.config = config
         self.jitter  = jitter
         if norm is None:
             self.norm = lambda x: x
@@ -139,9 +132,9 @@ class BatchGenerator(Sequence):
             idx : int
                 batch index
         """
-        x_batch = np.zeros((self.batch_size, self.config.input_size, self.config.input_size, 3))                         # input images
-        b_batch = np.zeros((self.batch_size, 1     , 1     , 1    ,  self.config.max_box_per_image, 4))   # list of self.config['TRUE_self.config['BOX']_BUFFER'] GT boxes
-        y_batch = np.zeros((self.batch_size, self.config.grid_size,  self.config.grid_size, self.config.nb_box, 4+1+self.n_classes))                # desired network output
+        x_batch = np.zeros((self.batch_size, self.input_size, self.input_size, 3))                         # input images
+        b_batch = np.zeros((self.batch_size, 1     , 1     , 1    ,  self.max_box_per_image, 4))   # list of self.config['TRUE_self.config['BOX']_BUFFER'] GT boxes
+        y_batch = np.zeros((self.batch_size, self.grid_size,  self.grid_size, self.nb_box, 4+1+self.n_classes))                # desired network output
 
         for i in range(self.batch_size):
             # 1. get input file & its annotation
@@ -152,8 +145,8 @@ class BatchGenerator(Sequence):
             # 2. read image in fixed size
             img, boxes = augment.imread(fname,
                                         boxes,
-                                        self.config.input_size,
-                                        self.config.input_size,
+                                        self.input_size,
+                                        self.input_size,
                                         self.jitter)
             norm_boxes = self._centroid_scale_box(boxes)
             
@@ -169,7 +162,7 @@ class BatchGenerator(Sequence):
 
     def _centroid_scale_box(self, boxes):
         centroid_boxes = to_centroid(boxes)
-        norm_boxes = to_normalize(centroid_boxes, self.config.input_size/self.config.grid_size)
+        norm_boxes = to_normalize(centroid_boxes, self.input_size/self.grid_size)
         return norm_boxes
 
     def on_epoch_end(self):
@@ -207,7 +200,13 @@ def test_generate_batch(setup, expected):
     train_annotations, config = setup
     x_batch_gt, b_batch_gt, y_batch_gt = expected
 
-    batch_gen = BatchGenerator(train_annotations, config, False)
+    batch_gen = BatchGenerator(train_annotations,
+                               config.input_size,
+                               config.grid_size,
+                               config.batch_size,
+                               config.max_box_per_image,
+                               config.anchors,
+                               jitter=False)
     
     # (8, 416, 416, 3) (8, 1, 1, 1, 10, 4) (8, 13, 13, 5, 6)
     (x_batch, b_batch), y_batch = batch_gen[0]
