@@ -101,7 +101,6 @@ class LabelBatchGenerator(object):
 class BatchGenerator(Sequence):
     def __init__(self, annotations, 
                        config, 
-                       shuffle=True, 
                        jitter=True, 
                        norm=None):
         """
@@ -120,7 +119,6 @@ class BatchGenerator(Sequence):
                     'ymax' : int
         """
         self.annotations = annotations
-        self.generator = None
         self.batch_size = config.batch_size
         self._label_generator = LabelBatchGenerator(config)
 
@@ -207,7 +205,7 @@ def test_generate_batch(setup, expected):
     train_annotations, config = setup
     x_batch_gt, b_batch_gt, y_batch_gt = expected
 
-    batch_gen = BatchGenerator(train_annotations, config, False, False)
+    batch_gen = BatchGenerator(train_annotations, config, False)
     
     # (8, 416, 416, 3) (8, 1, 1, 1, 10, 4) (8, 13, 13, 5, 6)
     (x_batch, b_batch), y_batch = batch_gen[0]
