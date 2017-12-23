@@ -181,15 +181,15 @@ class Annotations(object):
     def shuffle(self):
         np.random.shuffle(self._components)
     
-    def get_fname(self, i):
+    def fname(self, i):
         index = self._valid_index(i)
         return self._components[index].fname
     
-    def get_boxes(self, i):
+    def boxes(self, i):
         index = self._valid_index(i)
         return self._components[index].boxes
 
-    def get_labels(self, i):
+    def labels(self, i):
         index = self._valid_index(i)
         return self._components[index].labels
 
