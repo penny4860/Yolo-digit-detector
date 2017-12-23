@@ -4,7 +4,7 @@ import os
 from yolo.decoder import YoloDecoder
 from yolo.network import YoloNetwork
 from yolo.loss import YoloLoss
-from yolo.batch_gen import BatchGenerator, GeneratorConfig
+from yolo.batch_gen import BatchGenerator
 
 # create_feature_extractor(architecture, input_size)
 # client : predict_driver.py
