@@ -40,8 +40,8 @@ class LabelBatchGenerator(object):
     def __init__(self, anchors):
         self.anchors = create_anchor_boxes(anchors)
 
-    def _get_anchor_idx(self, box):
-        _, _, center_w, center_h = box
+    def _get_anchor_idx(self, norm_box):
+        _, _, center_w, center_h = norm_box
         
         # find the anchor that best predicts this box
         best_anchor = -1
