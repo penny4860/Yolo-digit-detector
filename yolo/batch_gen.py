@@ -64,7 +64,7 @@ class LabelBatchGenerator(object):
         y[grid_y, grid_x, best_anchor, 5+obj_indx] = 1
         return y
     
-    def generate(self, boxes, labels, y_shape, b_shape, coord_scale=32):
+    def generate(self, norm_boxes, labels, y_shape, b_shape):
         """
         # Args
             labels : list of integers
@@ -80,9 +80,6 @@ class LabelBatchGenerator(object):
         
         y = np.zeros(y_shape)
         b_ = np.zeros(b_shape)
-        
-        centroid_boxes = to_centroid(boxes)
-        norm_boxes = to_normalize(centroid_boxes, coord_scale)
         
         # loop over objects in one image
         for norm_box, label in zip(norm_boxes, labels):
@@ -163,13 +160,15 @@ class BatchGenerator(Sequence):
                                         self.config.input_size,
                                         self.config.input_size,
                                         self.jitter)
+            centroid_boxes = to_centroid(boxes)
+            norm_boxes = to_normalize(centroid_boxes, self.config.input_size/self.config.grid_size)
             
             # 3. generate x_batch
             x_batch[instance_count] = self.norm(img)
             
             y_shape = y_batch.shape[1:]
             b_shape = b_batch.shape[1:]
-            y_batch[instance_count], b_batch[instance_count] = self._label_generator.generate(boxes, labels, y_shape, b_shape)
+            y_batch[instance_count], b_batch[instance_count] = self._label_generator.generate(norm_boxes, labels, y_shape, b_shape)
             instance_count += 1
 
         self.counter += 1
