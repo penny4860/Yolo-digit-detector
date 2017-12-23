@@ -103,11 +103,12 @@ class PascalVocXmlParser(object):
     
 
 
-def parse_annotation(ann_dir, img_dir, labels=[]):
+def parse_annotation(ann_dir, img_dir, labels_naming=[]):
     """
     # Args
         ann_dir : str
         img_dir : str
+        labels_naming : list of strings
     
     # Returns
         all_imgs : list of dict
@@ -118,7 +119,7 @@ def parse_annotation(ann_dir, img_dir, labels=[]):
     
     parser = PascalVocXmlParser()
     
-    annotations = Annotations()
+    annotations = Annotations(labels_naming)
     for ann in sorted(os.listdir(ann_dir)):
         annotation_file = os.path.join(ann_dir, ann)
         fname = parser.get_fname(annotation_file)
@@ -172,8 +173,9 @@ class Annotation(object):
             self.boxes = np.concatenate([self.boxes, box])
 
 class Annotations(object):
-    def __init__(self):
+    def __init__(self, label_namings):
         self._components = []
+        self._label_namings = label_namings
 
     def add(self, annotation):
         self._components.append(annotation)
