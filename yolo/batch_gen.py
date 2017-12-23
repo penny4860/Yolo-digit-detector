@@ -68,8 +68,13 @@ class LabelBatchGenerator(object):
     
     def generate(self, boxes, labels, y_shape, b_shape):
         """
-        
-        labels : list of integers
+        # Args
+            labels : list of integers
+            
+            y_shape : tuple
+                (grid_size, grid_size, nb_boxes, 4+1+nb_classes)
+            b_shape : tuple
+                (1, 1, 1, max_box_per_image, 4)
         """
         
         # construct output from object's x, y, w, h
