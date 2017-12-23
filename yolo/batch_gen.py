@@ -69,7 +69,7 @@ class LabelBatchGenerator(object):
         y[grid_y, grid_x, best_anchor, 5+obj_indx] = 1
         return y
     
-    def generate(self, boxes, labels):
+    def generate(self, boxes, labels, y_shape, b_shape):
         """
         
         labels : list of integers
@@ -78,13 +78,8 @@ class LabelBatchGenerator(object):
         # construct output from object's x, y, w, h
         true_box_index = 0
         
-        y = np.zeros((self.grid_size,
-                      self.grid_size,
-                      self.nb_box,
-                      4+1+self.n_classes))
-        b_ = np.zeros((1,1,1,
-                       self.max_box_per_image,
-                       4))
+        y = np.zeros(y_shape)
+        b_ = np.zeros(b_shape)
         
         centroid_boxes = to_centroid(boxes)
         norm_boxes = to_normalize(centroid_boxes, self.input_size, self.grid_size)
@@ -176,8 +171,9 @@ class BatchGenerator(Sequence):
             # 3. generate x_batch
             x_batch[instance_count] = self.norm(img)
             
-            # 4. generate y_batch, b_batch
-            y_batch[instance_count], b_batch[instance_count] = self._label_generator.generate(boxes, labels)
+            y_shape = y_batch.shape[1:]
+            b_shape = b_batch.shape[1:]
+            y_batch[instance_count], b_batch[instance_count] = self._label_generator.generate(boxes, labels, y_shape, b_shape)
             instance_count += 1
 
         self.counter += 1
