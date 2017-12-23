@@ -5,22 +5,6 @@ import yolo.augment as augment
 from keras.utils import Sequence
 from yolo.box import BoundBox, bbox_iou, to_centroid, to_normalize
 
-
-class GeneratorConfig(object):
-    
-    def __init__(self,
-                 input_size,
-                 grid_size,
-                 batch_size,
-                 max_box_per_image,
-                 anchors):
-        self.input_size = input_size
-        self.grid_size = grid_size
-        self.anchors = anchors
-        self.batch_size = batch_size
-        self.max_box_per_image = max_box_per_image
-
-
 class LabelBatchGenerator(object):
     
     def __init__(self, anchors):
@@ -178,16 +162,16 @@ def setup():
     with open("config.json") as config_buffer:    
         config = json.loads(config_buffer.read())
         
-    generator_config = GeneratorConfig(config["model"]["input_size"],
-                                       int(config["model"]["input_size"]/32),
-                                       batch_size = 8,
-                                       max_box_per_image = config["model"]["max_box_per_image"],
-                                       anchors = config["model"]["anchors"])
+    input_size = config["model"]["input_size"]
+    grid_size = int(input_size/32)
+    batch_size = 8
+    max_box_per_image = config["model"]["max_box_per_image"]
+    anchors = config["model"]["anchors"]
 
-    train_annotations, train_labels = parse_annotation(config['train']['train_annot_folder'], 
+    train_annotations, _ = parse_annotation(config['train']['train_annot_folder'], 
                                                        config['train']['train_image_folder'], 
                                                        config['model']['labels'])
-    return train_annotations, generator_config
+    return train_annotations, input_size, grid_size, batch_size, max_box_per_image, anchors
 
 @pytest.fixture(scope='function')
 def expected():
@@ -197,15 +181,15 @@ def expected():
     return x_batch_gt, b_batch_gt, y_batch_gt
 
 def test_generate_batch(setup, expected):
-    train_annotations, config = setup
+    train_annotations, input_size, grid_size, batch_size, max_box_per_image, anchors = setup
     x_batch_gt, b_batch_gt, y_batch_gt = expected
 
     batch_gen = BatchGenerator(train_annotations,
-                               config.input_size,
-                               config.grid_size,
-                               config.batch_size,
-                               config.max_box_per_image,
-                               config.anchors,
+                               input_size,
+                               grid_size,
+                               batch_size,
+                               max_box_per_image,
+                               anchors,
                                jitter=False)
     
     # (8, 416, 416, 3) (8, 1, 1, 1, 10, 4) (8, 13, 13, 5, 6)
