@@ -12,22 +12,27 @@ class BoundBox:
         self.c     = c
         self.classes = classes
 
-        self.label = -1
-        self.score = -1
-
     def get_label(self):
-        if self.label == -1:
-            self.label = np.argmax(self.classes)
-        
-        return self.label
+        return np.argmax(self.classes)
     
     def get_score(self):
-        if self.score == -1:
-            self.score = self.classes[self.get_label()]
-            
-        return self.score
+        return self.classes[self.get_label()]
 
 def bbox_iou(box1, box2):
+    def _interval_overlap(interval_a, interval_b):
+        x1, x2 = interval_a
+        x3, x4 = interval_b
+    
+        if x3 < x1:
+            if x4 < x1:
+                return 0
+            else:
+                return min(x2,x4) - x1
+        else:
+            if x2 < x3:
+                return 0
+            else:
+                return min(x2,x4) - x3  
     x1_min  = box1.x - box1.w/2
     x1_max  = box1.x + box1.w/2
     y1_min  = box1.y - box1.h/2
@@ -67,25 +72,27 @@ def draw_boxes(image, boxes, labels):
     return image        
 
 
-def to_cxcy_wh(x1, y1, x2, y2):
-    cx = float(x1 + x2) / 2
-    cy = float(y1 + y2) / 2
-    w = x2-x1
-    h = y2-y1
-    return cx, cy, w, h
+def to_centroid(minmax_boxes):
+    """
+    minmax_boxes : (N, 4)
+    """
+    minmax_boxes = minmax_boxes.astype(np.float)
+    centroid_boxes = np.zeros_like(minmax_boxes)
+    
+    x1 = minmax_boxes[:,0]
+    y1 = minmax_boxes[:,1]
+    x2 = minmax_boxes[:,2]
+    y2 = minmax_boxes[:,3]
+    
+    centroid_boxes[:,0] = (x1 + x2) / 2
+    centroid_boxes[:,1] = (y1 + y2) / 2
+    centroid_boxes[:,2] = x2 - x1
+    centroid_boxes[:,3] = y2 - y1
+    return centroid_boxes
 
 
-def _interval_overlap(interval_a, interval_b):
-    x1, x2 = interval_a
-    x3, x4 = interval_b
-
-    if x3 < x1:
-        if x4 < x1:
-            return 0
-        else:
-            return min(x2,x4) - x1
-    else:
-        if x2 < x3:
-            return 0
-        else:
-            return min(x2,x4) - x3  
+def to_normalize(boxes, input_size, grid_size):
+    """
+    box coordinates -> (grid_size, grid_size)
+    """
+    return boxes / (float(input_size) / grid_size)
