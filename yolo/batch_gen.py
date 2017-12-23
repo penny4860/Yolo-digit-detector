@@ -1,11 +1,9 @@
 
-import cv2
 import numpy as np
 np.random.seed(1337)
 import yolo.augment as augment
 from keras.utils import Sequence
 from yolo.box import BoundBox, bbox_iou, to_cxcy_wh
-from yolo.annotation import AnnHandler
 
 
 class GeneratorConfig(object):
