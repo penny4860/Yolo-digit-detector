@@ -151,7 +151,6 @@ def parse_annotation(ann_dir, img_dir, labels=[]):
     return annotations, seen_labels
             
 
-from yolo.box import Box, Boxes
 class Annotation(object):
     """
     # Attributes
@@ -167,10 +166,10 @@ class Annotation(object):
     def add_object(self, x1, y1, x2, y2, name):
         self.labels.append(name)
         if self.boxes is None:
-            self.boxes = Boxes(minmax = [x1, y1, x2, y2])
+            self.boxes = np.array([x1, y1, x2, y2]).reshape(-1,4)
         else:
-            self.boxes.add(Box(minmax = [x1, y1, x2, y2]))
-
+            box = np.array([x1, y1, x2, y2]).reshape(-1,4)
+            self.boxes = np.concatenate([self.boxes, box])
 
 class Annotations(object):
     def __init__(self, filename=None):
