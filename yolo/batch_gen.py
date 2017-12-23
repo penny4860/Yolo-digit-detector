@@ -52,8 +52,7 @@ class LabelBatchGenerator(object):
                                center_w, 
                                center_h)
         
-        for i in range(len(self.anchors)):
-            anchor = self.anchors[i]
+        for i, anchor in enumerate(self.anchors):
             iou    = bbox_iou(shifted_box, anchor)
             
             if max_iou < iou:
