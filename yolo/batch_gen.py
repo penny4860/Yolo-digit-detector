@@ -11,18 +11,15 @@ class GeneratorConfig(object):
     def __init__(self,
                  input_size,
                  grid_size,
-                 labels,
                  batch_size,
                  max_box_per_image,
                  anchors):
         self.input_size = input_size
         self.grid_size = grid_size
         self.nb_box = int(len(anchors)/2)
-        self.labels = labels
         self.anchors = anchors
         self.batch_size = batch_size
         self.max_box_per_image = max_box_per_image
-        self.n_classes = len(self.labels)
 
 
 class LabelBatchGenerator(object):
@@ -120,6 +117,7 @@ class BatchGenerator(Sequence):
         """
         self.annotations = annotations
         self.batch_size = config.batch_size
+        self.n_classes = annotations.n_classes()
         
         #def __init__(self, input_size, grid_size, nb_box, n_classes, anchors):
         self._label_generator = LabelBatchGenerator(config.anchors)
@@ -143,7 +141,7 @@ class BatchGenerator(Sequence):
         """
         x_batch = np.zeros((self.batch_size, self.config.input_size, self.config.input_size, 3))                         # input images
         b_batch = np.zeros((self.batch_size, 1     , 1     , 1    ,  self.config.max_box_per_image, 4))   # list of self.config['TRUE_self.config['BOX']_BUFFER'] GT boxes
-        y_batch = np.zeros((self.batch_size, self.config.grid_size,  self.config.grid_size, self.config.nb_box, 4+1+self.config.n_classes))                # desired network output
+        y_batch = np.zeros((self.batch_size, self.config.grid_size,  self.config.grid_size, self.config.nb_box, 4+1+self.n_classes))                # desired network output
 
         for i in range(self.batch_size):
             # 1. get input file & its annotation
@@ -189,7 +187,6 @@ def setup():
         
     generator_config = GeneratorConfig(config["model"]["input_size"],
                                        int(config["model"]["input_size"]/32),
-                                       labels = config["model"]["labels"],
                                        batch_size = 8,
                                        max_box_per_image = config["model"]["max_box_per_image"],
                                        anchors = config["model"]["anchors"])
