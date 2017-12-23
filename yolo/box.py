@@ -85,6 +85,14 @@ def to_centroid(minmax_boxes):
     centroid_boxes[:,3] = y2 - y1
     return centroid_boxes
 
+
+def to_normalize(boxes, input_size, grid_size):
+    """
+    box coordinates -> (grid_size, grid_size)
+    """
+    return boxes / (float(input_size) / grid_size)
+
+
 def _interval_overlap(interval_a, interval_b):
     x1, x2 = interval_a
     x3, x4 = interval_b

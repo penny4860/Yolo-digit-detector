@@ -3,7 +3,7 @@ import numpy as np
 np.random.seed(1337)
 import yolo.augment as augment
 from keras.utils import Sequence
-from yolo.box import BoundBox, bbox_iou, to_centroid
+from yolo.box import BoundBox, bbox_iou, to_centroid, to_normalize
 
 
 class GeneratorConfig(object):
@@ -36,14 +36,6 @@ class LabelBatchGenerator(object):
         return [BoundBox(0, 0, anchors[2*i], anchors[2*i+1]) 
                 for i in range(n_anchor_boxes)]
 
-    def _normalize_box(self, cx, cy, w, h):
-        """Noramlize box : 1-grid == 1.0"""
-        norm_cx = cx / (float(self.config.input_size) / self.config.grid_size)
-        norm_cy = cy / (float(self.config.input_size) / self.config.grid_size)
-        norm_w = w / (float(self.config.input_size) / self.config.grid_size) # unit: grid cell
-        norm_h = h / (float(self.config.input_size) / self.config.grid_size) # unit: grid cell
-        return norm_cx, norm_cy, norm_w, norm_h
-    
     def _get_anchor_idx(self, box):
         _, _, center_w, center_h = box
         
@@ -86,11 +78,10 @@ class LabelBatchGenerator(object):
                        4))
         
         centroid_boxes = to_centroid(boxes)
+        norm_boxes = to_normalize(centroid_boxes, self.config.input_size, self.config.grid_size)
         
         # loop over objects in one image
-        for box, label in zip(centroid_boxes, labels):
-            cx, cy, w, h = box
-            norm_box = self._normalize_box(cx, cy, w, h)
+        for norm_box, label in zip(norm_boxes, labels):
             
             grid_x = int(np.floor(norm_box[0]))
             grid_y = int(np.floor(norm_box[1]))
