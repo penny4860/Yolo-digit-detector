@@ -152,10 +152,10 @@ class BatchGenerator(Sequence):
             
             # 3. generate x_batch
             x_batch[i] = self.norm(img)
-            
-            y_shape = y_batch.shape[1:]
-            b_shape = b_batch.shape[1:]
-            y_batch[i], b_batch[i] = self._label_generator.generate(norm_boxes, labels, y_shape, b_shape)
+            y_batch[i], b_batch[i] = self._label_generator.generate(norm_boxes,
+                                                                    labels,
+                                                                    y_batch.shape[1:],
+                                                                    b_batch.shape[1:])
 
         self.counter += 1
         return [x_batch, b_batch], y_batch
