@@ -75,15 +75,12 @@ class YOLO(object):
         return self._yolo_network.get_grid_size()
     
     def get_batch_generator(self, images, batch_size, jitter=True):
-        config = GeneratorConfig(self._input_size,
-                                 self.get_grid_size(),
-                                 self._labels,
-                                 batch_size,
-                                 self._max_box_per_image,
-                                 self._anchors)
-        
         batch_generator = BatchGenerator(images,
-                                         config,
+                                         self._input_size,
+                                         self.get_grid_size(),
+                                         batch_size,
+                                         self._max_box_per_image,
+                                         self._anchors,
                                          jitter=jitter,
                                          norm=self.get_normalize_func())
         return batch_generator
