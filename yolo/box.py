@@ -67,13 +67,22 @@ def draw_boxes(image, boxes, labels):
     return image        
 
 
-def to_cxcy_wh(x1, y1, x2, y2):
-    cx = float(x1 + x2) / 2
-    cy = float(y1 + y2) / 2
-    w = x2-x1
-    h = y2-y1
-    return cx, cy, w, h
-
+def to_centroid(minmax_boxes):
+    """
+    minmax_boxes : (N, 4)
+    """
+    centroid_boxes = np.zeros_like(minmax_boxes)
+    
+    x1 = minmax_boxes[:,0].astype(np.float)
+    y1 = minmax_boxes[:,1].astype(np.float)
+    x2 = minmax_boxes[:,2].astype(np.float)
+    y2 = minmax_boxes[:,3].astype(np.float)
+    
+    centroid_boxes[:,0] = (x1 + x2) / 2
+    centroid_boxes[:,1] = (y1 + y2) / 2
+    centroid_boxes[:,2] = x2 - x1
+    centroid_boxes[:,3] = y2 - y1
+    return centroid_boxes
 
 def _interval_overlap(interval_a, interval_b):
     x1, x2 = interval_a
