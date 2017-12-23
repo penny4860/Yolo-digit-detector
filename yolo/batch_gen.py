@@ -127,13 +127,15 @@ class LabelBatchGenerator(object):
 
 
 class BatchGenerator(Sequence):
-    def __init__(self, images, 
+    def __init__(self, annotations, 
                        config, 
                        shuffle=True, 
                        jitter=True, 
                        norm=None):
         """
         # Args
+            annotations : Annotations instance
+        
             images : list of dictionary including following keys
                 "filename"  : str
                 "width"     : int
@@ -145,8 +147,9 @@ class BatchGenerator(Sequence):
                     'xmax' : int
                     'ymax' : int
         """
+        self.annotations = annotations
         self.generator = None
-        self._ann_handler = AnnHandler(images, config.batch_size, shuffle)
+        self.batch_size = config.batch_size
         self._label_generator = LabelBatchGenerator(config)
 
         self.config = config
@@ -158,7 +161,7 @@ class BatchGenerator(Sequence):
         self.counter = 0
 
     def __len__(self):
-        return self._ann_handler.len_batches()
+        return len(self._annotations._components)
 
     def __getitem__(self, idx):
         """
@@ -166,23 +169,25 @@ class BatchGenerator(Sequence):
             idx : int
                 batch index
         """
-        batch_size = self._ann_handler.get_batch_size(idx)
+        # batch_size = self._ann_handler.get_batch_size(idx)
         instance_count = 0
 
-        x_batch = np.zeros((batch_size, self.config.input_size, self.config.input_size, 3))                         # input images
-        b_batch = np.zeros((batch_size, 1     , 1     , 1    ,  self.config.max_box_per_image, 4))   # list of self.config['TRUE_self.config['BOX']_BUFFER'] GT boxes
-        y_batch = np.zeros((batch_size, self.config.grid_size,  self.config.grid_size, self.config.nb_box, 4+1+self.config.n_classes))                # desired network output
+        x_batch = np.zeros((self.batch_size, self.config.input_size, self.config.input_size, 3))                         # input images
+        b_batch = np.zeros((self.batch_size, 1     , 1     , 1    ,  self.config.max_box_per_image, 4))   # list of self.config['TRUE_self.config['BOX']_BUFFER'] GT boxes
+        y_batch = np.zeros((self.batch_size, self.config.grid_size,  self.config.grid_size, self.config.nb_box, 4+1+self.config.n_classes))                # desired network output
 
-        for i in range(batch_size):
+        for i in range(self.batch_size):
             # 1. get input file & its annotation
-            fname, boxes, labels = self._ann_handler.get_ann(idx, i)
+            fname = self.annotations.get_fname(self.batch_size*idx + i)
+            boxes = self.annotations.get_boxes(self.batch_size*idx + i)
+            labels = self.annotations.get_labels(self.batch_size*idx + i)
             
             # 2. read image in fixed size
             img, boxes = augment.imread(fname,
-                                          boxes,
-                                          self.config.input_size,
-                                          self.config.input_size,
-                                          self.jitter)
+                                        boxes.as_minmax(),
+                                        self.config.input_size,
+                                        self.config.input_size,
+                                        self.jitter)
             
             # 3. generate x_batch
             x_batch[instance_count] = self.norm(img)
@@ -195,7 +200,7 @@ class BatchGenerator(Sequence):
         return [x_batch, b_batch], y_batch
 
     def on_epoch_end(self):
-        self._ann_handler.end_epoch()
+        self.annotations.shuffle()
         self.counter = 0
 
 
@@ -214,10 +219,10 @@ def setup():
                                        max_box_per_image = config["model"]["max_box_per_image"],
                                        anchors = config["model"]["anchors"])
 
-    train_imgs, train_labels = parse_annotation(config['train']['train_annot_folder'], 
+    train_annotations, train_labels = parse_annotation(config['train']['train_annot_folder'], 
                                                 config['train']['train_image_folder'], 
                                                 config['model']['labels'])
-    return train_imgs, generator_config
+    return train_annotations, generator_config
 
 @pytest.fixture(scope='function')
 def expected():
@@ -227,10 +232,10 @@ def expected():
     return x_batch_gt, b_batch_gt, y_batch_gt
 
 def test_generate_batch(setup, expected):
-    images, config = setup
+    train_annotations, config = setup
     x_batch_gt, b_batch_gt, y_batch_gt = expected
 
-    batch_gen = BatchGenerator(images, config, False, False)
+    batch_gen = BatchGenerator(train_annotations, config, False, False)
     
     # (8, 416, 416, 3) (8, 1, 1, 1, 10, 4) (8, 13, 13, 5, 6)
     (x_batch, b_batch), y_batch = batch_gen[0]
