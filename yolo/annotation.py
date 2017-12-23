@@ -177,6 +177,9 @@ class Annotations(object):
         self._components = []
         self._label_namings = label_namings
 
+    def n_classes(self):
+        return len(self._label_namings)
+
     def add(self, annotation):
         self._components.append(annotation)
 
