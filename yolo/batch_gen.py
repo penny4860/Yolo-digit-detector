@@ -5,15 +5,40 @@ import yolo.augment as augment
 from keras.utils import Sequence
 from yolo.box import BoundBox, bbox_iou, to_centroid, to_normalize
 
+
+# def create_anchor_boxes(anchors):
+#     """
+#     # Args
+#         anchors : list of floats
+#     # Returns
+#         boxes : array, shape of (len(anchors), 4)
+#             centroid-type
+#     """
+#     n_boxes = int(len(anchors)/2)
+#     boxes = []
+#     for i in range(n_boxes):
+#         boxes.append(np.array([0, 0, anchors[2*i], anchors[2*i+1]]).reshape(-1,4))
+#     boxes = np.array(boxes)
+#     return boxes
+
+
+def create_anchor_boxes(anchors):
+    """
+    # Args
+        anchors : list of floats
+    # Returns
+        boxes : array, shape of (len(anchors), 4)
+            centroid-type
+    """
+    n_boxes = int(len(anchors)/2)
+    return [BoundBox(0, 0, anchors[2*i], anchors[2*i+1]) 
+            for i in range(n_boxes)]
+
+
 class LabelBatchGenerator(object):
     
     def __init__(self, anchors):
-        self.anchors = self._create_anchor_boxes(anchors)
-
-    def _create_anchor_boxes(self, anchors):
-        n_anchor_boxes = int(len(anchors)/2)
-        return [BoundBox(0, 0, anchors[2*i], anchors[2*i+1]) 
-                for i in range(n_anchor_boxes)]
+        self.anchors = create_anchor_boxes(anchors)
 
     def _get_anchor_idx(self, box):
         _, _, center_w, center_h = box
