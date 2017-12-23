@@ -74,8 +74,17 @@ class YOLO(object):
     def get_grid_size(self):
         return self._yolo_network.get_grid_size()
     
-    def get_batch_generator(self, images, batch_size, jitter=True):
-        batch_generator = BatchGenerator(images,
+    def get_batch_generator(self, annotations, batch_size, jitter=True):
+        """
+        # Args
+            annotations : Annotations instance
+            batch_size : int
+            jitter : bool
+        
+        # Returns
+            batch_generator : BatchGenerator instance
+        """
+        batch_generator = BatchGenerator(annotations,
                                          self._input_size,
                                          self.get_grid_size(),
                                          batch_size,
