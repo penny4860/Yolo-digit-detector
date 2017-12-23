@@ -90,6 +90,20 @@ def to_centroid(minmax_boxes):
     centroid_boxes[:,3] = y2 - y1
     return centroid_boxes
 
+def to_minmax(centroid_boxes):
+    centroid_boxes = centroid_boxes.astype(np.float)
+    minmax_boxes = np.zeros_like(centroid_boxes)
+    
+    cx = centroid_boxes[:,0]
+    cy = centroid_boxes[:,1]
+    w = centroid_boxes[:,2]
+    h = centroid_boxes[:,3]
+    
+    minmax_boxes[:,0] = cx - w/2
+    minmax_boxes[:,1] = cy - h/2
+    minmax_boxes[:,2] = cx + w/2
+    minmax_boxes[:,3] = cy + h/2
+    return minmax_boxes
 
 def to_normalize(boxes, scale):
     """
