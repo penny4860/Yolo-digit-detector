@@ -91,8 +91,8 @@ def to_centroid(minmax_boxes):
     return centroid_boxes
 
 
-def to_normalize(boxes, input_size, grid_size):
+def to_normalize(boxes, scale):
     """
-    box coordinates -> (grid_size, grid_size)
+    box coordinates -> (scale, scale)
     """
-    return boxes / (float(input_size) / grid_size)
+    return boxes / float(scale)
