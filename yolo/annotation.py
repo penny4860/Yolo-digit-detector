@@ -114,19 +114,14 @@ def parse_annotation(ann_dir, img_dir, labels=[]):
         seen_labels : dict
             {'raccoon': 1, ...}
     """
-    all_imgs = []
     seen_labels = {}
     
     parser = PascalVocXmlParser()
     
     annotations = Annotations()
     for ann in sorted(os.listdir(ann_dir)):
-        img = {'object':[]}
-        
         annotation_file = os.path.join(ann_dir, ann)
-        
         fname = parser.get_fname(annotation_file)
-        img['filename'] = os.path.join(img_dir, fname)
 
         ##################################################################################
         annotation = Annotation(os.path.join(img_dir, fname))
@@ -152,11 +147,6 @@ def parse_annotation(ann_dir, img_dir, labels=[]):
         ##################################################################################
         annotations.add(annotation)
         ##################################################################################
-        
-        img['object'] = objects
-        
-        if len(img['object']) > 0:
-            all_imgs += [img]
                         
     return annotations, seen_labels
             
