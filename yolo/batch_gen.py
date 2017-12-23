@@ -176,9 +176,9 @@ class BatchGenerator(Sequence):
 
         for i in range(self.batch_size):
             # 1. get input file & its annotation
-            fname = self.annotations.get_fname(self.batch_size*idx + i)
-            boxes = self.annotations.get_boxes(self.batch_size*idx + i)
-            labels = self.annotations.get_labels(self.batch_size*idx + i)
+            fname = self.annotations.fname(self.batch_size*idx + i)
+            boxes = self.annotations.boxes(self.batch_size*idx + i)
+            labels = self.annotations.labels(self.batch_size*idx + i)
             
             # 2. read image in fixed size
             img, boxes = augment.imread(fname,
