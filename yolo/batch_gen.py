@@ -27,9 +27,8 @@ class GeneratorConfig(object):
 
 class LabelBatchGenerator(object):
     
-    def __init__(self, input_size, grid_size, anchors):
+    def __init__(self, input_size, anchors):
         self.input_size = input_size
-        self.grid_size = grid_size
         self.anchors = self._create_anchor_boxes(anchors)
 
     def _create_anchor_boxes(self, anchors):
@@ -84,7 +83,9 @@ class LabelBatchGenerator(object):
         b_ = np.zeros(b_shape)
         
         centroid_boxes = to_centroid(boxes)
-        norm_boxes = to_normalize(centroid_boxes, self.input_size, self.grid_size)
+        
+        grid_size = y_shape[0]
+        norm_boxes = to_normalize(centroid_boxes, self.input_size, grid_size)
         
         # loop over objects in one image
         for norm_box, label in zip(norm_boxes, labels):
@@ -128,7 +129,6 @@ class BatchGenerator(Sequence):
         
         #def __init__(self, input_size, grid_size, nb_box, n_classes, anchors):
         self._label_generator = LabelBatchGenerator(config.input_size,
-                                                    config.grid_size,
                                                     config.anchors)
 
         self.config = config
