@@ -211,3 +211,24 @@ class AnnHandler(object):
             r_bound = len(self.image_anns)
             l_bound = r_bound - self.batch_size
         return self.image_anns[l_bound:r_bound]
+
+
+from yolo.box import Box, Boxes
+class Annotation(object):
+    """
+    # Attributes
+        fname : image file path
+        labels : list of strings
+        boxes : Boxes instance
+    """
+    def __init__(self, filename):
+        self.fname = filename
+        self.labels = []
+        self.boxes = None
+
+    def add_object(self, x1, y1, x2, y2, name):
+        self.labels.append(name)
+        if self.boxes is None:
+            self.boxes = Boxes(minmax = [x1, y1, x2, y2])
+        else:
+            self.boxes.add(Box(minmax = [x1, y1, x2, y2]))
