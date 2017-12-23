@@ -172,12 +172,8 @@ class Annotation(object):
             self.boxes = np.concatenate([self.boxes, box])
 
 class Annotations(object):
-    def __init__(self, filename=None):
-        if filename is None:
-            self._components = []
-        else:
-            ann = Annotation(filename)
-            self._components = [ann]
+    def __init__(self):
+        self._components = []
 
     def add(self, annotation):
         self._components.append(annotation)
