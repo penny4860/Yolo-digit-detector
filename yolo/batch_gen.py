@@ -3,7 +3,7 @@ import numpy as np
 np.random.seed(1337)
 import yolo.augment as augment
 from keras.utils import Sequence
-from yolo.box import BoundBox, bbox_iou, to_cxcy_wh
+from yolo.box import BoundBox, bbox_iou, to_centroid
 
 
 class GeneratorConfig(object):
@@ -99,27 +99,27 @@ class LabelBatchGenerator(object):
                        self.config.max_box_per_image,
                        4))
         
+        centroid_boxes = to_centroid(boxes)
+        
         # loop over objects in one image
-        for box, label in zip(boxes, labels):
-            x1, y1, x2, y2 = box
-            cx, cy, w, h = to_cxcy_wh(x1, y1, x2, y2)
+        for box, label in zip(centroid_boxes, labels):
+            cx, cy, w, h = box
             norm_box = self._normalize_box(cx, cy, w, h)
             
             grid_x = int(np.floor(norm_box[0]))
             grid_y = int(np.floor(norm_box[1]))
 
-            if self._is_valid_obj(x1, y1, x2, y2, label, grid_x, grid_y):
-                obj_indx  = self.config.labels.index(label)
-                best_anchor = self._get_anchor_idx(norm_box)
+            obj_indx  = self.config.labels.index(label)
+            best_anchor = self._get_anchor_idx(norm_box)
 
-                # assign ground truth x, y, w, h, confidence and class probs to y_batch
-                y += self._generate_y(grid_x, grid_y, best_anchor, obj_indx, norm_box)
-                
-                # assign the true box to b_batch
-                b_[0, 0, 0, true_box_index] = norm_box
-                
-                true_box_index += 1
-                true_box_index = true_box_index % self.config.max_box_per_image
+            # assign ground truth x, y, w, h, confidence and class probs to y_batch
+            y += self._generate_y(grid_x, grid_y, best_anchor, obj_indx, norm_box)
+            
+            # assign the true box to b_batch
+            b_[0, 0, 0, true_box_index] = norm_box
+            
+            true_box_index += 1
+            true_box_index = true_box_index % self.config.max_box_per_image
         return y, b_
 
 
