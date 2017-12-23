@@ -57,8 +57,9 @@ class LabelBatchGenerator(object):
                 max_iou     = iou
         return best_anchor
     
-    def _generate_y(self, grid_x, grid_y, best_anchor, obj_indx, box):
+    def _generate_y(self, best_anchor, obj_indx, box):
         y = np.zeros((self.config.grid_size,  self.config.grid_size, self.config.nb_box, 4+1+self.config.n_classes))
+        grid_x, grid_y, _, _ = box.astype(int)
         y[grid_y, grid_x, best_anchor, 0:4] = box
         y[grid_y, grid_x, best_anchor, 4  ] = 1.
         y[grid_y, grid_x, best_anchor, 5+obj_indx] = 1
@@ -82,14 +83,11 @@ class LabelBatchGenerator(object):
         
         # loop over objects in one image
         for norm_box, label in zip(norm_boxes, labels):
-            grid_x = int(norm_box[0])
-            grid_y = int(norm_box[1])
-
             obj_indx  = self.config.labels.index(label)
             best_anchor = self._get_anchor_idx(norm_box)
 
             # assign ground truth x, y, w, h, confidence and class probs to y_batch
-            y += self._generate_y(grid_x, grid_y, best_anchor, obj_indx, norm_box)
+            y += self._generate_y(best_anchor, obj_indx, norm_box)
             
             # assign the true box to b_batch
             b_[0, 0, 0, true_box_index] = norm_box
