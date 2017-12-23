@@ -19,6 +19,20 @@ class BoundBox:
         return self.classes[self.get_label()]
 
 def bbox_iou(box1, box2):
+    def _interval_overlap(interval_a, interval_b):
+        x1, x2 = interval_a
+        x3, x4 = interval_b
+    
+        if x3 < x1:
+            if x4 < x1:
+                return 0
+            else:
+                return min(x2,x4) - x1
+        else:
+            if x2 < x3:
+                return 0
+            else:
+                return min(x2,x4) - x3  
     x1_min  = box1.x - box1.w/2
     x1_max  = box1.x + box1.w/2
     y1_min  = box1.y - box1.h/2
@@ -82,19 +96,3 @@ def to_normalize(boxes, input_size, grid_size):
     box coordinates -> (grid_size, grid_size)
     """
     return boxes / (float(input_size) / grid_size)
-
-
-def _interval_overlap(interval_a, interval_b):
-    x1, x2 = interval_a
-    x3, x4 = interval_b
-
-    if x3 < x1:
-        if x4 < x1:
-            return 0
-        else:
-            return min(x2,x4) - x1
-    else:
-        if x2 < x3:
-            return 0
-        else:
-            return min(x2,x4) - x3  
