@@ -79,11 +79,11 @@ class LabelBatchGenerator(object):
 
 class BatchGenerator(Sequence):
     def __init__(self, annotations, 
-                       input_size,
-                       grid_size,
-                       batch_size,
-                       max_box_per_image,
-                       anchors, 
+                       input_size=416,
+                       grid_size=13,
+                       batch_size=8,
+                       max_box_per_image=10,
+                       anchors=[0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828], 
                        jitter=True, 
                        norm=None):
         """
