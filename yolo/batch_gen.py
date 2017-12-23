@@ -182,7 +182,7 @@ class BatchGenerator(Sequence):
             
             # 2. read image in fixed size
             img, boxes = augment.imread(fname,
-                                        boxes.as_minmax(),
+                                        boxes,
                                         self.config.input_size,
                                         self.config.input_size,
                                         self.jitter)
