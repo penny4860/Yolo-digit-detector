@@ -119,6 +119,7 @@ def parse_annotation(ann_dir, img_dir, labels=[]):
     
     parser = PascalVocXmlParser()
     
+    annotations = Annotations()
     for ann in sorted(os.listdir(ann_dir)):
         img = {'object':[]}
         
@@ -127,6 +128,10 @@ def parse_annotation(ann_dir, img_dir, labels=[]):
         fname = parser.get_fname(annotation_file)
         img['filename'] = os.path.join(img_dir, fname)
 
+        ##################################################################################
+        annotation = Annotation(os.path.join(img_dir, fname))
+        ##################################################################################
+
         labels = parser.get_labels(annotation_file)
         boxes = parser.get_boxes(annotation_file)
         
@@ -134,18 +139,27 @@ def parse_annotation(ann_dir, img_dir, labels=[]):
         for label, box in zip(labels, boxes):
             x1, y1, x2, y2 = box
             objects.append({'name': label, 'xmin': x1, 'ymin': y1, 'xmax': x2, 'ymax': y2})
+
+            ##################################################################################
+            annotation.add_object(x1, y1, x2, y2, name=label)
+            ##################################################################################
             
             if label in seen_labels:
                 seen_labels[label] += 1
             else:
                 seen_labels[label] = 1
+
+        ##################################################################################
+        annotations.append(annotation)
+        ##################################################################################
+        
         img['object'] = objects
         
         if len(img['object']) > 0:
             all_imgs += [img]
                         
-    return all_imgs, seen_labels
-
+    return annotations, seen_labels
+            
 
 # Todo : parse_annotatiaon의 리턴을 이 객체로하자.
 class AnnHandler(object):
