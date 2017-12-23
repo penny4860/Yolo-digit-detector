@@ -192,8 +192,23 @@ class Annotations(object):
         return self._components[index].boxes
 
     def labels(self, i):
+        """
+        # Returns
+            labels : list of strings
+        """
         index = self._valid_index(i)
         return self._components[index].labels
+
+    def code_labels(self, i):
+        """
+        # Returns
+            code_labels : list of int
+        """
+        str_labels = self.labels(i)
+        labels = []
+        for label in str_labels:
+            labels.append(self._label_namings.index(label))
+        return labels
 
     def _valid_index(self, i):
         if i >= len(self._components):
