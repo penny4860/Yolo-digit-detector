@@ -12,20 +12,11 @@ class BoundBox:
         self.c     = c
         self.classes = classes
 
-        self.label = -1
-        self.score = -1
-
     def get_label(self):
-        if self.label == -1:
-            self.label = np.argmax(self.classes)
-        
-        return self.label
+        return np.argmax(self.classes)
     
     def get_score(self):
-        if self.score == -1:
-            self.score = self.classes[self.get_label()]
-            
-        return self.score
+        return self.classes[self.get_label()]
 
 def bbox_iou(box1, box2):
     x1_min  = box1.x - box1.w/2
