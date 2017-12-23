@@ -5,26 +5,6 @@ import yolo.augment as augment
 from keras.utils import Sequence
 from yolo.box import BoundBox, bbox_iou, to_centroid, to_normalize
 
-
-class GeneratorConfig(object):
-    
-    def __init__(self,
-                 input_size,
-                 grid_size,
-                 labels,
-                 batch_size,
-                 max_box_per_image,
-                 anchors):
-        self.input_size = input_size
-        self.grid_size = grid_size
-        self.nb_box = int(len(anchors)/2)
-        self.labels = labels
-        self.anchors = anchors
-        self.batch_size = batch_size
-        self.max_box_per_image = max_box_per_image
-        self.n_classes = len(self.labels)
-
-
 class LabelBatchGenerator(object):
     
     def __init__(self, anchors):
@@ -97,34 +77,29 @@ class LabelBatchGenerator(object):
         return y, b_
 
 
-
 class BatchGenerator(Sequence):
     def __init__(self, annotations, 
-                       config, 
+                       input_size=416,
+                       grid_size=13,
+                       batch_size=8,
+                       max_box_per_image=10,
+                       anchors=[0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828], 
                        jitter=True, 
                        norm=None):
         """
         # Args
             annotations : Annotations instance
         
-            images : list of dictionary including following keys
-                "filename"  : str
-                "width"     : int
-                "height"    : int
-                "object"    : list of dictionary
-                    'name' : str
-                    'xmin' : int
-                    'ymin' : int
-                    'xmax' : int
-                    'ymax' : int
         """
         self.annotations = annotations
-        self.batch_size = config.batch_size
-        
-        #def __init__(self, input_size, grid_size, nb_box, n_classes, anchors):
-        self._label_generator = LabelBatchGenerator(config.anchors)
+        self.input_size = input_size
+        self.grid_size = grid_size
+        self.batch_size = batch_size
+        self.max_box_per_image = max_box_per_image
+        self.n_classes = annotations.n_classes()
+        self.nb_box = int(len(anchors) / 2)
+        self._label_generator = LabelBatchGenerator(anchors)
 
-        self.config = config
         self.jitter  = jitter
         if norm is None:
             self.norm = lambda x: x
@@ -141,9 +116,9 @@ class BatchGenerator(Sequence):
             idx : int
                 batch index
         """
-        x_batch = np.zeros((self.batch_size, self.config.input_size, self.config.input_size, 3))                         # input images
-        b_batch = np.zeros((self.batch_size, 1     , 1     , 1    ,  self.config.max_box_per_image, 4))   # list of self.config['TRUE_self.config['BOX']_BUFFER'] GT boxes
-        y_batch = np.zeros((self.batch_size, self.config.grid_size,  self.config.grid_size, self.config.nb_box, 4+1+self.config.n_classes))                # desired network output
+        x_batch = np.zeros((self.batch_size, self.input_size, self.input_size, 3))                         # input images
+        b_batch = np.zeros((self.batch_size, 1     , 1     , 1    ,  self.max_box_per_image, 4))   # list of self.config['TRUE_self.config['BOX']_BUFFER'] GT boxes
+        y_batch = np.zeros((self.batch_size, self.grid_size,  self.grid_size, self.nb_box, 4+1+self.n_classes))                # desired network output
 
         for i in range(self.batch_size):
             # 1. get input file & its annotation
@@ -154,24 +129,24 @@ class BatchGenerator(Sequence):
             # 2. read image in fixed size
             img, boxes = augment.imread(fname,
                                         boxes,
-                                        self.config.input_size,
-                                        self.config.input_size,
+                                        self.input_size,
+                                        self.input_size,
                                         self.jitter)
             norm_boxes = self._centroid_scale_box(boxes)
             
             # 3. generate x_batch
             x_batch[i] = self.norm(img)
-            
-            y_shape = y_batch.shape[1:]
-            b_shape = b_batch.shape[1:]
-            y_batch[i], b_batch[i] = self._label_generator.generate(norm_boxes, labels, y_shape, b_shape)
+            y_batch[i], b_batch[i] = self._label_generator.generate(norm_boxes,
+                                                                    labels,
+                                                                    y_batch.shape[1:],
+                                                                    b_batch.shape[1:])
 
         self.counter += 1
         return [x_batch, b_batch], y_batch
 
     def _centroid_scale_box(self, boxes):
         centroid_boxes = to_centroid(boxes)
-        norm_boxes = to_normalize(centroid_boxes, self.config.input_size/self.config.grid_size)
+        norm_boxes = to_normalize(centroid_boxes, self.input_size/self.grid_size)
         return norm_boxes
 
     def on_epoch_end(self):
@@ -187,17 +162,16 @@ def setup():
     with open("config.json") as config_buffer:    
         config = json.loads(config_buffer.read())
         
-    generator_config = GeneratorConfig(config["model"]["input_size"],
-                                       int(config["model"]["input_size"]/32),
-                                       labels = config["model"]["labels"],
-                                       batch_size = 8,
-                                       max_box_per_image = config["model"]["max_box_per_image"],
-                                       anchors = config["model"]["anchors"])
+    input_size = config["model"]["input_size"]
+    grid_size = int(input_size/32)
+    batch_size = 8
+    max_box_per_image = config["model"]["max_box_per_image"]
+    anchors = config["model"]["anchors"]
 
-    train_annotations, train_labels = parse_annotation(config['train']['train_annot_folder'], 
+    train_annotations, _ = parse_annotation(config['train']['train_annot_folder'], 
                                                        config['train']['train_image_folder'], 
                                                        config['model']['labels'])
-    return train_annotations, generator_config
+    return train_annotations, input_size, grid_size, batch_size, max_box_per_image, anchors
 
 @pytest.fixture(scope='function')
 def expected():
@@ -207,10 +181,16 @@ def expected():
     return x_batch_gt, b_batch_gt, y_batch_gt
 
 def test_generate_batch(setup, expected):
-    train_annotations, config = setup
+    train_annotations, input_size, grid_size, batch_size, max_box_per_image, anchors = setup
     x_batch_gt, b_batch_gt, y_batch_gt = expected
 
-    batch_gen = BatchGenerator(train_annotations, config, False)
+    batch_gen = BatchGenerator(train_annotations,
+                               input_size,
+                               grid_size,
+                               batch_size,
+                               max_box_per_image,
+                               anchors,
+                               jitter=False)
     
     # (8, 416, 416, 3) (8, 1, 1, 1, 10, 4) (8, 13, 13, 5, 6)
     (x_batch, b_batch), y_batch = batch_gen[0]

@@ -52,13 +52,13 @@ def train(conf):
     yolo.load_weights(config['train']['pretrained_weights'])
 
     # 3. Parse the annotations 
-    train_imgs, valid_imgs = _parse(config)
+    train_annotations, valid_annotations = _parse(config)
 
     # 4. get batch generator
     # Todo : train_imgs 를 class 로 정의하자.
-    train_batch_generator = yolo.get_batch_generator(train_imgs,
+    train_batch_generator = yolo.get_batch_generator(train_annotations,
                                                     config["train"]["batch_size"])
-    valid_batch_generator = yolo.get_batch_generator(valid_imgs,
+    valid_batch_generator = yolo.get_batch_generator(valid_annotations,
                                                     config["train"]["batch_size"],
                                                     jitter=False)
     
