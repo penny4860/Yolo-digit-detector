@@ -249,9 +249,12 @@ class Annotation(object):
 
 
 class Annotations(object):
-    def __init__(self, filename):
-        ann = Annotation(filename)
-        self._components = [ann]
+    def __init__(self, filename=None):
+        if filename is None:
+            self._components = []
+        else:
+            ann = Annotation(filename)
+            self._components = [ann]
 
     def add(self, annotation):
         self._components.append(annotation)
