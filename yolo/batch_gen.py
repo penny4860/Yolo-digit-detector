@@ -27,13 +27,10 @@ class GeneratorConfig(object):
 
 class LabelBatchGenerator(object):
     
-    def __init__(self, input_size, grid_size, nb_box, n_classes, max_box_per_image, anchors):
+    def __init__(self, input_size, grid_size, anchors):
         self.input_size = input_size
         self.grid_size = grid_size
-        self.nb_box = nb_box
-        self.n_classes = n_classes
         self.anchors = self._create_anchor_boxes(anchors)
-        self.max_box_per_image = max_box_per_image
 
     def _create_anchor_boxes(self, anchors):
         n_anchor_boxes = int(len(anchors)/2)
@@ -61,8 +58,8 @@ class LabelBatchGenerator(object):
                 max_iou     = iou
         return best_anchor
     
-    def _generate_y(self, best_anchor, obj_indx, box):
-        y = np.zeros((self.grid_size,  self.grid_size, self.nb_box, 4+1+self.n_classes))
+    def _generate_y(self, best_anchor, obj_indx, box, y_shape):
+        y = np.zeros(y_shape)
         grid_x, grid_y, _, _ = box.astype(int)
         y[grid_y, grid_x, best_anchor, 0:4] = box
         y[grid_y, grid_x, best_anchor, 4  ] = 1.
@@ -89,13 +86,14 @@ class LabelBatchGenerator(object):
             best_anchor = self._get_anchor_idx(norm_box)
 
             # assign ground truth x, y, w, h, confidence and class probs to y_batch
-            y += self._generate_y(best_anchor, label, norm_box)
+            y += self._generate_y(best_anchor, label, norm_box, y_shape)
             
             # assign the true box to b_batch
             b_[0, 0, 0, true_box_index] = norm_box
             
+            max_box_per_image = b_.shape[-1]
             true_box_index += 1
-            true_box_index = true_box_index % self.max_box_per_image
+            true_box_index = true_box_index % max_box_per_image
         return y, b_
 
 
@@ -126,9 +124,6 @@ class BatchGenerator(Sequence):
         #def __init__(self, input_size, grid_size, nb_box, n_classes, anchors):
         self._label_generator = LabelBatchGenerator(config.input_size,
                                                     config.grid_size,
-                                                    config.nb_box,
-                                                    config.n_classes,
-                                                    config.max_box_per_image,
                                                     config.anchors)
 
         self.config = config
