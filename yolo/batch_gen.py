@@ -27,9 +27,8 @@ class GeneratorConfig(object):
 
 class LabelBatchGenerator(object):
     
-    def __init__(self, config):
-        self.config = config
-        self.anchors = self._create_anchor_boxes(config.anchors)
+    def __init__(self, anchors):
+        self.anchors = self._create_anchor_boxes(anchors)
 
     def _create_anchor_boxes(self, anchors):
         n_anchor_boxes = int(len(anchors)/2)
@@ -57,43 +56,44 @@ class LabelBatchGenerator(object):
                 max_iou     = iou
         return best_anchor
     
-    def _generate_y(self, best_anchor, obj_indx, box):
-        y = np.zeros((self.config.grid_size,  self.config.grid_size, self.config.nb_box, 4+1+self.config.n_classes))
+    def _generate_y(self, best_anchor, obj_indx, box, y_shape):
+        y = np.zeros(y_shape)
         grid_x, grid_y, _, _ = box.astype(int)
         y[grid_y, grid_x, best_anchor, 0:4] = box
         y[grid_y, grid_x, best_anchor, 4  ] = 1.
         y[grid_y, grid_x, best_anchor, 5+obj_indx] = 1
         return y
     
-    def generate(self, boxes, labels):
+    def generate(self, norm_boxes, labels, y_shape, b_shape):
+        """
+        # Args
+            labels : list of integers
+            
+            y_shape : tuple
+                (grid_size, grid_size, nb_boxes, 4+1+nb_classes)
+            b_shape : tuple
+                (1, 1, 1, max_box_per_image, 4)
+        """
         
         # construct output from object's x, y, w, h
         true_box_index = 0
         
-        y = np.zeros((self.config.grid_size,
-                      self.config.grid_size,
-                      self.config.nb_box,
-                      4+1+self.config.n_classes))
-        b_ = np.zeros((1,1,1,
-                       self.config.max_box_per_image,
-                       4))
-        
-        centroid_boxes = to_centroid(boxes)
-        norm_boxes = to_normalize(centroid_boxes, self.config.input_size, self.config.grid_size)
+        y = np.zeros(y_shape)
+        b_ = np.zeros(b_shape)
         
         # loop over objects in one image
         for norm_box, label in zip(norm_boxes, labels):
-            obj_indx  = self.config.labels.index(label)
             best_anchor = self._get_anchor_idx(norm_box)
 
             # assign ground truth x, y, w, h, confidence and class probs to y_batch
-            y += self._generate_y(best_anchor, obj_indx, norm_box)
+            y += self._generate_y(best_anchor, label, norm_box, y_shape)
             
             # assign the true box to b_batch
             b_[0, 0, 0, true_box_index] = norm_box
             
+            max_box_per_image = b_.shape[-1]
             true_box_index += 1
-            true_box_index = true_box_index % self.config.max_box_per_image
+            true_box_index = true_box_index % max_box_per_image
         return y, b_
 
 
@@ -101,7 +101,6 @@ class LabelBatchGenerator(object):
 class BatchGenerator(Sequence):
     def __init__(self, annotations, 
                        config, 
-                       shuffle=True, 
                        jitter=True, 
                        norm=None):
         """
@@ -120,9 +119,10 @@ class BatchGenerator(Sequence):
                     'ymax' : int
         """
         self.annotations = annotations
-        self.generator = None
         self.batch_size = config.batch_size
-        self._label_generator = LabelBatchGenerator(config)
+        
+        #def __init__(self, input_size, grid_size, nb_box, n_classes, anchors):
+        self._label_generator = LabelBatchGenerator(config.anchors)
 
         self.config = config
         self.jitter  = jitter
@@ -141,9 +141,6 @@ class BatchGenerator(Sequence):
             idx : int
                 batch index
         """
-        # batch_size = self._ann_handler.get_batch_size(idx)
-        instance_count = 0
-
         x_batch = np.zeros((self.batch_size, self.config.input_size, self.config.input_size, 3))                         # input images
         b_batch = np.zeros((self.batch_size, 1     , 1     , 1    ,  self.config.max_box_per_image, 4))   # list of self.config['TRUE_self.config['BOX']_BUFFER'] GT boxes
         y_batch = np.zeros((self.batch_size, self.config.grid_size,  self.config.grid_size, self.config.nb_box, 4+1+self.config.n_classes))                # desired network output
@@ -152,7 +149,7 @@ class BatchGenerator(Sequence):
             # 1. get input file & its annotation
             fname = self.annotations.fname(self.batch_size*idx + i)
             boxes = self.annotations.boxes(self.batch_size*idx + i)
-            labels = self.annotations.labels(self.batch_size*idx + i)
+            labels = self.annotations.code_labels(self.batch_size*idx + i)
             
             # 2. read image in fixed size
             img, boxes = augment.imread(fname,
@@ -160,16 +157,22 @@ class BatchGenerator(Sequence):
                                         self.config.input_size,
                                         self.config.input_size,
                                         self.jitter)
+            norm_boxes = self._centroid_scale_box(boxes)
             
             # 3. generate x_batch
-            x_batch[instance_count] = self.norm(img)
+            x_batch[i] = self.norm(img)
             
-            # 4. generate y_batch, b_batch
-            y_batch[instance_count], b_batch[instance_count] = self._label_generator.generate(boxes, labels)
-            instance_count += 1
+            y_shape = y_batch.shape[1:]
+            b_shape = b_batch.shape[1:]
+            y_batch[i], b_batch[i] = self._label_generator.generate(norm_boxes, labels, y_shape, b_shape)
 
         self.counter += 1
         return [x_batch, b_batch], y_batch
+
+    def _centroid_scale_box(self, boxes):
+        centroid_boxes = to_centroid(boxes)
+        norm_boxes = to_normalize(centroid_boxes, self.config.input_size/self.config.grid_size)
+        return norm_boxes
 
     def on_epoch_end(self):
         self.annotations.shuffle()
@@ -207,7 +210,7 @@ def test_generate_batch(setup, expected):
     train_annotations, config = setup
     x_batch_gt, b_batch_gt, y_batch_gt = expected
 
-    batch_gen = BatchGenerator(train_annotations, config, False, False)
+    batch_gen = BatchGenerator(train_annotations, config, False)
     
     # (8, 416, 416, 3) (8, 1, 1, 1, 10, 4) (8, 13, 13, 5, 6)
     (x_batch, b_batch), y_batch = batch_gen[0]
