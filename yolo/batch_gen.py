@@ -106,6 +106,11 @@ class LabelBatchGenerator(object):
             cx, cy, w, h = box
             norm_box = self._normalize_box(cx, cy, w, h)
             
+            print("================================================")
+            print(cx, cy, w, h)
+            print(norm_box)
+            print("================================================")
+            
             grid_x = int(np.floor(norm_box[0]))
             grid_y = int(np.floor(norm_box[1]))
 
