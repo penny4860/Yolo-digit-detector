@@ -11,7 +11,7 @@ class _TrueBoxGen(object):
     def __init__(self):
         pass
 
-    def generate(self, norm_boxes, b_shape):
+    def run(self, norm_boxes, b_shape):
         """
         # Args
             labels : list of integers
@@ -44,7 +44,7 @@ class _NetoutGen(object):
                                 9.77052, 9.16828]):
         self.anchors = create_anchor_boxes(anchors)
 
-    def generate(self, norm_boxes, labels, y_shape):
+    def run(self, norm_boxes, labels, y_shape):
         """
         # Args
             labels : list of integers
@@ -139,8 +139,8 @@ class BatchGenerator(Sequence):
             
             # 3. generate x_batch
             x_batch[i] = self.norm(img)
-            y_batch[i] = self._netout_gen.generate(norm_boxes, labels, y_batch.shape[1:])
-            b_batch[i] = self._true_box_gen.generate(norm_boxes, b_batch.shape[1:])
+            y_batch[i] = self._netout_gen.run(norm_boxes, labels, y_batch.shape[1:])
+            b_batch[i] = self._true_box_gen.run(norm_boxes, b_batch.shape[1:])
 
         self.counter += 1
         return [x_batch, b_batch], y_batch
