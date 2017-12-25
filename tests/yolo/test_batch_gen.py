@@ -9,7 +9,7 @@ TEST_SAMPLE_DIR = os.path.join(os.path.dirname(__file__), "test_sample")
 @pytest.fixture(scope='function')
 def setup():
     import json
-    from yolo.annotation import parse_annotation
+    from yolo.utils.annotation import parse_annotation
     with open(os.path.join(TEST_SAMPLE_DIR, "config.json")) as config_buffer:    
         config = json.loads(config_buffer.read())
         
