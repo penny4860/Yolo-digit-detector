@@ -139,3 +139,17 @@ def to_normalize(boxes, scale):
     box coordinates -> (scale, scale)
     """
     return boxes / float(scale)
+
+def create_anchor_boxes(anchors):
+    """
+    # Args
+        anchors : list of floats
+    # Returns
+        boxes : array, shape of (len(anchors)/2, 4)
+            centroid-type
+    """
+    boxes = []
+    n_boxes = int(len(anchors)/2)
+    for i in range(n_boxes):
+        boxes.append(np.array([0, 0, anchors[2*i], anchors[2*i+1]]))
+    return np.array(boxes)
