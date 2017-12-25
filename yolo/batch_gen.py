@@ -6,7 +6,7 @@ from keras.utils import Sequence
 from yolo.box import to_centroid, to_normalize, centroid_box_iou, create_anchor_boxes
 
 
-def get_match_box(centroid_box, centroid_boxes):
+def find_match_box(centroid_box, centroid_boxes):
     """Find the index of the boxes with the largest overlap among the N-boxes.
 
     # Args
@@ -73,7 +73,7 @@ class LabelBatchGenerator(object):
     def _get_anchor_idx(self, norm_box):
         _, _, center_w, center_h = norm_box
         shifted_box = np.array([0, 0, center_w, center_h])
-        return get_match_box(shifted_box, self.anchors)
+        return find_match_box(shifted_box, self.anchors)
     
     def _generate_y(self, best_anchor, obj_indx, box, y_shape):
         y = np.zeros(y_shape)
