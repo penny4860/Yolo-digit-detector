@@ -164,11 +164,25 @@ def setup_for_find_match_box():
     matching_idx = 4
     return input_box, boxes, matching_idx
 
+@pytest.fixture(scope='module')
+def setup_for_iou():
+    box1 = [0, 0, 9.96875, 9.96875]
+    box2 = [0, 0, 9.77052, 9.16828]
+    
+    box1 = np.array(box1)
+    box2 = np.array(box2)
+    iou = 0.901413
+    return box1, box2, iou
+
 def test_find_match_box(setup_for_find_match_box):
     input_box, boxes, expected_idx = setup_for_find_match_box
     matching_idx = find_match_box(input_box, boxes)
     assert matching_idx == expected_idx
 
+def test_centroid_box_iou(setup_for_iou):
+    box1, box2, expected_iou = setup_for_iou
+    iou = centroid_box_iou(box1, box2)
+    assert np.isclose(iou, expected_iou)
 
 if __name__ == '__main__':
     pytest.main([__file__, "-v", "-s"])
