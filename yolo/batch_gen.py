@@ -41,10 +41,9 @@ class BatchGenerator(Sequence):
             idx : int
                 batch index
         """
-        x_batch = np.zeros((self.batch_size, *self._netin_gen.get_tensor_shape()))                         # input images
-        true_box_batch = np.zeros((self.batch_size, *self._true_box_gen.get_tensor_shape()))   # list of self.config['TRUE_self.config['BOX']_BUFFER'] GT boxes
-        y_batch = np.zeros((self.batch_size, *self._netout_gen.get_tensor_shape()))
-
+        x_batch = []
+        y_batch= []
+        true_box_batch = []
         for i in range(self.batch_size):
             # 1. get input file & its annotation
             fname = self.annotations.fname(self.batch_size*idx + i)
@@ -61,10 +60,13 @@ class BatchGenerator(Sequence):
             norm_boxes = self._centroid_grid_scale_box(boxes)
             
             # 4. generate x_batch
-            x_batch[i] = self._netin_gen.run(img)
-            y_batch[i] = self._netout_gen.run(norm_boxes, labels)
-            true_box_batch[i] = self._true_box_gen.run(norm_boxes)
+            x_batch.append(self._netin_gen.run(img))
+            y_batch.append(self._netout_gen.run(norm_boxes, labels))
+            true_box_batch.append(self._true_box_gen.run(norm_boxes))
 
+        x_batch = np.array(x_batch)
+        y_batch = np.array(y_batch)
+        true_box_batch = np.array(true_box_batch)
         self.counter += 1
         return [x_batch, true_box_batch], y_batch
 
