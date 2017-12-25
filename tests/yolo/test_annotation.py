@@ -5,7 +5,8 @@ import os
 import numpy as np
 from yolo.annotation import parse_annotation
 
-SAMPLE_DIRECTORY = "..//..//sample"
+CURRENT_DIR = os.path.dirname(__file__)
+SAMPLE_DIRECTORY = os.path.join(os.path.dirname(os.path.dirname(CURRENT_DIR)), "SAMPLE")
 
 @pytest.fixture(scope='function')
 def setup_inputs(request):
