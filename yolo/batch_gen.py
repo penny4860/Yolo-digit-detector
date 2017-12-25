@@ -11,7 +11,7 @@ class _TrueBoxGen(object):
     def __init__(self):
         pass
 
-    def run(self, norm_boxes, b_shape):
+    def run(self, norm_boxes, max_box_per_image):
         """
         # Args
             labels : list of integers
@@ -24,13 +24,12 @@ class _TrueBoxGen(object):
         
         # construct output from object's x, y, w, h
         true_box_index = 0
-        true_boxes = np.zeros(b_shape)
+        true_boxes = np.zeros((max_box_per_image, 4))
         
         # loop over objects in one image
         for norm_box in norm_boxes:
             # assign the true box to b_batch
-            true_boxes[0, 0, 0, true_box_index] = norm_box
-            max_box_per_image = true_boxes.shape[-2]
+            true_boxes[true_box_index, :] = norm_box
             true_box_index += 1
             true_box_index = true_box_index % max_box_per_image
         return true_boxes
@@ -140,7 +139,7 @@ class BatchGenerator(Sequence):
             # 3. generate x_batch
             x_batch[i] = self.norm(img)
             y_batch[i] = self._netout_gen.run(norm_boxes, labels, y_batch.shape[1:])
-            true_box_batch[i] = self._true_box_gen.run(norm_boxes, true_box_batch.shape[1:])
+            true_box_batch[i] = self._true_box_gen.run(norm_boxes, self.max_box_per_image)
 
         self.counter += 1
         return [x_batch, true_box_batch], y_batch
