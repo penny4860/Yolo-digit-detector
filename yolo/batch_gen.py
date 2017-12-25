@@ -3,7 +3,7 @@ import numpy as np
 np.random.seed(1337)
 import yolo.augment as augment
 from keras.utils import Sequence
-from yolo.box import to_centroid, to_normalize, centroid_box_iou, create_anchor_boxes
+from yolo.box import to_centroid, to_normalize, create_anchor_boxes, find_match_box
 
 
 class LabelBatchGenerator(object):
@@ -33,7 +33,7 @@ class LabelBatchGenerator(object):
         
         # loop over objects in one image
         for norm_box, label in zip(norm_boxes, labels):
-            best_anchor = self._get_anchor_idx(norm_box)
+            best_anchor = self._find_anchor_idx(norm_box)
 
             # assign ground truth x, y, w, h, confidence and class probs to y_batch
             y += self._generate_y(best_anchor, label, norm_box, y_shape)
@@ -46,22 +46,10 @@ class LabelBatchGenerator(object):
             true_box_index = true_box_index % max_box_per_image
         return y, b_
 
-    def _get_anchor_idx(self, norm_box):
+    def _find_anchor_idx(self, norm_box):
         _, _, center_w, center_h = norm_box
-        
-        # find the anchor that best predicts this box
-        best_anchor = -1
-        max_iou     = -1
-        
         shifted_box = np.array([0, 0, center_w, center_h])
-        
-        for i, anchor_box in enumerate(self.anchors):
-            iou = centroid_box_iou(shifted_box, anchor_box)
-            
-            if max_iou < iou:
-                best_anchor = i
-                max_iou     = iou
-        return best_anchor
+        return find_match_box(shifted_box, self.anchors)
     
     def _generate_y(self, best_anchor, obj_indx, box, y_shape):
         y = np.zeros(y_shape)
