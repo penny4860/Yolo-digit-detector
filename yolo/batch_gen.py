@@ -24,11 +24,9 @@ class BatchGenerator(Sequence):
         self.input_size = input_size
         self.grid_size = grid_size
         self.batch_size = batch_size
-        self.max_box_per_image = max_box_per_image
         
-        self._true_box_gen = _TrueBoxGen()
-        n_classes = annotations.n_classes()
-        self._netout_gen = _NetoutGen(grid_size, n_classes, anchors)
+        self._true_box_gen = _TrueBoxGen(max_box_per_image)
+        self._netout_gen = _NetoutGen(grid_size, annotations.n_classes(), anchors)
         self._norm = self._set_norm(norm)
 
         self.jitter  = jitter
@@ -50,8 +48,8 @@ class BatchGenerator(Sequence):
                 batch index
         """
         x_batch = np.zeros((self.batch_size, self.input_size, self.input_size, 3))                         # input images
-        true_box_batch = np.zeros((self.batch_size, 1     , 1     , 1    ,  self.max_box_per_image, 4))   # list of self.config['TRUE_self.config['BOX']_BUFFER'] GT boxes
-        y_batch = np.zeros((self.batch_size, *self._netout_gen.get_out_shape()))
+        true_box_batch = np.zeros((self.batch_size, *self._true_box_gen.get_tensor_shape()))   # list of self.config['TRUE_self.config['BOX']_BUFFER'] GT boxes
+        y_batch = np.zeros((self.batch_size, *self._netout_gen.get_tensor_shape()))
 
         for i in range(self.batch_size):
             # 1. get input file & its annotation
@@ -70,7 +68,7 @@ class BatchGenerator(Sequence):
             # 3. generate x_batch
             x_batch[i] = self._norm(img)
             y_batch[i] = self._netout_gen.run(norm_boxes, labels)
-            true_box_batch[i] = self._true_box_gen.run(norm_boxes, self.max_box_per_image)
+            true_box_batch[i] = self._true_box_gen.run(norm_boxes)
 
         self.counter += 1
         return [x_batch, true_box_batch], y_batch
@@ -86,10 +84,13 @@ class BatchGenerator(Sequence):
 
 
 class _TrueBoxGen(object):
-    def __init__(self):
-        pass
+    def __init__(self, max_box_per_image):
+        self._max_box_per_image = max_box_per_image
 
-    def run(self, norm_boxes, max_box_per_image):
+    def get_tensor_shape(self):
+        return (1, 1, 1, self._max_box_per_image, 4)
+
+    def run(self, norm_boxes):
         """
         # Args
             labels : list of integers
@@ -102,14 +103,14 @@ class _TrueBoxGen(object):
         
         # construct output from object's x, y, w, h
         true_box_index = 0
-        true_boxes = np.zeros((max_box_per_image, 4))
+        true_boxes = np.zeros(self.get_tensor_shape())
         
         # loop over objects in one image
         for norm_box in norm_boxes:
             # assign the true box to b_batch
-            true_boxes[true_box_index, :] = norm_box
+            true_boxes[:,:,:,true_box_index, :] = norm_box
             true_box_index += 1
-            true_box_index = true_box_index % max_box_per_image
+            true_box_index = true_box_index % self._max_box_per_image
         return true_boxes
 
 
@@ -123,7 +124,7 @@ class _NetoutGen(object):
                           7.88282, 3.52778,
                           9.77052, 9.16828]):
         self._anchors = create_anchor_boxes(anchors)
-        self._out_shape = self._set_netout_shape(grid_size, nb_classes)
+        self._tensor_shape = self._set_tensor_shape(grid_size, nb_classes)
 
     def run(self, norm_boxes, labels):
         """
@@ -133,7 +134,7 @@ class _NetoutGen(object):
             labels : list of integers
             y_shape : tuple (grid_size, grid_size, nb_boxes, 4+1+nb_classes)
         """
-        y = np.zeros(self._out_shape)
+        y = np.zeros(self._tensor_shape)
         
         # loop over objects in one image
         for norm_box, label in zip(norm_boxes, labels):
@@ -143,10 +144,10 @@ class _NetoutGen(object):
             y += self._generate_y(best_anchor, label, norm_box)
         return y
 
-    def get_out_shape(self):
-        return self._out_shape
+    def get_tensor_shape(self):
+        return self._tensor_shape
 
-    def _set_netout_shape(self, grid_size, nb_classes):
+    def _set_tensor_shape(self, grid_size, nb_classes):
         nb_boxes = len(self._anchors)
         return (grid_size, grid_size, nb_boxes, 4+1+nb_classes)
 
@@ -156,7 +157,7 @@ class _NetoutGen(object):
         return find_match_box(shifted_box, self._anchors)
     
     def _generate_y(self, best_anchor, obj_indx, box):
-        y = np.zeros(self._out_shape)
+        y = np.zeros(self._tensor_shape)
         grid_x, grid_y, _, _ = box.astype(int)
         y[grid_y, grid_x, best_anchor, 0:4] = box
         y[grid_y, grid_x, best_anchor, 4  ] = 1.
