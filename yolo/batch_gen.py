@@ -22,9 +22,9 @@ class BatchGenerator(Sequence):
         """
         self.annotations = annotations
         self.input_size = input_size
-        self.grid_size = grid_size
         self.batch_size = batch_size
         
+        self._norm_coord_scale = float(input_size) / grid_size
         self._true_box_gen = _TrueBoxGen(max_box_per_image)
         self._netout_gen = _NetoutGen(grid_size, annotations.n_classes(), anchors)
         self._norm = self._set_norm(norm)
@@ -63,7 +63,7 @@ class BatchGenerator(Sequence):
                                         self.input_size,
                                         self.input_size,
                                         self.jitter)
-            norm_boxes = self._centroid_scale_box(boxes)
+            norm_boxes = self._centroid_grid_scale_box(boxes)
             
             # 3. generate x_batch
             x_batch[i] = self._norm(img)
@@ -73,9 +73,9 @@ class BatchGenerator(Sequence):
         self.counter += 1
         return [x_batch, true_box_batch], y_batch
 
-    def _centroid_scale_box(self, boxes):
+    def _centroid_grid_scale_box(self, boxes):
         centroid_boxes = to_centroid(boxes)
-        norm_boxes = to_normalize(centroid_boxes, self.input_size/self.grid_size)
+        norm_boxes = to_normalize(centroid_boxes, self._norm_coord_scale)
         return norm_boxes
 
     def on_epoch_end(self):
