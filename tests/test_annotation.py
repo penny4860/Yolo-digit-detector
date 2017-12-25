@@ -2,6 +2,7 @@
 
 import pytest
 import os
+import numpy as np
 from yolo.annotation import parse_annotation
 
 SAMPLE_DIRECTORY = "..//sample"
@@ -15,13 +16,11 @@ def setup_inputs(request):
 @pytest.fixture(scope='function')
 def setup_expected_outputs(request, setup_inputs):
     _, image_dir = setup_inputs
-    
-    images = [{'object': [{'name': 'raccoon', 'xmin': 81, 'ymin': 88, 'xmax': 522, 'ymax': 408}],
-               'filename': os.path.join(image_dir, 'raccoon-1.jpg'),
-               'width': 650,
-               'height': 417}]
-    labels = {'raccoon': 1}
-    return images, labels
+    seen_labels = {'raccoon': 1}
+    filenames = [os.path.join(image_dir, 'raccoon-1.jpg')]
+    minmax_boxes = np.array([[81, 88, 522, 408]])
+    labels = [["raccoon"]]
+    return filenames, minmax_boxes, labels, seen_labels
 
 
 def test_parse_annotation(setup_inputs, setup_expected_outputs):
@@ -30,12 +29,13 @@ def test_parse_annotation(setup_inputs, setup_expected_outputs):
     annotation_dir, image_dir = setup_inputs
     
     # When
-    all_imgs, seen_labels = parse_annotation(annotation_dir, image_dir)
+    annotations, seen_labels = parse_annotation(annotation_dir, image_dir)
     
-    images, labels = setup_expected_outputs
+    filenames, minmax_boxes, labels, seen_labels_ = setup_expected_outputs
     
-    assert all_imgs == images
-    assert seen_labels == labels
+    assert seen_labels == seen_labels_
+    assert annotations.fname(0) == filenames[0]
+    assert np.allclose(annotations.boxes(0), minmax_boxes[0])
     
 
 if __name__ == '__main__':
