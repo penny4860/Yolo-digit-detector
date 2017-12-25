@@ -149,21 +149,25 @@ def find_match_box(centroid_box, centroid_boxes):
             max_iou     = iou
     return match_index
 
-
 import pytest
-@pytest.fixture(scope='function')
-def setup():
-    pass
+@pytest.fixture(scope='module')
+def setup_for_find_match_box():
+    input_box = [0, 0, 9.96875, 9.96875]
+    boxes = [[0, 0, 0.57273, 0.677385],
+             [0, 0, 1.87446, 2.06253],
+             [0, 0, 3.33843, 5.47434],
+             [0, 0, 7.88282, 3.52778],
+             [0, 0, 9.77052, 9.16828]]
+    
+    input_box = np.array(input_box)
+    boxes = np.array(boxes)
+    matching_idx = 4
+    return input_box, boxes, matching_idx
 
-@pytest.fixture(scope='function')
-def expected():
-    pass
-
-def test_box(setup, expected):
-    pass
-#     assert np.array_equal(x_batch, x_batch_gt) == True 
-#     assert np.array_equal(b_batch, b_batch_gt) == True 
-#     assert np.array_equal(y_batch, y_batch_gt) == True 
+def test_find_match_box(setup_for_find_match_box):
+    input_box, boxes, expected_idx = setup_for_find_match_box
+    matching_idx = find_match_box(input_box, boxes)
+    assert matching_idx == expected_idx
 
 
 if __name__ == '__main__':
