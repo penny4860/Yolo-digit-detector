@@ -23,6 +23,7 @@ class BatchGenerator(Sequence):
         self.annotations = annotations
         self.batch_size = batch_size
         
+        self._input_size = input_size
         self._grid_scaling_factor = float(input_size) / grid_size
         self._netin_gen = _NetinGen(input_size, norm)
         self._netout_gen = _NetoutGen(grid_size, annotations.n_classes(), anchors)
@@ -53,8 +54,8 @@ class BatchGenerator(Sequence):
             # 2. read image in fixed size
             img, boxes = augment.imread(fname,
                                         boxes,
-                                        self._netin_gen._input_size,
-                                        self._netin_gen._input_size,
+                                        self._input_size,
+                                        self._input_size,
                                         self.jitter)
             # 3. grid scaling centroid boxes
             norm_boxes = self._centroid_grid_scale_box(boxes)
