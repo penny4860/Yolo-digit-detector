@@ -5,7 +5,6 @@ import numpy as np
 import cv2
 
 from yolo.backend import create_feature_extractor
-from yolo.loss import YoloLoss
 
 
 class YoloNetwork(object):
