@@ -6,6 +6,30 @@ from keras.utils import Sequence
 from yolo.box import to_centroid, to_normalize, centroid_box_iou, create_anchor_boxes
 
 
+def get_match_box(centroid_box, centroid_boxes):
+    """Find the index of the boxes with the largest overlap among the N-boxes.
+
+    # Args
+        box : array, shape of (1, 4)
+        boxes : array, shape of (N, 4)
+    
+    # Return
+        match_index : int
+    """
+    # _, _, center_w, center_h = centroid_box
+    # find the anchor that best predicts this box
+    match_index = -1
+    max_iou     = -1
+    
+    for i, box in enumerate(centroid_boxes):
+        iou = centroid_box_iou(centroid_box, box)
+        
+        if max_iou < iou:
+            match_index = i
+            max_iou     = iou
+    return match_index
+
+
 class LabelBatchGenerator(object):
     def __init__(self, anchors=[0.57273, 0.677385,
                                 1.87446, 2.06253,
@@ -48,20 +72,8 @@ class LabelBatchGenerator(object):
 
     def _get_anchor_idx(self, norm_box):
         _, _, center_w, center_h = norm_box
-        
-        # find the anchor that best predicts this box
-        best_anchor = -1
-        max_iou     = -1
-        
         shifted_box = np.array([0, 0, center_w, center_h])
-        
-        for i, anchor_box in enumerate(self.anchors):
-            iou = centroid_box_iou(shifted_box, anchor_box)
-            
-            if max_iou < iou:
-                best_anchor = i
-                max_iou     = iou
-        return best_anchor
+        return get_match_box(shifted_box, self.anchors)
     
     def _generate_y(self, best_anchor, obj_indx, box, y_shape):
         y = np.zeros(y_shape)
