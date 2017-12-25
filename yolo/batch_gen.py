@@ -120,7 +120,7 @@ class BatchGenerator(Sequence):
                 batch index
         """
         x_batch = np.zeros((self.batch_size, self.input_size, self.input_size, 3))                         # input images
-        b_batch = np.zeros((self.batch_size, 1     , 1     , 1    ,  self.max_box_per_image, 4))   # list of self.config['TRUE_self.config['BOX']_BUFFER'] GT boxes
+        true_box_batch = np.zeros((self.batch_size, 1     , 1     , 1    ,  self.max_box_per_image, 4))   # list of self.config['TRUE_self.config['BOX']_BUFFER'] GT boxes
         y_batch = np.zeros((self.batch_size, self.grid_size,  self.grid_size, self.nb_box, 4+1+self.n_classes))                # desired network output
 
         for i in range(self.batch_size):
@@ -140,10 +140,10 @@ class BatchGenerator(Sequence):
             # 3. generate x_batch
             x_batch[i] = self.norm(img)
             y_batch[i] = self._netout_gen.run(norm_boxes, labels, y_batch.shape[1:])
-            b_batch[i] = self._true_box_gen.run(norm_boxes, b_batch.shape[1:])
+            true_box_batch[i] = self._true_box_gen.run(norm_boxes, true_box_batch.shape[1:])
 
         self.counter += 1
-        return [x_batch, b_batch], y_batch
+        return [x_batch, true_box_batch], y_batch
 
     def _centroid_scale_box(self, boxes):
         centroid_boxes = to_centroid(boxes)
