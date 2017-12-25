@@ -6,15 +6,12 @@ from keras.utils import Sequence
 from yolo.box import to_centroid, to_normalize, create_anchor_boxes, find_match_box
 
 
-class LabelBatchGenerator(object):
-    def __init__(self, anchors=[0.57273, 0.677385,
-                                1.87446, 2.06253,
-                                3.33843, 5.47434,
-                                7.88282, 3.52778,
-                                9.77052, 9.16828]):
-        self.anchors = create_anchor_boxes(anchors)
 
-    def generate(self, norm_boxes, labels, y_shape, b_shape):
+class _TrueBoxGen(object):
+    def __init__(self):
+        pass
+
+    def generate(self, norm_boxes, b_shape):
         """
         # Args
             labels : list of integers
@@ -27,9 +24,37 @@ class LabelBatchGenerator(object):
         
         # construct output from object's x, y, w, h
         true_box_index = 0
+        true_boxes = np.zeros(b_shape)
         
+        # loop over objects in one image
+        for norm_box in norm_boxes:
+            # assign the true box to b_batch
+            true_boxes[0, 0, 0, true_box_index] = norm_box
+            max_box_per_image = true_boxes.shape[-2]
+            true_box_index += 1
+            true_box_index = true_box_index % max_box_per_image
+        return true_boxes
+
+
+class _NetoutGen(object):
+    def __init__(self, anchors=[0.57273, 0.677385,
+                                1.87446, 2.06253,
+                                3.33843, 5.47434,
+                                7.88282, 3.52778,
+                                9.77052, 9.16828]):
+        self.anchors = create_anchor_boxes(anchors)
+
+    def generate(self, norm_boxes, labels, y_shape):
+        """
+        # Args
+            labels : list of integers
+            
+            y_shape : tuple
+                (grid_size, grid_size, nb_boxes, 4+1+nb_classes)
+            b_shape : tuple
+                (1, 1, 1, max_box_per_image, 4)
+        """
         y = np.zeros(y_shape)
-        b_ = np.zeros(b_shape)
         
         # loop over objects in one image
         for norm_box, label in zip(norm_boxes, labels):
@@ -37,14 +62,7 @@ class LabelBatchGenerator(object):
 
             # assign ground truth x, y, w, h, confidence and class probs to y_batch
             y += self._generate_y(best_anchor, label, norm_box, y_shape)
-            
-            # assign the true box to b_batch
-            b_[0, 0, 0, true_box_index] = norm_box
-            
-            max_box_per_image = b_.shape[-2]
-            true_box_index += 1
-            true_box_index = true_box_index % max_box_per_image
-        return y, b_
+        return y
 
     def _find_anchor_idx(self, norm_box):
         _, _, center_w, center_h = norm_box
@@ -81,7 +99,9 @@ class BatchGenerator(Sequence):
         self.max_box_per_image = max_box_per_image
         self.n_classes = annotations.n_classes()
         self.nb_box = int(len(anchors) / 2)
-        self._label_generator = LabelBatchGenerator(anchors)
+        
+        self._true_box_gen = _TrueBoxGen()
+        self._netout_gen = _NetoutGen(anchors)
 
         self.jitter  = jitter
         if norm is None:
@@ -119,10 +139,8 @@ class BatchGenerator(Sequence):
             
             # 3. generate x_batch
             x_batch[i] = self.norm(img)
-            y_batch[i], b_batch[i] = self._label_generator.generate(norm_boxes,
-                                                                    labels,
-                                                                    y_batch.shape[1:],
-                                                                    b_batch.shape[1:])
+            y_batch[i] = self._netout_gen.generate(norm_boxes, labels, y_batch.shape[1:])
+            b_batch[i] = self._true_box_gen.generate(norm_boxes, b_batch.shape[1:])
 
         self.counter += 1
         return [x_batch, b_batch], y_batch
