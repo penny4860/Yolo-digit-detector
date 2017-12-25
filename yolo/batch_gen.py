@@ -97,9 +97,6 @@ class _NetinGen(object):
     def run(self, image):
         return self._norm(image)
     
-    def get_tensor_shape(self):
-        return (self._input_size, self._input_size, 3)
-
     def _set_norm(self, norm):
         if norm is None:
             return lambda x: x
@@ -110,9 +107,6 @@ class _NetinGen(object):
 class _TrueBoxGen(object):
     def __init__(self, max_box_per_image):
         self._max_box_per_image = max_box_per_image
-
-    def get_tensor_shape(self):
-        return (1, 1, 1, self._max_box_per_image, 4)
 
     def run(self, norm_boxes):
         """
@@ -127,7 +121,7 @@ class _TrueBoxGen(object):
         
         # construct output from object's x, y, w, h
         true_box_index = 0
-        true_boxes = np.zeros(self.get_tensor_shape())
+        true_boxes = np.zeros(self._get_tensor_shape())
         
         # loop over objects in one image
         for norm_box in norm_boxes:
@@ -137,6 +131,8 @@ class _TrueBoxGen(object):
             true_box_index = true_box_index % self._max_box_per_image
         return true_boxes
 
+    def _get_tensor_shape(self):
+        return (1, 1, 1, self._max_box_per_image, 4)
 
 class _NetoutGen(object):
     def __init__(self,
@@ -167,9 +163,6 @@ class _NetoutGen(object):
             # assign ground truth x, y, w, h, confidence and class probs to y_batch
             y += self._generate_y(best_anchor, label, norm_box)
         return y
-
-    def get_tensor_shape(self):
-        return self._tensor_shape
 
     def _set_tensor_shape(self, grid_size, nb_classes):
         nb_boxes = len(self._anchors)
