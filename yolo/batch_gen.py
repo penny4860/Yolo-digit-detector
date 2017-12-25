@@ -3,7 +3,7 @@ import numpy as np
 np.random.seed(1337)
 import yolo.augment as augment
 from keras.utils import Sequence
-from yolo.box import to_centroid, to_normalize, centroid_box_iou, create_anchor_boxes, find_match_box
+from yolo.box import to_centroid, to_normalize, create_anchor_boxes, find_match_box
 
 
 class LabelBatchGenerator(object):
