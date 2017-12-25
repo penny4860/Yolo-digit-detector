@@ -3,7 +3,7 @@ import numpy as np
 np.random.seed(1337)
 import yolo.augment as augment
 from keras.utils import Sequence
-from yolo.box import to_centroid, to_normalize, create_anchor_boxes, find_match_box
+from yolo.box import to_centroid, create_anchor_boxes, find_match_box
 
 
 class BatchGenerator(Sequence):
@@ -24,7 +24,8 @@ class BatchGenerator(Sequence):
         self.batch_size = batch_size
         
         self._input_size = input_size
-        self._grid_scaling_factor = float(input_size) / grid_size
+        
+        self._yolo_box = _YoloBox(input_size, grid_size)
         self._netin_gen = _NetinGen(input_size, norm)
         self._netout_gen = _NetoutGen(grid_size, annotations.n_classes(), anchors)
         self._true_box_gen = _TrueBoxGen(max_box_per_image)
@@ -38,8 +39,7 @@ class BatchGenerator(Sequence):
     def __getitem__(self, idx):
         """
         # Args
-            idx : int
-                batch index
+            idx : batch index
         """
         x_batch = []
         y_batch= []
@@ -56,8 +56,9 @@ class BatchGenerator(Sequence):
                                         self._input_size,
                                         self._input_size,
                                         self.jitter)
+
             # 3. grid scaling centroid boxes
-            norm_boxes = self._centroid_grid_scale_box(boxes)
+            norm_boxes = self._yolo_box.trans(boxes)
             
             # 4. generate x_batch
             x_batch.append(self._netin_gen.run(img))
@@ -70,7 +71,18 @@ class BatchGenerator(Sequence):
         self.counter += 1
         return [x_batch, true_box_batch], y_batch
 
-    def _centroid_grid_scale_box(self, boxes):
+    def on_epoch_end(self):
+        self.annotations.shuffle()
+        self.counter = 0
+
+
+class _YoloBox(object):
+    
+    def __init__(self, input_size, grid_size):
+        self._input_size = input_size
+        self._grid_size = grid_size
+
+    def trans(self, boxes):
         """
         # Args
             boxes : array, shape of (N, 4)
@@ -80,13 +92,11 @@ class BatchGenerator(Sequence):
             norm_boxes : array, same shape of boxes
                 (cx, cy, w, h)-ordered & rescaled to grid-size
         """
-        centroid_boxes = to_centroid(boxes)
-        norm_boxes = to_normalize(centroid_boxes, self._grid_scaling_factor)
+        # 1. minimax box -> centroid box
+        centroid_boxes = to_centroid(boxes).astype(np.float32)
+        # 2. image scale -> grid scale
+        norm_boxes = centroid_boxes * (self._grid_size / self._input_size)
         return norm_boxes
-
-    def on_epoch_end(self):
-        self.annotations.shuffle()
-        self.counter = 0
 
 
 class _NetinGen(object):
