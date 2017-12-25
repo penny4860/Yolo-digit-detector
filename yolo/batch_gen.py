@@ -122,10 +122,11 @@ class _NetoutGen(object):
                                 9.77052, 9.16828]):
         self.anchors = create_anchor_boxes(anchors)
 
-    def run(self, norm_boxes, labels, y_shape):
+    def run(self, norm_boxes, labels, y_shape=(13,13,5,6)):
         """
         # Args
-            norm_boxes : scale normalized boxes
+            norm_boxes : array, shape of (N, 4)
+                scale normalized boxes
             labels : list of integers
             y_shape : tuple (grid_size, grid_size, nb_boxes, 4+1+nb_classes)
         """
