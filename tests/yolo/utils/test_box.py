@@ -1,7 +1,7 @@
 
 import pytest
 import numpy as np
-from yolo.box import find_match_box, centroid_box_iou
+from yolo.utils.box import find_match_box, centroid_box_iou
 
 @pytest.fixture(scope='module')
 def setup_for_find_match_box():

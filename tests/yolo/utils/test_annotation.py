@@ -3,10 +3,10 @@
 import pytest
 import os
 import numpy as np
-from yolo.annotation import parse_annotation
+from yolo.utils.annotation import parse_annotation
 
 CURRENT_DIR = os.path.dirname(__file__)
-SAMPLE_DIRECTORY = os.path.join(os.path.dirname(os.path.dirname(CURRENT_DIR)), "SAMPLE")
+SAMPLE_DIRECTORY = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(CURRENT_DIR))), "SAMPLE")
 
 @pytest.fixture(scope='function')
 def setup_inputs(request):
