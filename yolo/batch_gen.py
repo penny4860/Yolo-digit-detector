@@ -24,7 +24,7 @@ class BatchGenerator(Sequence):
         self.input_size = input_size
         self.batch_size = batch_size
         
-        self._norm_coord_scale = float(input_size) / grid_size
+        self._grid_scaling_factor = float(input_size) / grid_size
         self._true_box_gen = _TrueBoxGen(max_box_per_image)
         self._netout_gen = _NetoutGen(grid_size, annotations.n_classes(), anchors)
         self._norm = self._set_norm(norm)
@@ -63,9 +63,10 @@ class BatchGenerator(Sequence):
                                         self.input_size,
                                         self.input_size,
                                         self.jitter)
+            # 3. grid scaling centroid boxes
             norm_boxes = self._centroid_grid_scale_box(boxes)
             
-            # 3. generate x_batch
+            # 4. generate x_batch
             x_batch[i] = self._norm(img)
             y_batch[i] = self._netout_gen.run(norm_boxes, labels)
             true_box_batch[i] = self._true_box_gen.run(norm_boxes)
@@ -74,8 +75,17 @@ class BatchGenerator(Sequence):
         return [x_batch, true_box_batch], y_batch
 
     def _centroid_grid_scale_box(self, boxes):
+        """
+        # Args
+            boxes : array, shape of (N, 4)
+                (x1, y1, x2, y2)-ordered & input image size scale coordinate
+        
+        # Returns
+            norm_boxes : array, same shape of boxes
+                (cx, cy, w, h)-ordered & rescaled to grid-size
+        """
         centroid_boxes = to_centroid(boxes)
-        norm_boxes = to_normalize(centroid_boxes, self._norm_coord_scale)
+        norm_boxes = to_normalize(centroid_boxes, self._grid_scaling_factor)
         return norm_boxes
 
     def on_epoch_end(self):
