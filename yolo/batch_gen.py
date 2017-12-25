@@ -3,22 +3,8 @@ import numpy as np
 np.random.seed(1337)
 import yolo.augment as augment
 from keras.utils import Sequence
-from yolo.box import to_centroid, to_normalize, centroid_box_iou
+from yolo.box import to_centroid, to_normalize, centroid_box_iou, create_anchor_boxes
 
-
-def create_anchor_boxes(anchors):
-    """
-    # Args
-        anchors : list of floats
-    # Returns
-        boxes : array, shape of (len(anchors), 4)
-            centroid-type
-    """
-    boxes = []
-    n_boxes = int(len(anchors)/2)
-    for i in range(n_boxes):
-        boxes.append(np.array([0, 0, anchors[2*i], anchors[2*i+1]]))
-    return np.array(boxes)
 
 class LabelBatchGenerator(object):
     
