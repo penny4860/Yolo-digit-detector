@@ -7,8 +7,11 @@ from yolo.box import to_centroid, to_normalize, centroid_box_iou, create_anchor_
 
 
 class LabelBatchGenerator(object):
-    
-    def __init__(self, anchors):
+    def __init__(self, anchors=[0.57273, 0.677385,
+                                1.87446, 2.06253,
+                                3.33843, 5.47434,
+                                7.88282, 3.52778,
+                                9.77052, 9.16828]):
         self.anchors = create_anchor_boxes(anchors)
 
     def generate(self, norm_boxes, labels, y_shape, b_shape):
