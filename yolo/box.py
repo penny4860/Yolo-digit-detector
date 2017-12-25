@@ -17,41 +17,15 @@ class BoundBox:
     
     def get_score(self):
         return self.classes[self.get_label()]
+    
+    def iou(self, bound_box):
+        b1 = self.as_centroid()
+        b2 = bound_box.as_centroid()
+        return centroid_box_iou(b1, b2)
 
-def bbox_iou(box1, box2):
-    def _interval_overlap(interval_a, interval_b):
-        x1, x2 = interval_a
-        x3, x4 = interval_b
-    
-        if x3 < x1:
-            if x4 < x1:
-                return 0
-            else:
-                return min(x2,x4) - x1
-        else:
-            if x2 < x3:
-                return 0
-            else:
-                return min(x2,x4) - x3  
-    x1_min  = box1.x - box1.w/2
-    x1_max  = box1.x + box1.w/2
-    y1_min  = box1.y - box1.h/2
-    y1_max  = box1.y + box1.h/2
-    
-    x2_min  = box2.x - box2.w/2
-    x2_max  = box2.x + box2.w/2
-    y2_min  = box2.y - box2.h/2
-    y2_max  = box2.y + box2.h/2
-    
-    intersect_w = _interval_overlap([x1_min, x1_max], [x2_min, x2_max])
-    intersect_h = _interval_overlap([y1_min, y1_max], [y2_min, y2_max])
-    
-    intersect = intersect_w * intersect_h
-    
-    union = box1.w * box1.h + box2.w * box2.h - intersect
-    
-    return float(intersect) / union
-
+    def as_centroid(self):
+        return np.array([self.x, self.y, self.w, self.h])
+        
 
 def draw_boxes(image, boxes, labels):
     
