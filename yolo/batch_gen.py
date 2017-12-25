@@ -21,8 +21,7 @@ class BatchGenerator(Sequence):
         
         """
         self.annotations = annotations
-        self.batch_size = batch_size
-        
+        self._batch_size = batch_size
         self._input_size = input_size
         
         self._yolo_box = _YoloBox(input_size, grid_size)
@@ -44,11 +43,11 @@ class BatchGenerator(Sequence):
         x_batch = []
         y_batch= []
         true_box_batch = []
-        for i in range(self.batch_size):
+        for i in range(self._batch_size):
             # 1. get input file & its annotation
-            fname = self.annotations.fname(self.batch_size*idx + i)
-            boxes = self.annotations.boxes(self.batch_size*idx + i)
-            labels = self.annotations.code_labels(self.batch_size*idx + i)
+            fname = self.annotations.fname(self._batch_size*idx + i)
+            boxes = self.annotations.boxes(self._batch_size*idx + i)
+            labels = self.annotations.code_labels(self._batch_size*idx + i)
             
             # 2. read image in fixed size
             img, boxes = augment.imread(fname,
