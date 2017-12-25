@@ -108,12 +108,6 @@ def to_minmax(centroid_boxes):
     minmax_boxes[:,3] = cy + h/2
     return minmax_boxes
 
-def to_normalize(boxes, scale):
-    """
-    box coordinates -> (scale, scale)
-    """
-    return boxes / float(scale)
-
 def create_anchor_boxes(anchors):
     """
     # Args

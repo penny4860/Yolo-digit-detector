@@ -1,63 +1,9 @@
 
 import numpy as np
 np.random.seed(1337)
-import yolo.augment as augment
+from yolo.augment import ImgAugment
 from keras.utils import Sequence
-from yolo.box import to_centroid, to_normalize, create_anchor_boxes, find_match_box
-
-
-class LabelBatchGenerator(object):
-    def __init__(self, anchors=[0.57273, 0.677385,
-                                1.87446, 2.06253,
-                                3.33843, 5.47434,
-                                7.88282, 3.52778,
-                                9.77052, 9.16828]):
-        self.anchors = create_anchor_boxes(anchors)
-
-    def generate(self, norm_boxes, labels, y_shape, b_shape):
-        """
-        # Args
-            labels : list of integers
-            
-            y_shape : tuple
-                (grid_size, grid_size, nb_boxes, 4+1+nb_classes)
-            b_shape : tuple
-                (1, 1, 1, max_box_per_image, 4)
-        """
-        
-        # construct output from object's x, y, w, h
-        true_box_index = 0
-        
-        y = np.zeros(y_shape)
-        b_ = np.zeros(b_shape)
-        
-        # loop over objects in one image
-        for norm_box, label in zip(norm_boxes, labels):
-            best_anchor = self._find_anchor_idx(norm_box)
-
-            # assign ground truth x, y, w, h, confidence and class probs to y_batch
-            y += self._generate_y(best_anchor, label, norm_box, y_shape)
-            
-            # assign the true box to b_batch
-            b_[0, 0, 0, true_box_index] = norm_box
-            
-            max_box_per_image = b_.shape[-2]
-            true_box_index += 1
-            true_box_index = true_box_index % max_box_per_image
-        return y, b_
-
-    def _find_anchor_idx(self, norm_box):
-        _, _, center_w, center_h = norm_box
-        shifted_box = np.array([0, 0, center_w, center_h])
-        return find_match_box(shifted_box, self.anchors)
-    
-    def _generate_y(self, best_anchor, obj_indx, box, y_shape):
-        y = np.zeros(y_shape)
-        grid_x, grid_y, _, _ = box.astype(int)
-        y[grid_y, grid_x, best_anchor, 0:4] = box
-        y[grid_y, grid_x, best_anchor, 4  ] = 1.
-        y[grid_y, grid_x, best_anchor, 5+obj_indx] = 1
-        return y
+from yolo.box import to_centroid, create_anchor_boxes, find_match_box
 
 
 class BatchGenerator(Sequence):
@@ -75,19 +21,15 @@ class BatchGenerator(Sequence):
         
         """
         self.annotations = annotations
-        self.input_size = input_size
-        self.grid_size = grid_size
-        self.batch_size = batch_size
-        self.max_box_per_image = max_box_per_image
-        self.n_classes = annotations.n_classes()
-        self.nb_box = int(len(anchors) / 2)
-        self._label_generator = LabelBatchGenerator(anchors)
+        self._batch_size = batch_size
+        
+        # related object instances initialized
+        self._img_aug = ImgAugment(input_size, input_size, jitter)
+        self._yolo_box = _YoloBox(input_size, grid_size)
+        self._netin_gen = _NetinGen(input_size, norm)
+        self._netout_gen = _NetoutGen(grid_size, annotations.n_classes(), anchors)
+        self._true_box_gen = _TrueBoxGen(max_box_per_image)
 
-        self.jitter  = jitter
-        if norm is None:
-            self.norm = lambda x: x
-        else:
-            self.norm = norm
         self.counter = 0
 
     def __len__(self):
@@ -96,42 +38,150 @@ class BatchGenerator(Sequence):
     def __getitem__(self, idx):
         """
         # Args
-            idx : int
-                batch index
+            idx : batch index
         """
-        x_batch = np.zeros((self.batch_size, self.input_size, self.input_size, 3))                         # input images
-        b_batch = np.zeros((self.batch_size, 1     , 1     , 1    ,  self.max_box_per_image, 4))   # list of self.config['TRUE_self.config['BOX']_BUFFER'] GT boxes
-        y_batch = np.zeros((self.batch_size, self.grid_size,  self.grid_size, self.nb_box, 4+1+self.n_classes))                # desired network output
-
-        for i in range(self.batch_size):
+        x_batch = []
+        y_batch= []
+        true_box_batch = []
+        for i in range(self._batch_size):
             # 1. get input file & its annotation
-            fname = self.annotations.fname(self.batch_size*idx + i)
-            boxes = self.annotations.boxes(self.batch_size*idx + i)
-            labels = self.annotations.code_labels(self.batch_size*idx + i)
+            fname = self.annotations.fname(self._batch_size*idx + i)
+            boxes = self.annotations.boxes(self._batch_size*idx + i)
+            labels = self.annotations.code_labels(self._batch_size*idx + i)
             
             # 2. read image in fixed size
-            img, boxes = augment.imread(fname,
-                                        boxes,
-                                        self.input_size,
-                                        self.input_size,
-                                        self.jitter)
-            norm_boxes = self._centroid_scale_box(boxes)
+            img, boxes = self._img_aug.imread(fname, boxes)
+
+            # 3. grid scaling centroid boxes
+            norm_boxes = self._yolo_box.trans(boxes)
             
-            # 3. generate x_batch
-            x_batch[i] = self.norm(img)
-            y_batch[i], b_batch[i] = self._label_generator.generate(norm_boxes,
-                                                                    labels,
-                                                                    y_batch.shape[1:],
-                                                                    b_batch.shape[1:])
+            # 4. generate x_batch
+            x_batch.append(self._netin_gen.run(img))
+            y_batch.append(self._netout_gen.run(norm_boxes, labels))
+            true_box_batch.append(self._true_box_gen.run(norm_boxes))
 
+        x_batch = np.array(x_batch)
+        y_batch = np.array(y_batch)
+        true_box_batch = np.array(true_box_batch)
         self.counter += 1
-        return [x_batch, b_batch], y_batch
-
-    def _centroid_scale_box(self, boxes):
-        centroid_boxes = to_centroid(boxes)
-        norm_boxes = to_normalize(centroid_boxes, self.input_size/self.grid_size)
-        return norm_boxes
+        return [x_batch, true_box_batch], y_batch
 
     def on_epoch_end(self):
         self.annotations.shuffle()
         self.counter = 0
+
+
+class _YoloBox(object):
+    
+    def __init__(self, input_size, grid_size):
+        self._input_size = input_size
+        self._grid_size = grid_size
+
+    def trans(self, boxes):
+        """
+        # Args
+            boxes : array, shape of (N, 4)
+                (x1, y1, x2, y2)-ordered & input image size scale coordinate
+        
+        # Returns
+            norm_boxes : array, same shape of boxes
+                (cx, cy, w, h)-ordered & rescaled to grid-size
+        """
+        # 1. minimax box -> centroid box
+        centroid_boxes = to_centroid(boxes).astype(np.float32)
+        # 2. image scale -> grid scale
+        norm_boxes = centroid_boxes * (self._grid_size / self._input_size)
+        return norm_boxes
+
+
+class _NetinGen(object):
+    def __init__(self, input_size, norm):
+        self._input_size = input_size
+        self._norm = self._set_norm(norm)
+    
+    def run(self, image):
+        return self._norm(image)
+    
+    def _set_norm(self, norm):
+        if norm is None:
+            return lambda x: x
+        else:
+            return norm
+
+
+class _TrueBoxGen(object):
+    def __init__(self, max_box_per_image):
+        self._max_box_per_image = max_box_per_image
+
+    def run(self, norm_boxes):
+        """
+        # Args
+            labels : list of integers
+            
+            y_shape : tuple
+                (grid_size, grid_size, nb_boxes, 4+1+nb_classes)
+            b_shape : tuple
+                (1, 1, 1, max_box_per_image, 4)
+        """
+        
+        # construct output from object's x, y, w, h
+        true_box_index = 0
+        true_boxes = np.zeros(self._get_tensor_shape())
+        
+        # loop over objects in one image
+        for norm_box in norm_boxes:
+            # assign the true box to b_batch
+            true_boxes[:,:,:,true_box_index, :] = norm_box
+            true_box_index += 1
+            true_box_index = true_box_index % self._max_box_per_image
+        return true_boxes
+
+    def _get_tensor_shape(self):
+        return (1, 1, 1, self._max_box_per_image, 4)
+
+class _NetoutGen(object):
+    def __init__(self,
+                 grid_size,
+                 nb_classes,
+                 anchors=[0.57273, 0.677385,
+                          1.87446, 2.06253,
+                          3.33843, 5.47434,
+                          7.88282, 3.52778,
+                          9.77052, 9.16828]):
+        self._anchors = create_anchor_boxes(anchors)
+        self._tensor_shape = self._set_tensor_shape(grid_size, nb_classes)
+
+    def run(self, norm_boxes, labels):
+        """
+        # Args
+            norm_boxes : array, shape of (N, 4)
+                scale normalized boxes
+            labels : list of integers
+            y_shape : tuple (grid_size, grid_size, nb_boxes, 4+1+nb_classes)
+        """
+        y = np.zeros(self._tensor_shape)
+        
+        # loop over objects in one image
+        for norm_box, label in zip(norm_boxes, labels):
+            best_anchor = self._find_anchor_idx(norm_box)
+
+            # assign ground truth x, y, w, h, confidence and class probs to y_batch
+            y += self._generate_y(best_anchor, label, norm_box)
+        return y
+
+    def _set_tensor_shape(self, grid_size, nb_classes):
+        nb_boxes = len(self._anchors)
+        return (grid_size, grid_size, nb_boxes, 4+1+nb_classes)
+
+    def _find_anchor_idx(self, norm_box):
+        _, _, center_w, center_h = norm_box
+        shifted_box = np.array([0, 0, center_w, center_h])
+        return find_match_box(shifted_box, self._anchors)
+    
+    def _generate_y(self, best_anchor, obj_indx, box):
+        y = np.zeros(self._tensor_shape)
+        grid_x, grid_y, _, _ = box.astype(int)
+        y[grid_y, grid_x, best_anchor, 0:4] = box
+        y[grid_y, grid_x, best_anchor, 4  ] = 1.
+        y[grid_y, grid_x, best_anchor, 5+obj_indx] = 1
+        return y
