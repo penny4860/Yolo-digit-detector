@@ -1,6 +1,6 @@
 
 import numpy as np
-from yolo.box import BoundBox, bbox_iou
+from yolo.box import BoundBox
 
 class YoloDecoder(object):
     
@@ -60,8 +60,8 @@ class YoloDecoder(object):
                 else:
                     for j in range(i+1, len(sorted_indices)):
                         index_j = sorted_indices[j]
-                        
-                        if bbox_iou(boxes[index_i], boxes[index_j]) >= self._nms_threshold:
+
+                        if boxes[index_i].iou(boxes[index_j]) >= self._nms_threshold:
                             boxes[index_j].classes[c] = 0
                             
         # remove the boxes which are less likely than a obj_threshold
