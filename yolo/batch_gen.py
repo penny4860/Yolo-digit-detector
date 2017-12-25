@@ -3,31 +3,7 @@ import numpy as np
 np.random.seed(1337)
 import yolo.augment as augment
 from keras.utils import Sequence
-from yolo.box import to_centroid, to_normalize, centroid_box_iou, create_anchor_boxes
-
-
-def find_match_box(centroid_box, centroid_boxes):
-    """Find the index of the boxes with the largest overlap among the N-boxes.
-
-    # Args
-        box : array, shape of (1, 4)
-        boxes : array, shape of (N, 4)
-    
-    # Return
-        match_index : int
-    """
-    # _, _, center_w, center_h = centroid_box
-    # find the anchor that best predicts this box
-    match_index = -1
-    max_iou     = -1
-    
-    for i, box in enumerate(centroid_boxes):
-        iou = centroid_box_iou(centroid_box, box)
-        
-        if max_iou < iou:
-            match_index = i
-            max_iou     = iou
-    return match_index
+from yolo.box import to_centroid, to_normalize, centroid_box_iou, create_anchor_boxes, find_match_box
 
 
 class LabelBatchGenerator(object):
@@ -57,7 +33,7 @@ class LabelBatchGenerator(object):
         
         # loop over objects in one image
         for norm_box, label in zip(norm_boxes, labels):
-            best_anchor = self._get_anchor_idx(norm_box)
+            best_anchor = self._find_anchor_idx(norm_box)
 
             # assign ground truth x, y, w, h, confidence and class probs to y_batch
             y += self._generate_y(best_anchor, label, norm_box, y_shape)
@@ -70,7 +46,7 @@ class LabelBatchGenerator(object):
             true_box_index = true_box_index % max_box_per_image
         return y, b_
 
-    def _get_anchor_idx(self, norm_box):
+    def _find_anchor_idx(self, norm_box):
         _, _, center_w, center_h = norm_box
         shifted_box = np.array([0, 0, center_w, center_h])
         return find_match_box(shifted_box, self.anchors)

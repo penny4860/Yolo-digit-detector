@@ -127,3 +127,26 @@ def create_anchor_boxes(anchors):
     for i in range(n_boxes):
         boxes.append(np.array([0, 0, anchors[2*i], anchors[2*i+1]]))
     return np.array(boxes)
+
+def find_match_box(centroid_box, centroid_boxes):
+    """Find the index of the boxes with the largest overlap among the N-boxes.
+
+    # Args
+        box : array, shape of (1, 4)
+        boxes : array, shape of (N, 4)
+    
+    # Return
+        match_index : int
+    """
+    # _, _, center_w, center_h = centroid_box
+    # find the anchor that best predicts this box
+    match_index = -1
+    max_iou     = -1
+    
+    for i, box in enumerate(centroid_boxes):
+        iou = centroid_box_iou(centroid_box, box)
+        
+        if max_iou < iou:
+            match_index = i
+            max_iou     = iou
+    return match_index
