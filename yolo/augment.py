@@ -5,36 +5,40 @@ import numpy as np
 np.random.seed(1337)
 
 
-def imread(img_file,
-           boxes,
-           desired_w,
-           desired_h,
-           jitter):
-    """
-    # Args
-        img_file : str
-        boxes : array, shape of (N, 4)
-        desired_w : int
-        desired_h : int
-        jitter : bool
+class ImgAugment(object):
+    def __init__(self, w, h, jitter):
+        """
+        # Args
+            desired_w : int
+            desired_h : int
+            jitter : bool
+        """
+        self._jitter = jitter
+        self._w = w
+        self._h = h
+        
+    def run(self, img_file, boxes):
+        """
+        # Args
+            img_file : str
+            boxes : array, shape of (N, 4)
+        
+        # Returns
+            image : 3d-array, shape of (h, w, 3)
+            boxes_ : array, same shape of boxes
+                jittered & resized bounding box
+        """
+        # 1. read image file
+        image = cv2.imread(img_file)
     
-    # Returns
-        image : 3d-array, shape of (h, w, 3)
-        boxes_ : array, same shape of boxes
-            jittered & resized bounding box
-    """
-
-    # 1. read image file
-    image = cv2.imread(img_file)
-
-    # 2. make jitter on image
-    boxes_ = np.copy(boxes)
-    if jitter:
-        image, boxes_ = make_jitter_on_image(image, boxes_)
-
-    # 3. resize image            
-    image, boxes_ = resize_image(image, boxes_, desired_w, desired_h)
-    return image, boxes_
+        # 2. make jitter on image
+        boxes_ = np.copy(boxes)
+        if self._jitter:
+            image, boxes_ = make_jitter_on_image(image, boxes_)
+    
+        # 3. resize image            
+        image, boxes_ = resize_image(image, boxes_, self._w, self._h)
+        return image, boxes_
 
 
 def make_jitter_on_image(image, boxes):
