@@ -3,7 +3,6 @@ import os
 
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard
-from yolo.batch_gen import BatchGenerator
 
 
 def train_yolo(model,
