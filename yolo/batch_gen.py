@@ -21,22 +21,15 @@ class BatchGenerator(Sequence):
         
         """
         self.annotations = annotations
-        self.input_size = input_size
         self.batch_size = batch_size
         
         self._grid_scaling_factor = float(input_size) / grid_size
-        self._true_box_gen = _TrueBoxGen(max_box_per_image)
+        self._netin_gen = _NetinGen(input_size, norm)
         self._netout_gen = _NetoutGen(grid_size, annotations.n_classes(), anchors)
-        self._norm = self._set_norm(norm)
+        self._true_box_gen = _TrueBoxGen(max_box_per_image)
 
         self.jitter  = jitter
         self.counter = 0
-
-    def _set_norm(self, norm):
-        if norm is None:
-            return lambda x: x
-        else:
-            return norm
 
     def __len__(self):
         return len(self.annotations._components)
@@ -47,7 +40,7 @@ class BatchGenerator(Sequence):
             idx : int
                 batch index
         """
-        x_batch = np.zeros((self.batch_size, self.input_size, self.input_size, 3))                         # input images
+        x_batch = np.zeros((self.batch_size, *self._netin_gen.get_tensor_shape()))                         # input images
         true_box_batch = np.zeros((self.batch_size, *self._true_box_gen.get_tensor_shape()))   # list of self.config['TRUE_self.config['BOX']_BUFFER'] GT boxes
         y_batch = np.zeros((self.batch_size, *self._netout_gen.get_tensor_shape()))
 
@@ -60,14 +53,14 @@ class BatchGenerator(Sequence):
             # 2. read image in fixed size
             img, boxes = augment.imread(fname,
                                         boxes,
-                                        self.input_size,
-                                        self.input_size,
+                                        self._netin_gen._input_size,
+                                        self._netin_gen._input_size,
                                         self.jitter)
             # 3. grid scaling centroid boxes
             norm_boxes = self._centroid_grid_scale_box(boxes)
             
             # 4. generate x_batch
-            x_batch[i] = self._norm(img)
+            x_batch[i] = self._netin_gen.run(img)
             y_batch[i] = self._netout_gen.run(norm_boxes, labels)
             true_box_batch[i] = self._true_box_gen.run(norm_boxes)
 
@@ -91,6 +84,24 @@ class BatchGenerator(Sequence):
     def on_epoch_end(self):
         self.annotations.shuffle()
         self.counter = 0
+
+
+class _NetinGen(object):
+    def __init__(self, input_size, norm):
+        self._input_size = input_size
+        self._norm = self._set_norm(norm)
+    
+    def run(self, image):
+        return self._norm(image)
+    
+    def get_tensor_shape(self):
+        return (self._input_size, self._input_size, 3)
+
+    def _set_norm(self, norm):
+        if norm is None:
+            return lambda x: x
+        else:
+            return norm
 
 
 class _TrueBoxGen(object):
