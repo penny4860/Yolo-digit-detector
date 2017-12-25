@@ -125,12 +125,9 @@ class _NetoutGen(object):
     def run(self, norm_boxes, labels, y_shape):
         """
         # Args
+            norm_boxes : scale normalized boxes
             labels : list of integers
-            
-            y_shape : tuple
-                (grid_size, grid_size, nb_boxes, 4+1+nb_classes)
-            b_shape : tuple
-                (1, 1, 1, max_box_per_image, 4)
+            y_shape : tuple (grid_size, grid_size, nb_boxes, 4+1+nb_classes)
         """
         y = np.zeros(y_shape)
         
