@@ -3,23 +3,7 @@ import numpy as np
 np.random.seed(1337)
 import yolo.augment as augment
 from keras.utils import Sequence
-from yolo.box import BoundBox, bbox_iou, to_centroid, to_normalize
-
-
-# def create_anchor_boxes(anchors):
-#     """
-#     # Args
-#         anchors : list of floats
-#     # Returns
-#         boxes : array, shape of (len(anchors), 4)
-#             centroid-type
-#     """
-#     n_boxes = int(len(anchors)/2)
-#     boxes = []
-#     for i in range(n_boxes):
-#         boxes.append(np.array([0, 0, anchors[2*i], anchors[2*i+1]]).reshape(-1,4))
-#     boxes = np.array(boxes)
-#     return boxes
+from yolo.box import to_centroid, to_normalize, centroid_box_iou
 
 
 def create_anchor_boxes(anchors):
@@ -30,10 +14,11 @@ def create_anchor_boxes(anchors):
         boxes : array, shape of (len(anchors), 4)
             centroid-type
     """
+    boxes = []
     n_boxes = int(len(anchors)/2)
-    return [BoundBox(0, 0, anchors[2*i], anchors[2*i+1]) 
-            for i in range(n_boxes)]
-
+    for i in range(n_boxes):
+        boxes.append(np.array([0, 0, anchors[2*i], anchors[2*i+1]]))
+    return np.array(boxes)
 
 class LabelBatchGenerator(object):
     
@@ -47,13 +32,10 @@ class LabelBatchGenerator(object):
         best_anchor = -1
         max_iou     = -1
         
-        shifted_box = BoundBox(0, 
-                               0, 
-                               center_w, 
-                               center_h)
+        shifted_box = np.array([0, 0, center_w, center_h])
         
-        for i, anchor in enumerate(self.anchors):
-            iou    = bbox_iou(shifted_box, anchor)
+        for i, anchor_box in enumerate(self.anchors):
+            iou = centroid_box_iou(shifted_box, anchor_box)
             
             if max_iou < iou:
                 best_anchor = i
