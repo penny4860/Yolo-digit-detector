@@ -2,12 +2,15 @@
 import numpy as np
 import pytest
 from yolo.batch_gen import BatchGenerator
+import os
+
+TEST_SAMPLE_DIR = os.path.join(os.path.dirname(__file__), "test_sample")
 
 @pytest.fixture(scope='function')
 def setup():
     import json
     from yolo.annotation import parse_annotation
-    with open("config.json") as config_buffer:    
+    with open(os.path.join(TEST_SAMPLE_DIR, "config.json")) as config_buffer:    
         config = json.loads(config_buffer.read())
         
     input_size = config["model"]["input_size"]
@@ -23,9 +26,9 @@ def setup():
 
 @pytest.fixture(scope='function')
 def expected():
-    x_batch_gt = np.load("x_batch_gt.npy")
-    b_batch_gt = np.load("b_batch_gt.npy")
-    y_batch_gt = np.load("y_batch_gt.npy")
+    x_batch_gt = np.load(os.path.join(TEST_SAMPLE_DIR, "x_batch_gt.npy"))
+    b_batch_gt = np.load(os.path.join(TEST_SAMPLE_DIR, "b_batch_gt.npy"))
+    y_batch_gt = np.load(os.path.join(TEST_SAMPLE_DIR, "y_batch_gt.npy"))
     return x_batch_gt, b_batch_gt, y_batch_gt
 
 def test_generate_batch(setup, expected):
