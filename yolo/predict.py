@@ -1,6 +1,6 @@
 
 import json
-from yolo.box import draw_boxes
+from yolo.utils.box import draw_boxes
 from yolo import YOLO
 import cv2
 

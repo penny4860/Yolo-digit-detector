@@ -183,8 +183,9 @@ if __name__ == '__main__':
     desired_w = 416
     desired_h = 416
     jitter = True
-     
-    img, boxes_ = imread(img_file, boxes, desired_w, desired_h, jitter)
+    
+    aug = ImgAugment(desired_w, desired_h, jitter)
+    img, boxes_ = aug.imread(img_file, boxes)
     img = img.astype(np.uint8)
     
     import matplotlib.pyplot as plt

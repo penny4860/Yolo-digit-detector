@@ -2,7 +2,7 @@
 import json
 import os
 import numpy as np
-from yolo.annotation import parse_annotation
+from yolo.utils.annotation import parse_annotation
 from yolo import YOLO
 
 
