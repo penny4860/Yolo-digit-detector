@@ -25,11 +25,10 @@ class BatchGenerator(Sequence):
         self.grid_size = grid_size
         self.batch_size = batch_size
         self.max_box_per_image = max_box_per_image
-        self.n_classes = annotations.n_classes()
-        self.nb_box = int(len(anchors) / 2)
         
         self._true_box_gen = _TrueBoxGen()
-        self._netout_gen = _NetoutGen(grid_size, self.n_classes, anchors)
+        n_classes = annotations.n_classes()
+        self._netout_gen = _NetoutGen(grid_size, n_classes, anchors)
         self._norm = self._set_norm(norm)
 
         self.jitter  = jitter
@@ -52,7 +51,7 @@ class BatchGenerator(Sequence):
         """
         x_batch = np.zeros((self.batch_size, self.input_size, self.input_size, 3))                         # input images
         true_box_batch = np.zeros((self.batch_size, 1     , 1     , 1    ,  self.max_box_per_image, 4))   # list of self.config['TRUE_self.config['BOX']_BUFFER'] GT boxes
-        y_batch = np.zeros((self.batch_size, self.grid_size,  self.grid_size, self.nb_box, 4+1+self.n_classes))                # desired network output
+        y_batch = np.zeros((self.batch_size, *self._netout_gen.get_out_shape()))
 
         for i in range(self.batch_size):
             # 1. get input file & its annotation
