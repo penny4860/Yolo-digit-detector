@@ -72,6 +72,35 @@ def draw_boxes(image, boxes, labels):
     return image        
 
 
+def centroid_box_iou(box1, box2):
+    def _interval_overlap(interval_a, interval_b):
+        x1, x2 = interval_a
+        x3, x4 = interval_b
+    
+        if x3 < x1:
+            if x4 < x1:
+                return 0
+            else:
+                return min(x2,x4) - x1
+        else:
+            if x2 < x3:
+                return 0
+            else:
+                return min(x2,x4) - x3
+    
+    _, _, w1, h1 = box1.reshape(-1,)
+    _, _, w2, h2 = box2.reshape(-1,)
+    x1_min, y1_min, x1_max, y1_max = to_minmax(box1).reshape(-1,)
+    x2_min, y2_min, x2_max, y2_max = to_minmax(box2).reshape(-1,)
+            
+    intersect_w = _interval_overlap([x1_min, x1_max], [x2_min, x2_max])
+    intersect_h = _interval_overlap([y1_min, y1_max], [y2_min, y2_max])
+    intersect = intersect_w * intersect_h
+    union = w1 * h1 + w2 * h2 - intersect
+    
+    return float(intersect) / union
+
+
 def to_centroid(minmax_boxes):
     """
     minmax_boxes : (N, 4)
