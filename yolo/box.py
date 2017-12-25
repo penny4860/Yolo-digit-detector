@@ -138,8 +138,6 @@ def find_match_box(centroid_box, centroid_boxes):
     # Return
         match_index : int
     """
-    # _, _, center_w, center_h = centroid_box
-    # find the anchor that best predicts this box
     match_index = -1
     max_iou     = -1
     
@@ -150,3 +148,24 @@ def find_match_box(centroid_box, centroid_boxes):
             match_index = i
             max_iou     = iou
     return match_index
+
+
+import pytest
+@pytest.fixture(scope='function')
+def setup():
+    pass
+
+@pytest.fixture(scope='function')
+def expected():
+    pass
+
+def test_box(setup, expected):
+    pass
+#     assert np.array_equal(x_batch, x_batch_gt) == True 
+#     assert np.array_equal(b_batch, b_batch_gt) == True 
+#     assert np.array_equal(y_batch, y_batch_gt) == True 
+
+
+if __name__ == '__main__':
+    pytest.main([__file__, "-v", "-s"])
+
