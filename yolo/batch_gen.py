@@ -101,13 +101,16 @@ class BatchGenerator(Sequence):
         
         self._true_box_gen = _TrueBoxGen()
         self._netout_gen = _NetoutGen(anchors)
+        self._norm = self._set_norm(norm)
 
         self.jitter  = jitter
-        if norm is None:
-            self.norm = lambda x: x
-        else:
-            self.norm = norm
         self.counter = 0
+
+    def _set_norm(self, norm):
+        if norm is None:
+            return lambda x: x
+        else:
+            return norm
 
     def __len__(self):
         return len(self.annotations._components)
@@ -137,7 +140,7 @@ class BatchGenerator(Sequence):
             norm_boxes = self._centroid_scale_box(boxes)
             
             # 3. generate x_batch
-            x_batch[i] = self.norm(img)
+            x_batch[i] = self._norm(img)
             y_batch[i] = self._netout_gen.run(norm_boxes, labels, y_batch.shape[1:])
             true_box_batch[i] = self._true_box_gen.run(norm_boxes, self.max_box_per_image)
 
