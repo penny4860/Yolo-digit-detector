@@ -29,7 +29,7 @@ class BatchGenerator(Sequence):
         self.nb_box = int(len(anchors) / 2)
         
         self._true_box_gen = _TrueBoxGen()
-        self._netout_gen = _NetoutGen(anchors)
+        self._netout_gen = _NetoutGen((grid_size, grid_size, self.nb_box, 4+1+self.n_classes), anchors)
         self._norm = self._set_norm(norm)
 
         self.jitter  = jitter
@@ -70,7 +70,7 @@ class BatchGenerator(Sequence):
             
             # 3. generate x_batch
             x_batch[i] = self._norm(img)
-            y_batch[i] = self._netout_gen.run(norm_boxes, labels, y_batch.shape[1:])
+            y_batch[i] = self._netout_gen.run(norm_boxes, labels)
             true_box_batch[i] = self._true_box_gen.run(norm_boxes, self.max_box_per_image)
 
         self.counter += 1
@@ -115,14 +115,17 @@ class _TrueBoxGen(object):
 
 
 class _NetoutGen(object):
-    def __init__(self, anchors=[0.57273, 0.677385,
+    def __init__(self,
+                 netout_shape=(13,13,5,6),
+                 anchors=[0.57273, 0.677385,
                                 1.87446, 2.06253,
                                 3.33843, 5.47434,
                                 7.88282, 3.52778,
                                 9.77052, 9.16828]):
-        self.anchors = create_anchor_boxes(anchors)
+        self._out_shape = netout_shape
+        self._anchors = create_anchor_boxes(anchors)
 
-    def run(self, norm_boxes, labels, y_shape=(13,13,5,6)):
+    def run(self, norm_boxes, labels):
         """
         # Args
             norm_boxes : array, shape of (N, 4)
@@ -130,23 +133,23 @@ class _NetoutGen(object):
             labels : list of integers
             y_shape : tuple (grid_size, grid_size, nb_boxes, 4+1+nb_classes)
         """
-        y = np.zeros(y_shape)
+        y = np.zeros(self._out_shape)
         
         # loop over objects in one image
         for norm_box, label in zip(norm_boxes, labels):
             best_anchor = self._find_anchor_idx(norm_box)
 
             # assign ground truth x, y, w, h, confidence and class probs to y_batch
-            y += self._generate_y(best_anchor, label, norm_box, y_shape)
+            y += self._generate_y(best_anchor, label, norm_box)
         return y
 
     def _find_anchor_idx(self, norm_box):
         _, _, center_w, center_h = norm_box
         shifted_box = np.array([0, 0, center_w, center_h])
-        return find_match_box(shifted_box, self.anchors)
+        return find_match_box(shifted_box, self._anchors)
     
-    def _generate_y(self, best_anchor, obj_indx, box, y_shape):
-        y = np.zeros(y_shape)
+    def _generate_y(self, best_anchor, obj_indx, box):
+        y = np.zeros(self._out_shape)
         grid_x, grid_y, _, _ = box.astype(int)
         y[grid_y, grid_x, best_anchor, 0:4] = box
         y[grid_y, grid_x, best_anchor, 4  ] = 1.
