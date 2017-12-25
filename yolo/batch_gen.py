@@ -11,31 +11,6 @@ class LabelBatchGenerator(object):
     def __init__(self, anchors):
         self.anchors = create_anchor_boxes(anchors)
 
-    def _get_anchor_idx(self, norm_box):
-        _, _, center_w, center_h = norm_box
-        
-        # find the anchor that best predicts this box
-        best_anchor = -1
-        max_iou     = -1
-        
-        shifted_box = np.array([0, 0, center_w, center_h])
-        
-        for i, anchor_box in enumerate(self.anchors):
-            iou = centroid_box_iou(shifted_box, anchor_box)
-            
-            if max_iou < iou:
-                best_anchor = i
-                max_iou     = iou
-        return best_anchor
-    
-    def _generate_y(self, best_anchor, obj_indx, box, y_shape):
-        y = np.zeros(y_shape)
-        grid_x, grid_y, _, _ = box.astype(int)
-        y[grid_y, grid_x, best_anchor, 0:4] = box
-        y[grid_y, grid_x, best_anchor, 4  ] = 1.
-        y[grid_y, grid_x, best_anchor, 5+obj_indx] = 1
-        return y
-    
     def generate(self, norm_boxes, labels, y_shape, b_shape):
         """
         # Args
@@ -63,10 +38,35 @@ class LabelBatchGenerator(object):
             # assign the true box to b_batch
             b_[0, 0, 0, true_box_index] = norm_box
             
-            max_box_per_image = b_.shape[-1]
+            max_box_per_image = b_.shape[-2]
             true_box_index += 1
             true_box_index = true_box_index % max_box_per_image
         return y, b_
+
+    def _get_anchor_idx(self, norm_box):
+        _, _, center_w, center_h = norm_box
+        
+        # find the anchor that best predicts this box
+        best_anchor = -1
+        max_iou     = -1
+        
+        shifted_box = np.array([0, 0, center_w, center_h])
+        
+        for i, anchor_box in enumerate(self.anchors):
+            iou = centroid_box_iou(shifted_box, anchor_box)
+            
+            if max_iou < iou:
+                best_anchor = i
+                max_iou     = iou
+        return best_anchor
+    
+    def _generate_y(self, best_anchor, obj_indx, box, y_shape):
+        y = np.zeros(y_shape)
+        grid_x, grid_y, _, _ = box.astype(int)
+        y[grid_y, grid_x, best_anchor, 0:4] = box
+        y[grid_y, grid_x, best_anchor, 4  ] = 1.
+        y[grid_y, grid_x, best_anchor, 5+obj_indx] = 1
+        return y
 
 
 class BatchGenerator(Sequence):
