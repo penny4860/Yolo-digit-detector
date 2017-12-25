@@ -1,7 +1,7 @@
 
 import numpy as np
 np.random.seed(1337)
-import yolo.augment as augment
+from yolo.augment import ImgAugment
 from keras.utils import Sequence
 from yolo.box import to_centroid, create_anchor_boxes, find_match_box
 
@@ -22,14 +22,14 @@ class BatchGenerator(Sequence):
         """
         self.annotations = annotations
         self._batch_size = batch_size
-        self._input_size = input_size
         
+        # related object instances initialized
+        self._img_aug = ImgAugment(input_size, input_size, jitter)
         self._yolo_box = _YoloBox(input_size, grid_size)
         self._netin_gen = _NetinGen(input_size, norm)
         self._netout_gen = _NetoutGen(grid_size, annotations.n_classes(), anchors)
         self._true_box_gen = _TrueBoxGen(max_box_per_image)
 
-        self.jitter  = jitter
         self.counter = 0
 
     def __len__(self):
@@ -50,11 +50,7 @@ class BatchGenerator(Sequence):
             labels = self.annotations.code_labels(self._batch_size*idx + i)
             
             # 2. read image in fixed size
-            img, boxes = augment.imread(fname,
-                                        boxes,
-                                        self._input_size,
-                                        self._input_size,
-                                        self.jitter)
+            img, boxes = self._img_aug.imread(fname, boxes)
 
             # 3. grid scaling centroid boxes
             norm_boxes = self._yolo_box.trans(boxes)

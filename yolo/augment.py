@@ -17,7 +17,7 @@ class ImgAugment(object):
         self._w = w
         self._h = h
         
-    def run(self, img_file, boxes):
+    def imread(self, img_file, boxes):
         """
         # Args
             img_file : str
