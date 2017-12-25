@@ -29,7 +29,7 @@ class BatchGenerator(Sequence):
         self.nb_box = int(len(anchors) / 2)
         
         self._true_box_gen = _TrueBoxGen()
-        self._netout_gen = _NetoutGen(grid_size, self.nb_box, self.n_classes, anchors)
+        self._netout_gen = _NetoutGen(grid_size, self.n_classes, anchors)
         self._norm = self._set_norm(norm)
 
         self.jitter  = jitter
@@ -117,15 +117,14 @@ class _TrueBoxGen(object):
 class _NetoutGen(object):
     def __init__(self,
                  grid_size,
-                 nb_boxes,
                  nb_classes,
                  anchors=[0.57273, 0.677385,
                           1.87446, 2.06253,
                           3.33843, 5.47434,
                           7.88282, 3.52778,
                           9.77052, 9.16828]):
-        self._out_shape = self._set_netout_shape(grid_size, nb_boxes, nb_classes)
         self._anchors = create_anchor_boxes(anchors)
+        self._out_shape = self._set_netout_shape(grid_size, nb_classes)
 
     def run(self, norm_boxes, labels):
         """
@@ -148,7 +147,8 @@ class _NetoutGen(object):
     def get_out_shape(self):
         return self._out_shape
 
-    def _set_netout_shape(self, grid_size, nb_boxes, nb_classes):
+    def _set_netout_shape(self, grid_size, nb_classes):
+        nb_boxes = len(self._anchors)
         return (grid_size, grid_size, nb_boxes, 4+1+nb_classes)
 
     def _find_anchor_idx(self, norm_box):
