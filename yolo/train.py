@@ -59,7 +59,7 @@ def train(conf):
     # 4. get batch generator
     # Todo : train_imgs 를 class 로 정의하자.
     train_batch_generator = yolo.get_batch_generator(train_annotations,
-                                                    config["train"]["batch_size"])
+                                                    config["train"]["batch_size"], jitter=False)
     valid_batch_generator = yolo.get_batch_generator(valid_annotations,
                                                     config["train"]["batch_size"],
                                                     jitter=False)
