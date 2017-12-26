@@ -3,6 +3,7 @@ import json
 import os
 import numpy as np
 from yolo.utils.annotation import parse_annotation
+from yolo.utils.trainer import train_yolo
 from yolo import YOLO
 
 
@@ -70,7 +71,6 @@ def train(conf):
                               config['valid']['valid_times'])
     
     # 6. Run training loop
-    from yolo.trainer import train_yolo
     train_yolo(model,
                loss,
                train_batch_generator,
