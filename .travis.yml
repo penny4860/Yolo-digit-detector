@@ -12,7 +12,6 @@ python:
 # command to install dependencies
 install: 
     - pip install pytest
-    - pip install -e .
 
 # command to run tests
 script: pytest main.py
