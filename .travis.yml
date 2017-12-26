@@ -14,7 +14,7 @@ install:
     - pip install pytest
 
 # command to run tests
-script: pytest main.py
+script: pytest tests/main.py
 
 #Upload code coverage statistics
 #after_success:
