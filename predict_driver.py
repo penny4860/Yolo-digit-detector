@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+# Todo : sample driver file => ipython notebook description
 import argparse
 import json
 import cv2
