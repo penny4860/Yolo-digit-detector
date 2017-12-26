@@ -21,8 +21,7 @@ def create_yolo(architecture,
                          n_classes, anchors)
     yolo_decoder = YoloDecoder(anchors)
     yolo = YOLO(yolo_network, yolo_loss, yolo_decoder, input_size, max_box_per_image, anchors)
-    if weights_path:
-        yolo.load_weights(weights_path)
+    yolo.load_weights(weights_path)
     return yolo
 
 # create_feature_extractor(architecture, input_size)
