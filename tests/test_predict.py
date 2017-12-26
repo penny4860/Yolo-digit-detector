@@ -6,7 +6,10 @@ import cv2
 import numpy as np
 import os
 
-SAMPLE_DIRECTORY = "..//sample"
+
+THIS_DIRECTORY = os.path.dirname(__file__)
+SAMPLE_DIRECTORY = os.path.join(os.path.dirname(THIS_DIRECTORY),
+                                "sample")
 
 @pytest.fixture(scope='function')
 def setup_inputs(request):
