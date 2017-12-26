@@ -44,7 +44,7 @@ if __name__ == '__main__':
 
     # 4. save detection result
     output_path = args.input[:-4] + '_detected' + args.input[-4:]
-    image = draw_boxes(image, boxes, config['model']['labels'])
+    image = draw_boxes(image, boxes, config['labels'])
     cv2.imwrite(output_path, image)
     print("{}-boxes are detected. {} saved.".format(len(boxes), output_path))
 
