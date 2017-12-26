@@ -4,7 +4,7 @@ import os
 from yolo.decoder import YoloDecoder
 from yolo.network import YoloNetwork
 from yolo.loss import YoloLoss
-from yolo.batch_gen import BatchGenerator
+from yolo.batch_gen import create_batch_generator
 
 # create_feature_extractor(architecture, input_size)
 # client : predict_driver.py
@@ -84,15 +84,12 @@ class YOLO(object):
         # Returns
             batch_generator : BatchGenerator instance
         """
-        batch_generator = BatchGenerator(annotations,
-                                         self._input_size,
-                                         self.get_grid_size(),
-                                         batch_size,
-                                         self._max_box_per_image,
-                                         self._anchors,
-                                         jitter=jitter,
-                                         norm=self.get_normalize_func())
+        batch_generator = create_batch_generator(annotations,
+                                                 self._input_size,
+                                                 self.get_grid_size(),
+                                                 batch_size,
+                                                 self._max_box_per_image,
+                                                 self._anchors,
+                                                 jitter=jitter,
+                                                 norm=self.get_normalize_func())
         return batch_generator
-        
-        
-        
