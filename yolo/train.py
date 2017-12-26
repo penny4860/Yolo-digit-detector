@@ -3,8 +3,8 @@ import json
 import os
 import numpy as np
 from yolo.utils.annotation import parse_annotation
-from yolo import YOLO
 from yolo.utils.trainer import train_yolo
+from yolo.frontend import create_yolo
 
 
 def _parse(config):
@@ -44,7 +44,6 @@ def train(conf):
         config = json.loads(config_buffer.read())
 
     # 1. Construct the model 
-    from yolo.frontend import create_yolo
     yolo = create_yolo(config['model']['architecture'],
                        config['model']['labels'],
                        config['model']['input_size'],
