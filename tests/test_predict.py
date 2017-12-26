@@ -6,7 +6,10 @@ import cv2
 import numpy as np
 import os
 
-SAMPLE_DIRECTORY = "..//sample"
+
+THIS_DIRECTORY = os.path.dirname(__file__)
+SAMPLE_DIRECTORY = os.path.join(os.path.dirname(THIS_DIRECTORY),
+                                "sample")
 
 @pytest.fixture(scope='function')
 def setup_inputs(request):
@@ -22,12 +25,13 @@ def setup_outputs(request):
         if os.path.exists(fname):
             os.remove(fname)
     output_file = os.path.join(SAMPLE_DIRECTORY, "raccoon_detected.jpg")
-    desired_file = os.path.join(SAMPLE_DIRECTORY, "raccoon_detected_gt.jpg")
+    desired_file1 = os.path.join(SAMPLE_DIRECTORY, "raccoon_detected_gt.jpg")
+    desired_file2 = os.path.join(SAMPLE_DIRECTORY, "raccoon_detected_gt2.jpg")
     _delete_file(output_file)
     def teardown():
         _delete_file(output_file)
     request.addfinalizer(teardown)
-    return output_file, desired_file
+    return output_file, desired_file1, desired_file2
 
 
 def test_predict(setup_inputs, setup_outputs):
@@ -38,13 +42,16 @@ def test_predict(setup_inputs, setup_outputs):
 
     # 1. Given 
     input_file, conf, weights = setup_inputs
-    output_file, desired_file = setup_outputs
+    output_file, desired_file1, desired_file2 = setup_outputs
     
     # 2. When run main()
     predict(input_file, weights, conf)
 
     # 3. Should 
-    assert(is_equal_image_file(output_file, desired_file) == True)
+    # Todo : Edit this !!!!!!!!!!!!!!!!!
+    # desired1 : saved in ubuntu 
+    # desired2 : saved in windows
+    assert(is_equal_image_file(output_file, desired_file1) == True or is_equal_image_file(output_file, desired_file2) == True)
     
     
 if __name__ == '__main__':
