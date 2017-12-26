@@ -6,13 +6,31 @@ from yolo.network import YoloNetwork
 from yolo.loss import YoloLoss
 from yolo.batch_gen import create_batch_generator
 
+
+def create_yolo(architecture,
+                labels,
+                input_size = 416,
+                max_box_per_image = 10,
+                anchors = [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828]):
+
+    n_classes = len(labels)
+    yolo_network = YoloNetwork(architecture, input_size, n_classes, max_box_per_image, anchors)
+    yolo_loss = YoloLoss(yolo_network.get_true_boxes(),
+                         yolo_network.get_grid_size(),
+                         n_classes, anchors)
+    yolo_decoder = YoloDecoder(anchors)
+    yolo = YOLO(yolo_network, yolo_loss, yolo_decoder, input_size, max_box_per_image, anchors)
+    return yolo
+
+
 # create_feature_extractor(architecture, input_size)
 # client : predict_driver.py
 # client : train_driver.py
 class YOLO(object):
     def __init__(self,
-                 architecture,
-                 labels,
+                 yolo_network,
+                 yolo_loss,
+                 yolo_decoder,
                  input_size = 416,
                  max_box_per_image = 10,
                  anchors = [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828]):
@@ -20,21 +38,12 @@ class YOLO(object):
         # Args
             feature_extractor : BaseFeatureExtractor instance
         """
+        self._yolo_network = yolo_network
+        self._yolo_loss = yolo_loss
+        self._yolo_decoder = yolo_decoder
         
-        # 1. inference model
-        n_classes = len(labels)
-        self._yolo_network = YoloNetwork(architecture, input_size, n_classes, max_box_per_image, anchors)
-        
-        # 2. loss function
-        self._yolo_loss = YoloLoss(self._yolo_network.get_true_boxes(),
-                                   self._yolo_network.get_grid_size(),
-                                   n_classes,
-                                   anchors)
-
-        # 3. decoding
-        self._yolo_decoder = YoloDecoder(anchors)
+        # Batch를 생성할 때만 사용한다.
         self._anchors = anchors
-        self._labels = labels
         self._input_size = input_size
         self._max_box_per_image = max_box_per_image
 
