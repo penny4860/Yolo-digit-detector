@@ -3,8 +3,8 @@ import json
 import os
 import numpy as np
 from yolo.utils.annotation import parse_annotation
-from yolo.utils.trainer import train_yolo
 from yolo import YOLO
+from yolo.utils.trainer import train_yolo
 
 
 def _parse(config):
@@ -44,11 +44,13 @@ def train(conf):
         config = json.loads(config_buffer.read())
 
     # 1. Construct the model 
-    yolo = YOLO(config['model']['architecture'],
-                config['model']['labels'],
-                config['model']['input_size'],
-                config['model']['max_box_per_image'],
-                config['model']['anchors'])
+    from yolo.frontend import create_yolo
+    yolo = create_yolo(config['model']['architecture'],
+                       config['model']['labels'],
+                       config['model']['input_size'],
+                       config['model']['max_box_per_image'],
+                       config['model']['anchors'])
+    
     # 2. Load the pretrained weights (if any) 
     yolo.load_weights(config['train']['pretrained_weights'])
 
@@ -58,8 +60,7 @@ def train(conf):
     # 4. get batch generator
     # Todo : train_imgs 를 class 로 정의하자.
     train_batch_generator = yolo.get_batch_generator(train_annotations,
-                                                    config["train"]["batch_size"],
-                                                    jitter=False)
+                                                    config["train"]["batch_size"])
     valid_batch_generator = yolo.get_batch_generator(valid_annotations,
                                                     config["train"]["batch_size"],
                                                     jitter=False)
