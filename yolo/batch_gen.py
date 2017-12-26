@@ -4,32 +4,54 @@ np.random.seed(1337)
 from yolo.utils.augment import ImgAugment
 from yolo.utils.box import to_centroid, create_anchor_boxes, find_match_box
 from keras.utils import Sequence
+        
+
+def create_batch_generator(annotations, 
+                           input_size=416,
+                           grid_size=13,
+                           batch_size=8,
+                           max_box_per_image=10,
+                           anchors=[0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828], 
+                           jitter=True, 
+                           norm=None):
+
+    img_aug = ImgAugment(input_size, input_size, jitter)
+    yolo_box = _YoloBox(input_size, grid_size)
+    netin_gen = _NetinGen(input_size, norm)
+    netout_gen = _NetoutGen(grid_size, annotations.n_classes(), anchors)
+    true_box_gen = _TrueBoxGen(max_box_per_image)
+    worker = BatchGenerator(netin_gen,
+                            netout_gen,
+                            true_box_gen,
+                            yolo_box,
+                            img_aug,
+                            annotations,
+                            batch_size)
+    return worker
 
 
 class BatchGenerator(Sequence):
-    def __init__(self, annotations, 
-                       input_size=416,
-                       grid_size=13,
-                       batch_size=8,
-                       max_box_per_image=10,
-                       anchors=[0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828], 
-                       jitter=True, 
-                       norm=None):
+    def __init__(self,
+                 netin_gen,
+                 netout_gen,
+                 true_box_gen,
+                 yolo_box,
+                 img_aug,
+                 annotations,
+                 batch_size):
         """
         # Args
             annotations : Annotations instance
         
         """
-        self.annotations = annotations
-        self._batch_size = batch_size
-        
-        # related object instances initialized
-        self._img_aug = ImgAugment(input_size, input_size, jitter)
-        self._yolo_box = _YoloBox(input_size, grid_size)
-        self._netin_gen = _NetinGen(input_size, norm)
-        self._netout_gen = _NetoutGen(grid_size, annotations.n_classes(), anchors)
-        self._true_box_gen = _TrueBoxGen(max_box_per_image)
+        self._netin_gen = netin_gen
+        self._netout_gen = netout_gen
+        self._true_box_gen = true_box_gen
+        self._img_aug = img_aug
+        self._yolo_box = yolo_box
 
+        self._batch_size = batch_size
+        self.annotations = annotations
         self.counter = 0
 
     def __len__(self):
