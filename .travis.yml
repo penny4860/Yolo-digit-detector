@@ -3,7 +3,7 @@ sudo: required
 
 language: python
 python:
-  - "3.6"
+  - "3.5"
 
 #cache:
 #    directories:
@@ -14,7 +14,7 @@ install:
     - pip install pytest
 
 # command to run tests
-script: pytest tests/main.py
+script: python tests/main.py
 
 #Upload code coverage statistics
 #after_success:
