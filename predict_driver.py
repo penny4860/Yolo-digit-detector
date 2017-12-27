@@ -41,11 +41,11 @@ if __name__ == '__main__':
                        config['max_box_per_image'],
                        config['anchors'],
                        config['pretrained_weights'])
-    boxes = yolo.predict(image)
+    boxes, probs = yolo.predict(image)
 
     # 4. save detection result
     output_path = args.input[:-4] + '_detected' + args.input[-4:]
-    image = draw_boxes(image, boxes, config['labels'])
+    image = draw_boxes(image, boxes, probs, config['labels'])
     cv2.imwrite(output_path, image)
     print("{}-boxes are detected. {} saved.".format(len(boxes), output_path))
 
