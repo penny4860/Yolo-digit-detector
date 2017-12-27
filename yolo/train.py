@@ -1,42 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
-import os
-import numpy as np
-from yolo.backend.utils.annotation import parse_annotation
-from yolo.backend.utils.fit import train
-from yolo.frontend import create_yolo
-
-
-def _parse(config):
-    # parse annotations of the training set
-    train_imgs, train_labels = parse_annotation(config['train']['train_annot_folder'], 
-                                                config['train']['train_image_folder'], 
-                                                config['model']['labels'])
-
-    # parse annotations of the validation set, if any, otherwise split the training set
-    if os.path.exists(config['valid']['valid_annot_folder']):
-        valid_imgs, valid_labels = parse_annotation(config['valid']['valid_annot_folder'], 
-                                                    config['valid']['valid_image_folder'], 
-                                                    config['model']['labels'])
-    else:
-        train_valid_split = int(0.8*len(train_imgs))
-        np.random.shuffle(train_imgs)
-
-        valid_imgs = train_imgs[train_valid_split:]
-        train_imgs = train_imgs[:train_valid_split]
-
-    
-    overlap_labels = set(config['model']['labels']).intersection(set(train_labels.keys()))
-
-    print('Seen labels:\t', train_labels)
-    print('Given labels:\t', config['model']['labels'])
-    print('Overlap labels:\t', overlap_labels)    
-
-    if len(overlap_labels) < len(config['model']['labels']):
-        print('Some labels have no images! Please revise the list of labels in the config.json file!')
-        return
-    
-    return train_imgs, valid_imgs
+from yolo.frontend import create_yolo, get_annotations
 
 def train_yolo(conf):
 
@@ -54,17 +18,18 @@ def train_yolo(conf):
     yolo.load_weights(config['train']['pretrained_weights'])
     
     # 3. Parse the annotations 
-    train_annotations, valid_annotations = _parse(config)
-    yolo.train(train_annotations,
-               valid_annotations,
+    yolo.train(config['train']['train_image_folder'],
+               config['train']['train_annot_folder'],
+               config['train']['nb_epoch'],
+               config['train']['saved_weights_name'],
                config["train"]["batch_size"],
-               jitter=False,
-               learning_rate      = config['train']['learning_rate'], 
-               nb_epoch           = config['train']['nb_epoch'],
-               warmup_epochs      = config['train']['warmup_epochs'],
-               train_times        = config['train']['train_times'],
-               valid_times        = config['valid']['valid_times'],
-               saved_weights_name = config['train']['saved_weights_name'])
-
+               False,
+               config['train']['learning_rate'], 
+               config['train']['train_times'],
+               config['valid']['valid_times'],
+               config['train']['warmup_epochs'],
+               config['valid']['valid_image_folder'],
+               config['valid']['valid_annot_folder'])
+           
 
 
