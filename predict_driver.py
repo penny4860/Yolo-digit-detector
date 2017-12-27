@@ -4,7 +4,7 @@ import argparse
 import json
 import cv2
 from yolo.frontend import create_yolo
-from yolo.utils.box import draw_boxes
+from yolo.backend.utils.box import draw_boxes
 
 
 DEFAULT_CONFIG_FILE = "sample//pred_config.json"

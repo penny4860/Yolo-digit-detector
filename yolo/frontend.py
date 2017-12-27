@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import os
-from yolo.decoder import YoloDecoder
-from yolo.network import YoloNetwork
-from yolo.loss import YoloLoss
-from yolo.batch_gen import create_batch_generator
+from yolo.backend.decoder import YoloDecoder
+from yolo.backend.network import YoloNetwork
+from yolo.backend.loss import YoloLoss
+from yolo.backend.batch_gen import create_batch_generator
 
 
 def create_yolo(architecture,
@@ -21,7 +21,8 @@ def create_yolo(architecture,
                          n_classes, anchors)
     yolo_decoder = YoloDecoder(anchors)
     yolo = YOLO(yolo_network, yolo_loss, yolo_decoder, input_size, max_box_per_image, anchors)
-    yolo.load_weights(weights_path)
+    if weights_path:
+        yolo.load_weights(weights_path)
     return yolo
 
 # create_feature_extractor(architecture, input_size)
