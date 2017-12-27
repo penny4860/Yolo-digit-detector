@@ -1,10 +1,14 @@
 
 import numpy as np
-from .utils.box import BoundBox
+# from .utils.box import BoundBox
+from yolo.backend.utils.box import BoundBox, nms_boxes, boxes_to_array
 
 class YoloDecoder(object):
     
-    def __init__(self, anchors, obj_threshold=0.3, nms_threshold=0.3):
+    def __init__(self,
+                 anchors = [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828],
+                 obj_threshold=0.3,
+                 nms_threshold=0.3):
         self._anchors = anchors
         self._obj_threshold = obj_threshold
         self._nms_threshold = nms_threshold
@@ -17,7 +21,9 @@ class YoloDecoder(object):
                 YOLO neural network output array
         
         # Returns
-            boxes : list of BoundBox instance
+            boxes : array, shape of (N, 4)
+                coordinate scale is normalized [0, 1]
+            probs : array, shape of (N, nb_classes)
         """
         grid_h, grid_w, nb_box = netout.shape[:3]
 
@@ -43,32 +49,12 @@ class YoloDecoder(object):
                         w = self._anchors[2 * b + 0] * np.exp(w) / grid_w # unit: image width
                         h = self._anchors[2 * b + 1] * np.exp(h) / grid_h # unit: image height
                         confidence = netout[row,col,b,4]
-                        
                         box = BoundBox(x, y, w, h, confidence, classes)
-                        
                         boxes.append(box)
-
-        # suppress non-maximal boxes
-        for c in range(len(classes)):
-            sorted_indices = list(reversed(np.argsort([box.classes[c] for box in boxes])))
-
-            for i in range(len(sorted_indices)):
-                index_i = sorted_indices[i]
-                
-                if boxes[index_i].classes[c] == 0: 
-                    continue
-                else:
-                    for j in range(i+1, len(sorted_indices)):
-                        index_j = sorted_indices[j]
-
-                        if boxes[index_i].iou(boxes[index_j]) >= self._nms_threshold:
-                            boxes[index_j].classes[c] = 0
-                            
-        # remove the boxes which are less likely than a obj_threshold
-        boxes = [box for box in boxes if box.get_score() > self._obj_threshold]
         
-        # Todo : python primitive type?
-        return boxes
+        boxes = nms_boxes(boxes, len(classes), self._nms_threshold, self._obj_threshold)
+        boxes, probs = boxes_to_array(boxes)
+        return boxes, probs
 
 def _sigmoid(x):
     return 1. / (1. + np.exp(-x))
@@ -79,3 +65,30 @@ def _softmax(x, axis=-1, t=-100.):
         x = x/np.min(x)*t
     e_x = np.exp(x)
     return e_x / e_x.sum(axis, keepdims=True)
+
+import pytest
+def test_yolo_decoding():
+    netout = np.load("netout.npy")
+    yolo_decoder = YoloDecoder()
+    boxes, probs = yolo_decoder.run(netout)
+    assert np.allclose(boxes, np.array([(0.50070397927, 0.585420268209, 0.680594700387, 0.758197716846)]))
+    assert np.allclose(probs, np.array([(0.57606441)]))
+
+if __name__ == '__main__':
+    pytest.main([__file__, "-s", "-v"])
+    
+    
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+

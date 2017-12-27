@@ -2,6 +2,8 @@
 import numpy as np
 import cv2
 
+
+# Todo : BoundBox & its related method extraction
 class BoundBox:
     def __init__(self, x, y, w, h, c = None, classes = None):
         self.x     = x
@@ -25,24 +27,64 @@ class BoundBox:
 
     def as_centroid(self):
         return np.array([self.x, self.y, self.w, self.h])
+    
+
+def boxes_to_array(bound_boxes):
+    """
+    # Args
+        boxes : list of BoundBox instances
+    
+    # Returns
+        centroid_boxes : (N, 4)
+        probs : (N, nb_classes)
+    """
+    centroid_boxes = []
+    probs = []
+    for box in bound_boxes:
+        centroid_boxes.append([box.x, box.y, box.w, box.h])
+        probs.append(box.classes)
+    return np.array(centroid_boxes), np.array(probs)
+
+
+def nms_boxes(boxes, n_classes, nms_threshold=0.3, obj_threshold=0.3):
+    """
+    # Args
+        boxes : list of BoundBox
+    
+    # Returns
+        boxes : list of BoundBox
+            non maximum supressed BoundBox instances
+    """
+    # suppress non-maximal boxes
+    for c in range(n_classes):
+        sorted_indices = list(reversed(np.argsort([box.classes[c] for box in boxes])))
+
+        for i in range(len(sorted_indices)):
+            index_i = sorted_indices[i]
+            
+            if boxes[index_i].classes[c] == 0: 
+                continue
+            else:
+                for j in range(i+1, len(sorted_indices)):
+                    index_j = sorted_indices[j]
+
+                    if boxes[index_i].iou(boxes[index_j]) >= nms_threshold:
+                        boxes[index_j].classes[c] = 0
+    # remove the boxes which are less likely than a obj_threshold
+    boxes = [box for box in boxes if box.get_score() > obj_threshold]
+    return boxes
         
 
-def draw_boxes(image, boxes, labels):
-    
-    for box in boxes:
-        xmin  = int((box.x - box.w/2) * image.shape[1])
-        xmax  = int((box.x + box.w/2) * image.shape[1])
-        ymin  = int((box.y - box.h/2) * image.shape[0])
-        ymax  = int((box.y + box.h/2) * image.shape[0])
-
-        cv2.rectangle(image, (xmin,ymin), (xmax,ymax), (0,255,0), 3)
+def draw_boxes(image, boxes, probs, labels):
+    for box, classes in zip(boxes, probs):
+        x1, y1, x2, y2 = box
+        cv2.rectangle(image, (x1,y1), (x2,y2), (0,255,0), 3)
         cv2.putText(image, 
-                    labels[box.get_label()] + ' ' + str(box.get_score()), 
-                    (xmin, ymin - 13), 
+                    labels[np.argmax(classes)] + ' ' + str(classes.max()), 
+                    (x1, y1 - 13), 
                     cv2.FONT_HERSHEY_SIMPLEX, 
                     1e-3 * image.shape[0], 
                     (0,255,0), 2)
-        
     return image        
 
 

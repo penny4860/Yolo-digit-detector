@@ -4,6 +4,8 @@ import numpy as np
 np.random.seed(111)
 import argparse
 import os
+import json
+from yolo.frontend import create_yolo
 
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
@@ -18,8 +20,6 @@ argparser.add_argument(
     help='path to configuration file')
 
 if __name__ == '__main__':
-    import json
-    from yolo.frontend import create_yolo
     args = argparser.parse_args()
     
     with open(args.conf) as config_buffer:
