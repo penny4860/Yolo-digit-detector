@@ -3,7 +3,6 @@
 # Outside the package, someone can use yolo detector accessing with this module.
 
 import os
-import numpy as np
 
 from yolo.backend.decoder import YoloDecoder
 from yolo.backend.network import YoloNetwork
