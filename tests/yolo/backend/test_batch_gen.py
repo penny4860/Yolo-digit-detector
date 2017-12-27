@@ -1,10 +1,10 @@
 
 import numpy as np
 import pytest
-from yolo.batch_gen import BatchGenerator
 import os
+from yolo.backend.batch_gen import create_batch_generator
 
-TEST_SAMPLE_DIR = os.path.join(os.path.dirname(__file__), "test_sample")
+TEST_SAMPLE_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "test_sample")
 
 @pytest.fixture(scope='function')
 def setup():
@@ -31,26 +31,24 @@ def expected():
     y_batch_gt = np.load(os.path.join(TEST_SAMPLE_DIR, "y_batch_gt.npy"))
     return x_batch_gt, b_batch_gt, y_batch_gt
 
-# Todo : CI test env
-# def test_generate_batch(setup, expected):
-#     train_annotations, input_size, grid_size, batch_size, max_box_per_image, anchors = setup
-#     x_batch_gt, b_batch_gt, y_batch_gt = expected
-#     
-#     from yolo.batch_gen import create_batch_generator
-#     batch_gen = create_batch_generator(train_annotations,
-#                               input_size,
-#                               grid_size,
-#                               batch_size,
-#                               max_box_per_image,
-#                               anchors,
-#                               jitter=False)
-# 
-#     # (8, 416, 416, 3) (8, 1, 1, 1, 10, 4) (8, 13, 13, 5, 6)
-#     (x_batch, b_batch), y_batch = batch_gen[0]
-#     
-#     assert np.array_equal(x_batch, x_batch_gt) == True 
-#     assert np.array_equal(b_batch, b_batch_gt) == True 
-#     assert np.array_equal(y_batch, y_batch_gt) == True 
+def test_generate_batch(setup, expected):
+    train_annotations, input_size, grid_size, batch_size, max_box_per_image, anchors = setup
+    x_batch_gt, b_batch_gt, y_batch_gt = expected
+     
+    batch_gen = create_batch_generator(train_annotations,
+                              input_size,
+                              grid_size,
+                              batch_size,
+                              max_box_per_image,
+                              anchors,
+                              jitter=False)
+ 
+    # (8, 416, 416, 3) (8, 1, 1, 1, 10, 4) (8, 13, 13, 5, 6)
+    (x_batch, b_batch), y_batch = batch_gen[0]
+     
+    assert np.array_equal(x_batch, x_batch_gt) == True 
+    assert np.array_equal(b_batch, b_batch_gt) == True 
+    assert np.array_equal(y_batch, y_batch_gt) == True 
 
 
 if __name__ == '__main__':
