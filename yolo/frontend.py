@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import os
-from yolo.decoder import YoloDecoder
-from yolo.network import YoloNetwork
-from yolo.loss import YoloLoss
-from yolo.batch_gen import create_batch_generator
+from yolo.backend.decoder import YoloDecoder
+from yolo.backend.network import YoloNetwork
+from yolo.backend.loss import YoloLoss
+from yolo.backend.batch_gen import create_batch_generator
 
 
 def create_yolo(architecture,
