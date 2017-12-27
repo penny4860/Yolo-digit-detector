@@ -1,9 +1,9 @@
 
 import numpy as np
 np.random.seed(1337)
-from yolo.utils.augment import ImgAugment
-from yolo.utils.box import to_centroid, create_anchor_boxes, find_match_box
 from keras.utils import Sequence
+from .utils.augment import ImgAugment
+from .utils.box import to_centroid, create_anchor_boxes, find_match_box
         
 
 def create_batch_generator(annotations, 

@@ -4,6 +4,7 @@ from keras.layers import Reshape, Conv2D, Input, Lambda
 import numpy as np
 import cv2
 
+# Todo : remove dependency 
 from yolo.backend.feature import create_feature_extractor
 
 
