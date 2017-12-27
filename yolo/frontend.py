@@ -72,7 +72,7 @@ class YOLO(object):
             boxes : array, shape of (N, 4)
             probs : array, shape of (N, nb_classes)
         """
-        def _scale_boxes(boxes):
+        def _to_original_scale(boxes):
             height, width = image.shape[:2]
             minmax_boxes = to_minmax(boxes)
             minmax_boxes[:,0] *= width
@@ -83,7 +83,7 @@ class YOLO(object):
 
         netout = self._yolo_network.forward(image)
         boxes, probs = self._yolo_decoder.run(netout)
-        boxes = _scale_boxes(boxes)
+        boxes = _to_original_scale(boxes)
         return boxes, probs
 
     def train(self,
