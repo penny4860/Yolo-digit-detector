@@ -5,16 +5,15 @@ from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard
 
 
-def train_yolo(model,
-               loss_func,
-               train_batch_gen,
-               valid_batch_gen,
-               learning_rate = 1e-4,
-               nb_epoch = 300,
-               train_times = 1,
-               valid_times = 1,
-               saved_weights_name = 'best_weights.h5',
-               ):
+def train(model,
+         loss_func,
+         train_batch_gen,
+         valid_batch_gen,
+         learning_rate = 1e-4,
+         nb_epoch = 300,
+         train_times = 1,
+         valid_times = 1,
+         saved_weights_name = 'best_weights.h5'):
     """A function that performs training on a general keras model.
 
     # Args
