@@ -2,8 +2,8 @@
 import json
 import os
 import numpy as np
-from yolo.utils.annotation import parse_annotation
-from yolo.utils.trainer import train_yolo
+from yolo.backend.utils.annotation import parse_annotation
+from yolo.backend.utils.trainer import train_yolo
 from yolo.frontend import create_yolo
 
 
