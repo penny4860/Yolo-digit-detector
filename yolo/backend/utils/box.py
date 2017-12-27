@@ -27,6 +27,23 @@ class BoundBox:
 
     def as_centroid(self):
         return np.array([self.x, self.y, self.w, self.h])
+    
+
+def boxes_to_array(bound_boxes):
+    """
+    # Args
+        boxes : list of BoundBox instances
+    
+    # Returns
+        centroid_boxes : (N, 4)
+        probs : (N, nb_classes)
+    """
+    centroid_boxes = []
+    probs = []
+    for box in bound_boxes:
+        centroid_boxes.append([box.x, box.y, box.w, box.h])
+        probs.append(box.classes)
+    return np.array(centroid_boxes), np.array(probs)
 
 
 def nms_boxes(boxes, n_classes, nms_threshold=0.3, obj_threshold=0.3):
