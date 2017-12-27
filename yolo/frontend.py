@@ -3,6 +3,7 @@
 # Outside the package, someone can use yolo detector accessing with this module.
 
 import os
+import numpy as np
 
 from yolo.backend.decoder import YoloDecoder
 from yolo.backend.loss import YoloLoss
@@ -11,6 +12,7 @@ from yolo.backend.batch_gen import create_batch_generator
 
 from yolo.backend.utils.fit import train
 from yolo.backend.utils.annotation import get_train_annotations
+from yolo.backend.utils.box import to_minmax
 
 
 def create_yolo(architecture,
@@ -67,11 +69,22 @@ class YOLO(object):
             image : 3d-array (BGR ordered)
         
         # Returns
-            boxes : list of BoundBox instance
+            boxes : array, shape of (N, 4)
+            probs : array, shape of (N, nb_classes)
         """
+        def _to_original_scale(boxes):
+            height, width = image.shape[:2]
+            minmax_boxes = to_minmax(boxes)
+            minmax_boxes[:,0] *= width
+            minmax_boxes[:,2] *= width
+            minmax_boxes[:,1] *= height
+            minmax_boxes[:,3] *= height
+            return minmax_boxes.astype(np.int)
+
         netout = self._yolo_network.forward(image)
-        boxes = self._yolo_decoder.run(netout)
-        return boxes
+        boxes, probs = self._yolo_decoder.run(netout)
+        boxes = _to_original_scale(boxes)
+        return boxes, probs
 
     def train(self,
               img_folder,
@@ -143,4 +156,4 @@ class YOLO(object):
                                                  jitter=jitter,
                                                  norm=self._yolo_network.get_normalize_func())
         return batch_generator
-
+    
