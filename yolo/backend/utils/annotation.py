@@ -5,6 +5,44 @@ import numpy as np
 from xml.etree.ElementTree import parse
 
 
+def get_train_annotations(labels,
+                          img_folder,
+                          ann_folder,
+                          valid_img_folder = "",
+                          valid_ann_folder = ""):
+    """
+    # Args
+        labels : list of strings
+            ["raccoon", "human", ...]
+        img_folder : str
+        ann_folder : str
+        valid_img_folder : str
+        valid_ann_folder : str
+
+    # Returns
+        train_anns : Annotations instance
+        valid_anns : Annotations instance
+    """
+    # parse annotations of the training set
+    train_anns, _ = parse_annotation(ann_folder,
+                                     img_folder,
+                                     labels)
+
+    # parse annotations of the validation set, if any, otherwise split the training set
+    if os.path.exists(valid_ann_folder):
+        valid_anns, _ = parse_annotation(valid_ann_folder,
+                                         valid_img_folder,
+                                         labels)
+    else:
+        train_valid_split = int(0.8*len(train_anns))
+        np.random.shuffle(train_anns)
+
+        valid_anns = train_anns[train_valid_split:]
+        train_anns = train_anns[:train_valid_split]
+    
+    return train_anns, valid_anns
+
+
 class PascalVocXmlParser(object):
     """Parse annotation for 1-annotation file """
     
