@@ -52,32 +52,19 @@ def train_yolo(conf):
     
     # 2. Load the pretrained weights (if any) 
     yolo.load_weights(config['train']['pretrained_weights'])
-
+    
     # 3. Parse the annotations 
     train_annotations, valid_annotations = _parse(config)
+    yolo.train(train_annotations,
+               valid_annotations,
+               config["train"]["batch_size"],
+               jitter=False,
+               learning_rate      = config['train']['learning_rate'], 
+               nb_epoch           = config['train']['nb_epoch'],
+               warmup_epochs      = config['train']['warmup_epochs'],
+               train_times        = config['train']['train_times'],
+               valid_times        = config['valid']['valid_times'],
+               saved_weights_name = config['train']['saved_weights_name'])
 
-    # 4. get batch generator
-    # Todo : train_imgs 를 class 로 정의하자.
-    train_batch_generator = yolo.get_batch_generator(train_annotations,
-                                                    config["train"]["batch_size"], jitter=False)
-    valid_batch_generator = yolo.get_batch_generator(valid_annotations,
-                                                    config["train"]["batch_size"],
-                                                    jitter=False)
-    
-    # 5. To train model get keras model instance & loss fucntion
-    model = yolo.get_model()
-    loss = yolo.get_loss_func(config['train']['batch_size'],
-                              config['train']['warmup_epochs'],
-                              config['train']['train_times'],
-                              config['valid']['valid_times'])
-    
-    # 6. Run training loop
-    train(model,
-            loss,
-            train_batch_generator,
-            valid_batch_generator,
-            learning_rate      = config['train']['learning_rate'], 
-            nb_epoch           = config['train']['nb_epoch'],
-            train_times        = config['train']['train_times'],
-            valid_times        = config['valid']['valid_times'],
-            saved_weights_name = config['train']['saved_weights_name'])
+
+

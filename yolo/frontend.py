@@ -7,6 +7,7 @@ from yolo.backend.decoder import YoloDecoder
 from yolo.backend.network import YoloNetwork
 from yolo.backend.loss import YoloLoss
 from yolo.backend.batch_gen import create_batch_generator
+from yolo.backend.utils.fit import train
 
 
 def create_yolo(architecture,
@@ -106,3 +107,37 @@ class YOLO(object):
                                                  jitter=jitter,
                                                  norm=self.get_normalize_func())
         return batch_generator
+
+    def train(self,
+              train_annotations,
+              valid_annotations,
+              batch_size,
+              jitter,
+              learning_rate, 
+              nb_epoch,
+              warmup_epochs,
+              train_times,
+              valid_times,
+              saved_weights_name):
+        
+        # 4. get batch generator
+        train_batch_generator = self.get_batch_generator(train_annotations, batch_size, jitter=jitter)
+        valid_batch_generator = self.get_batch_generator(valid_annotations, batch_size, jitter=False)
+        
+        # 5. To train model get keras model instance & loss fucntion
+        model = self.get_model()
+        loss = self.get_loss_func(batch_size,
+                                  warmup_epochs,
+                                  train_times,
+                                  valid_times)
+        
+        # 6. Run training loop
+        train(model,
+                loss,
+                train_batch_generator,
+                valid_batch_generator,
+                learning_rate      = learning_rate, 
+                nb_epoch           = nb_epoch,
+                train_times        = train_times,
+                valid_times        = valid_times,
+                saved_weights_name = saved_weights_name)
