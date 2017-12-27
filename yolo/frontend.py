@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# This module is responsible for communicating with the outside of the yolo package.
+# Outside the package, someone can use yolo detector accessing with this module.
 
 import os
 from yolo.backend.decoder import YoloDecoder
