@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
-from yolo.frontend import create_yolo, get_annotations
+from yolo.frontend import create_yolo
 
 def train_yolo(conf):
 
