@@ -28,9 +28,7 @@ def create_yolo(architecture,
         yolo.load_weights(weights_path)
     return yolo
 
-# create_feature_extractor(architecture, input_size)
-# client : predict_driver.py
-# client : train_driver.py
+
 class YOLO(object):
     def __init__(self,
                  yolo_network,
@@ -71,43 +69,6 @@ class YOLO(object):
         boxes = self._yolo_decoder.run(netout)
         return boxes
 
-    def get_model(self):
-        return self._yolo_network.get_model()
-
-    def get_loss_func(self,
-                      batch_size,
-                      warmup_epochs,
-                      train_times = 1,
-                      valid_times = 1):
-        warmup_bs  = warmup_epochs * (train_times*(batch_size+1) + valid_times*(batch_size+1))
-        return self._yolo_loss.custom_loss(batch_size, warmup_bs)
-
-    def get_normalize_func(self):
-        return self._yolo_network.get_normalize_func()
-
-    def get_grid_size(self):
-        return self._yolo_network.get_grid_size()
-    
-    def get_batch_generator(self, annotations, batch_size, jitter=True):
-        """
-        # Args
-            annotations : Annotations instance
-            batch_size : int
-            jitter : bool
-        
-        # Returns
-            batch_generator : BatchGenerator instance
-        """
-        batch_generator = create_batch_generator(annotations,
-                                                 self._input_size,
-                                                 self.get_grid_size(),
-                                                 batch_size,
-                                                 self._max_box_per_image,
-                                                 self._anchors,
-                                                 jitter=jitter,
-                                                 norm=self.get_normalize_func())
-        return batch_generator
-
     def train(self,
               train_annotations,
               valid_annotations,
@@ -120,18 +81,18 @@ class YOLO(object):
               valid_times,
               saved_weights_name):
         
-        # 4. get batch generator
-        train_batch_generator = self.get_batch_generator(train_annotations, batch_size, jitter=jitter)
-        valid_batch_generator = self.get_batch_generator(valid_annotations, batch_size, jitter=False)
+        # 1. get batch generator
+        train_batch_generator = self._get_batch_generator(train_annotations, batch_size, jitter=jitter)
+        valid_batch_generator = self._get_batch_generator(valid_annotations, batch_size, jitter=False)
         
-        # 5. To train model get keras model instance & loss fucntion
-        model = self.get_model()
-        loss = self.get_loss_func(batch_size,
+        # 2. To train model get keras model instance & loss fucntion
+        model = self._yolo_network.get_model()
+        loss = self._get_loss_func(batch_size,
                                   warmup_epochs,
                                   train_times,
                                   valid_times)
         
-        # 6. Run training loop
+        # 3. Run training loop
         train(model,
                 loss,
                 train_batch_generator,
@@ -141,3 +102,32 @@ class YOLO(object):
                 train_times        = train_times,
                 valid_times        = valid_times,
                 saved_weights_name = saved_weights_name)
+
+    def _get_loss_func(self,
+                      batch_size,
+                      warmup_epochs,
+                      train_times = 1,
+                      valid_times = 1):
+        warmup_bs  = warmup_epochs * (train_times*(batch_size+1) + valid_times*(batch_size+1))
+        return self._yolo_loss.custom_loss(batch_size, warmup_bs)
+
+    def _get_batch_generator(self, annotations, batch_size, jitter=True):
+        """
+        # Args
+            annotations : Annotations instance
+            batch_size : int
+            jitter : bool
+        
+        # Returns
+            batch_generator : BatchGenerator instance
+        """
+        batch_generator = create_batch_generator(annotations,
+                                                 self._input_size,
+                                                 self._yolo_network.get_grid_size(),
+                                                 batch_size,
+                                                 self._max_box_per_image,
+                                                 self._anchors,
+                                                 jitter=jitter,
+                                                 norm=self._yolo_network.get_normalize_func())
+        return batch_generator
+
