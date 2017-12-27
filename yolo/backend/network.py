@@ -15,7 +15,7 @@ class YoloNetwork(object):
                  input_size,
                  nb_classes,
                  max_box_per_image,
-                 anchors):
+                 nb_box):
         
         # 1. create feature extractor
         feature_extractor = create_feature_extractor(architecture, input_size)
@@ -29,7 +29,6 @@ class YoloNetwork(object):
         true_boxes = Input(shape=(1, 1, 1, max_box_per_image , 4))
     
         # make the object detection layer
-        nb_box = int(len(anchors)/2)
         output_tensor = Conv2D(nb_box * (4 + 1 + nb_classes), 
                         (1,1), strides=(1,1), 
                         padding='same', 

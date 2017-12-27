@@ -20,7 +20,8 @@ def create_yolo(architecture,
                 weights_path=None):
 
     n_classes = len(labels)
-    yolo_network = YoloNetwork(architecture, input_size, n_classes, max_box_per_image, anchors)
+    n_boxes = int(len(anchors)/2)
+    yolo_network = YoloNetwork(architecture, input_size, n_classes, max_box_per_image, n_boxes)
     yolo_loss = YoloLoss(yolo_network.get_true_boxes(),
                          yolo_network.get_grid_size(),
                          n_classes, anchors)
