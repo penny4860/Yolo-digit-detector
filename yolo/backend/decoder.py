@@ -1,7 +1,7 @@
 
 import numpy as np
 # from .utils.box import BoundBox
-from yolo.backend.utils.box import BoundBox
+from yolo.backend.utils.box import BoundBox, nms_boxes
 
 class YoloDecoder(object):
     
@@ -51,27 +51,8 @@ class YoloDecoder(object):
                         box = BoundBox(x, y, w, h, confidence, classes)
                         
                         boxes.append(box)
-
-        # suppress non-maximal boxes
-        for c in range(len(classes)):
-            sorted_indices = list(reversed(np.argsort([box.classes[c] for box in boxes])))
-
-            for i in range(len(sorted_indices)):
-                index_i = sorted_indices[i]
-                
-                if boxes[index_i].classes[c] == 0: 
-                    continue
-                else:
-                    for j in range(i+1, len(sorted_indices)):
-                        index_j = sorted_indices[j]
-
-                        if boxes[index_i].iou(boxes[index_j]) >= self._nms_threshold:
-                            boxes[index_j].classes[c] = 0
-                            
-        # remove the boxes which are less likely than a obj_threshold
-        boxes = [box for box in boxes if box.get_score() > self._obj_threshold]
         
-        # Todo : python primitive type?
+        boxes = nms_boxes(boxes, len(classes), self._nms_threshold, self._obj_threshold)
         return boxes
 
 def _sigmoid(x):
