@@ -1,7 +1,7 @@
 
 import numpy as np
 # from .utils.box import BoundBox
-from yolo.backend.utils.box import BoundBox, nms_boxes
+from yolo.backend.utils.box import BoundBox, nms_boxes, boxes_to_array
 
 class YoloDecoder(object):
     
@@ -21,7 +21,9 @@ class YoloDecoder(object):
                 YOLO neural network output array
         
         # Returns
-            boxes : list of BoundBox instance
+            boxes : array, shape of (N, 4)
+                coordinate scale is normalized [0, 1]
+            probs : array, shape of (N, nb_classes)
         """
         grid_h, grid_w, nb_box = netout.shape[:3]
 
@@ -47,13 +49,12 @@ class YoloDecoder(object):
                         w = self._anchors[2 * b + 0] * np.exp(w) / grid_w # unit: image width
                         h = self._anchors[2 * b + 1] * np.exp(h) / grid_h # unit: image height
                         confidence = netout[row,col,b,4]
-                        
                         box = BoundBox(x, y, w, h, confidence, classes)
-                        
                         boxes.append(box)
         
         boxes = nms_boxes(boxes, len(classes), self._nms_threshold, self._obj_threshold)
-        return boxes
+        boxes, probs = boxes_to_array(boxes)
+        return boxes, probs
 
 def _sigmoid(x):
     return 1. / (1. + np.exp(-x))
@@ -69,17 +70,12 @@ import pytest
 def test_yolo_decoding():
     netout = np.load("netout.npy")
     yolo_decoder = YoloDecoder()
-    boxes = yolo_decoder.run(netout)
-    assert np.allclose(boxes[0].x, 0.50070397927)
-    assert np.allclose(boxes[0].y, 0.585420268209)
-    assert np.allclose(boxes[0].w, 0.680594700387)
-    assert np.allclose(boxes[0].h, 0.758197716846)
-    assert np.allclose(boxes[0].c, 0.576064)
-    assert np.allclose(boxes[0].classes, [ 0.57606441])
-    
+    boxes, probs = yolo_decoder.run(netout)
+    assert np.allclose(boxes, np.array([(0.50070397927, 0.585420268209, 0.680594700387, 0.758197716846)]))
+    assert np.allclose(probs, np.array([(0.57606441)]))
 
 if __name__ == '__main__':
-    pytest.main([__file__])
+    pytest.main([__file__, "-s", "-v"])
     
     
 
