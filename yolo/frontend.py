@@ -5,9 +5,10 @@
 import os
 
 from yolo.backend.decoder import YoloDecoder
-from yolo.backend.network import YoloNetwork
 from yolo.backend.loss import YoloLoss
+from yolo.backend.network import create_yolo_network
 from yolo.backend.batch_gen import create_batch_generator
+
 from yolo.backend.utils.fit import train
 from yolo.backend.utils.annotation import get_train_annotations
 
@@ -21,7 +22,7 @@ def create_yolo(architecture,
 
     n_classes = len(labels)
     n_boxes = int(len(anchors)/2)
-    yolo_network = YoloNetwork(architecture, input_size, n_classes, max_box_per_image, n_boxes)
+    yolo_network = create_yolo_network(architecture, input_size, n_classes, max_box_per_image, n_boxes)
     yolo_loss = YoloLoss(yolo_network.get_true_boxes(),
                          yolo_network.get_grid_size(),
                          n_classes, anchors)

@@ -4,23 +4,33 @@ from keras.layers import Reshape, Conv2D, Input, Lambda
 import numpy as np
 import cv2
 
-# Todo : remove dependency 
-from yolo.backend.feature import create_feature_extractor
+from .utils.feature import create_feature_extractor
+
+
+def create_yolo_network(architecture,
+                        input_size,
+                        nb_classes,
+                        max_box_per_image,
+                        nb_box):
+    feature_extractor = create_feature_extractor(architecture, input_size)
+    yolo_net = YoloNetwork(feature_extractor,
+                           input_size,
+                           nb_classes,
+                           max_box_per_image,
+                           nb_box)
+    return yolo_net
 
 
 class YoloNetwork(object):
     
     def __init__(self,
-                 architecture,
+                 feature_extractor,
                  input_size,
                  nb_classes,
                  max_box_per_image,
                  nb_box):
         
-        # 1. create feature extractor
-        feature_extractor = create_feature_extractor(architecture, input_size)
-        
-        # 2. create full network
+        # 1. create full network
         input_tensor = Input(shape=(input_size, input_size, 3))
         features = feature_extractor.extract(input_tensor)
         grid_size = feature_extractor.get_output_size()
