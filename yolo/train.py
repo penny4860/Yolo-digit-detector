@@ -3,7 +3,7 @@ import json
 import os
 import numpy as np
 from yolo.backend.utils.annotation import parse_annotation
-from yolo.backend.utils.trainer import train_yolo
+from yolo.backend.utils.trainer import train
 from yolo.frontend import create_yolo
 
 
@@ -38,7 +38,7 @@ def _parse(config):
     
     return train_imgs, valid_imgs
 
-def train(conf):
+def train_yolo(conf):
 
     with open(conf) as config_buffer:
         config = json.loads(config_buffer.read())
@@ -72,13 +72,12 @@ def train(conf):
                               config['valid']['valid_times'])
     
     # 6. Run training loop
-    train_yolo(model,
-               loss,
-               train_batch_generator,
-               valid_batch_generator,
-               learning_rate      = config['train']['learning_rate'], 
-               nb_epoch           = config['train']['nb_epoch'],
-               train_times        = config['train']['train_times'],
-               valid_times        = config['valid']['valid_times'],
-               saved_weights_name = config['train']['saved_weights_name'],
-               )
+    train(model,
+            loss,
+            train_batch_generator,
+            valid_batch_generator,
+            learning_rate      = config['train']['learning_rate'], 
+            nb_epoch           = config['train']['nb_epoch'],
+            train_times        = config['train']['train_times'],
+            valid_times        = config['valid']['valid_times'],
+            saved_weights_name = config['train']['saved_weights_name'])
