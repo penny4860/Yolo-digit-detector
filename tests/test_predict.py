@@ -5,7 +5,6 @@ import cv2
 import numpy as np
 import os
 from yolo.frontend import create_yolo
-from yolo.backend.utils.box import BoundBox
 
 
 THIS_DIRECTORY = os.path.dirname(__file__)
