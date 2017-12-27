@@ -2,6 +2,8 @@
 import numpy as np
 import cv2
 
+
+# Todo : BoundBox & its related method extraction
 class BoundBox:
     def __init__(self, x, y, w, h, c = None, classes = None):
         self.x     = x
@@ -25,6 +27,35 @@ class BoundBox:
 
     def as_centroid(self):
         return np.array([self.x, self.y, self.w, self.h])
+
+
+def nms_boxes(boxes, n_classes, nms_threshold=0.3, obj_threshold=0.3):
+    """
+    # Args
+        boxes : list of BoundBox
+    
+    # Returns
+        boxes : list of BoundBox
+            non maximum supressed BoundBox instances
+    """
+    # suppress non-maximal boxes
+    for c in range(n_classes):
+        sorted_indices = list(reversed(np.argsort([box.classes[c] for box in boxes])))
+
+        for i in range(len(sorted_indices)):
+            index_i = sorted_indices[i]
+            
+            if boxes[index_i].classes[c] == 0: 
+                continue
+            else:
+                for j in range(i+1, len(sorted_indices)):
+                    index_j = sorted_indices[j]
+
+                    if boxes[index_i].iou(boxes[index_j]) >= nms_threshold:
+                        boxes[index_j].classes[c] = 0
+    # remove the boxes which are less likely than a obj_threshold
+    boxes = [box for box in boxes if box.get_score() > obj_threshold]
+    return boxes
         
 
 def draw_boxes(image, boxes, labels):
