@@ -72,9 +72,7 @@ class YoloDecoder(object):
         boxes = [box for box in boxes if box.get_score() > self._obj_threshold]
         
         # Todo : python primitive type?
-        c_boxes = [np.array([box.x, box.y, box.w, box.h]) for box in boxes]
-        probs = [box.classes for box in boxes]
-        return np.array(c_boxes), np.array(probs)
+        return boxes
 
 def _sigmoid(x):
     return 1. / (1. + np.exp(-x))
@@ -90,16 +88,17 @@ import pytest
 def test_yolo_decoding():
     netout = np.load("netout.npy")
     yolo_decoder = YoloDecoder()
-    boxes, probs = yolo_decoder.run(netout)
-    desired_boxes = np.array([(0.50070398, 0.58542027, 0.6805947, 0.75819772)])
-    desired_probs = np.array([(0.576064)])
-    print(boxes.shape, probs.shape)
+    boxes = yolo_decoder.run(netout)
+    assert np.allclose(boxes[0].x, 0.50070397927)
+    assert np.allclose(boxes[0].y, 0.585420268209)
+    assert np.allclose(boxes[0].w, 0.680594700387)
+    assert np.allclose(boxes[0].h, 0.758197716846)
+    assert np.allclose(boxes[0].c, 0.576064)
+    assert np.allclose(boxes[0].classes, [ 0.57606441])
     
-    assert np.allclose(boxes, desired_boxes)
-    assert np.allclose(probs, desired_probs)
 
 if __name__ == '__main__':
-    pytest.main([__file__, "-v", "-s"])
+    pytest.main([__file__])
     
     
 
