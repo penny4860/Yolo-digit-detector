@@ -62,7 +62,7 @@ class YOLO(object):
     def predict(self, image):
         """
         # Args
-            image : 3d-array
+            image : 3d-array (BGR ordered)
         
         # Returns
             boxes : list of BoundBox instance
