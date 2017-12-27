@@ -1,10 +1,14 @@
 
 import numpy as np
-from .utils.box import BoundBox
+# from .utils.box import BoundBox
+from yolo.backend.utils.box import BoundBox
 
 class YoloDecoder(object):
     
-    def __init__(self, anchors, obj_threshold=0.3, nms_threshold=0.3):
+    def __init__(self,
+                 anchors = [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828],
+                 obj_threshold=0.3,
+                 nms_threshold=0.3):
         self._anchors = anchors
         self._obj_threshold = obj_threshold
         self._nms_threshold = nms_threshold
@@ -79,3 +83,35 @@ def _softmax(x, axis=-1, t=-100.):
         x = x/np.min(x)*t
     e_x = np.exp(x)
     return e_x / e_x.sum(axis, keepdims=True)
+
+import pytest
+def test_yolo_decoding():
+    netout = np.load("netout.npy")
+    yolo_decoder = YoloDecoder()
+    boxes = yolo_decoder.run(netout)
+    assert np.allclose(boxes[0].x, 0.50070397927)
+    assert np.allclose(boxes[0].y, 0.585420268209)
+    assert np.allclose(boxes[0].w, 0.680594700387)
+    assert np.allclose(boxes[0].h, 0.758197716846)
+    assert np.allclose(boxes[0].c, 0.576064)
+    assert np.allclose(boxes[0].classes, [ 0.57606441])
+    
+
+if __name__ == '__main__':
+    pytest.main([__file__])
+    
+    
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
