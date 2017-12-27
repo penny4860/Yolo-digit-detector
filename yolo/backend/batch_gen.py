@@ -14,6 +14,13 @@ def create_batch_generator(annotations,
                            anchors=[0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828], 
                            jitter=True, 
                            norm=None):
+    """
+    # Args
+        annotations : Annotations instance in utils.annotataion module
+    
+    # Return 
+        worker : BatchGenerator instance
+    """
 
     img_aug = ImgAugment(input_size, input_size, jitter)
     yolo_box = _YoloBox(input_size, grid_size)
