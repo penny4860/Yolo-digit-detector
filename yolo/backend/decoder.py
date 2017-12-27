@@ -65,30 +65,5 @@ def _softmax(x, axis=-1, t=-100.):
         x = x/np.min(x)*t
     e_x = np.exp(x)
     return e_x / e_x.sum(axis, keepdims=True)
-
-import pytest
-def test_yolo_decoding():
-    netout = np.load("netout.npy")
-    yolo_decoder = YoloDecoder()
-    boxes, probs = yolo_decoder.run(netout)
-    assert np.allclose(boxes, np.array([(0.50070397927, 0.585420268209, 0.680594700387, 0.758197716846)]))
-    assert np.allclose(probs, np.array([(0.57606441)]))
-
-if __name__ == '__main__':
-    pytest.main([__file__, "-s", "-v"])
-    
-    
-
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
 
