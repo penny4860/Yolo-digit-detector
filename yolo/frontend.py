@@ -25,7 +25,7 @@ def create_yolo(architecture,
                          yolo_network.get_grid_size(),
                          n_classes, anchors)
     yolo_decoder = YoloDecoder(anchors)
-    yolo = YOLO(yolo_network, yolo_loss, yolo_decoder, labels, input_size, max_box_per_image, anchors)
+    yolo = YOLO(yolo_network, yolo_loss, yolo_decoder, labels, input_size, max_box_per_image)
     if weights_path:
         yolo.load_weights(weights_path)
     return yolo
@@ -38,8 +38,7 @@ class YOLO(object):
                  yolo_decoder,
                  labels,
                  input_size = 416,
-                 max_box_per_image = 10,
-                 anchors = [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828]):
+                 max_box_per_image = 10):
         """
         # Args
             feature_extractor : BaseFeatureExtractor instance
@@ -50,7 +49,6 @@ class YOLO(object):
         
         self._labels = labels
         # Batch를 생성할 때만 사용한다.
-        self._anchors = anchors
         self._input_size = input_size
         self._max_box_per_image = max_box_per_image
 
@@ -139,7 +137,7 @@ class YOLO(object):
                                                  self._yolo_network.get_grid_size(),
                                                  batch_size,
                                                  self._max_box_per_image,
-                                                 self._anchors,
+                                                 self._yolo_loss.anchors,
                                                  jitter=jitter,
                                                  norm=self._yolo_network.get_normalize_func())
         return batch_generator
