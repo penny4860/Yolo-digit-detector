@@ -1,6 +1,6 @@
 
 import numpy as np
-from .utils.box import BoundBox
+from yolo.utils.box import BoundBox
 
 class YoloDecoder(object):
     
