@@ -100,8 +100,6 @@ class PascalVocXmlParser(object):
     def _tree(self, fname):
         tree = parse(fname)
         return tree
-    
-
 
 def parse_annotation(ann_dir, img_dir, labels_naming=[]):
     """

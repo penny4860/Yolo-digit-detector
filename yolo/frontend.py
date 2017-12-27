@@ -3,11 +3,39 @@
 # Outside the package, someone can use yolo detector accessing with this module.
 
 import os
+import numpy as np
+
 from yolo.backend.decoder import YoloDecoder
 from yolo.backend.network import YoloNetwork
 from yolo.backend.loss import YoloLoss
 from yolo.backend.batch_gen import create_batch_generator
 from yolo.backend.utils.fit import train
+from yolo.backend.utils.annotation import parse_annotation
+
+
+def get_annotations(labels,
+                    train_img_folder,
+                    train_ann_folder,
+                    valid_img_folder = "",
+                    valid_ann_folder = ""):
+    # parse annotations of the training set
+    train_imgs, _ = parse_annotation(train_ann_folder, 
+                                                train_img_folder, 
+                                                labels)
+
+    # parse annotations of the validation set, if any, otherwise split the training set
+    if os.path.exists(valid_ann_folder):
+        valid_imgs, _ = parse_annotation(valid_ann_folder, 
+                                                    valid_img_folder, 
+                                                    labels)
+    else:
+        train_valid_split = int(0.8*len(train_imgs))
+        np.random.shuffle(train_imgs)
+
+        valid_imgs = train_imgs[train_valid_split:]
+        train_imgs = train_imgs[:train_valid_split]
+    
+    return train_imgs, valid_imgs
 
 
 def create_yolo(architecture,
@@ -23,7 +51,7 @@ def create_yolo(architecture,
                          yolo_network.get_grid_size(),
                          n_classes, anchors)
     yolo_decoder = YoloDecoder(anchors)
-    yolo = YOLO(yolo_network, yolo_loss, yolo_decoder, input_size, max_box_per_image, anchors)
+    yolo = YOLO(yolo_network, yolo_loss, yolo_decoder, labels, input_size, max_box_per_image, anchors)
     if weights_path:
         yolo.load_weights(weights_path)
     return yolo
@@ -34,6 +62,7 @@ class YOLO(object):
                  yolo_network,
                  yolo_loss,
                  yolo_decoder,
+                 labels,
                  input_size = 416,
                  max_box_per_image = 10,
                  anchors = [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828]):
@@ -45,6 +74,7 @@ class YOLO(object):
         self._yolo_loss = yolo_loss
         self._yolo_decoder = yolo_decoder
         
+        self._labels = labels
         # Batch를 생성할 때만 사용한다.
         self._anchors = anchors
         self._input_size = input_size
@@ -70,16 +100,25 @@ class YOLO(object):
         return boxes
 
     def train(self,
-              train_annotations,
-              valid_annotations,
-              batch_size,
-              jitter,
-              learning_rate, 
+              img_folder,
+              ann_folder,
               nb_epoch,
-              warmup_epochs,
-              train_times,
-              valid_times,
-              saved_weights_name):
+              saved_weights_name,
+              batch_size=8,
+              jitter=True,
+              learning_rate=1e-4, 
+              train_times=1,
+              valid_times=1,
+              warmup_epochs=None,
+              valid_img_folder="",
+              valid_ann_folder=""):
+
+        # 1. get annotations        
+        train_annotations, valid_annotations = get_annotations(self._labels,
+                                                               img_folder,
+                                                               ann_folder,
+                                                               valid_img_folder,
+                                                               valid_ann_folder)
         
         # 1. get batch generator
         train_batch_generator = self._get_batch_generator(train_annotations, batch_size, jitter=jitter)
