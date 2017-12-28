@@ -3,8 +3,9 @@ import numpy as np
 import pytest
 import os
 from yolo.backend.batch_gen import create_batch_generator
+import yolo
 
-TEST_SAMPLE_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "test_sample")
+TEST_SAMPLE_DIR = os.path.join(yolo.PROJECT_ROOT, "tests", "dataset")
 
 @pytest.fixture(scope='function')
 def setup():
