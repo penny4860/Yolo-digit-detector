@@ -4,14 +4,14 @@ import pytest
 import os
 import numpy as np
 from yolo.backend.utils.annotation import parse_annotation
+import yolo
 
-CURRENT_DIR = os.path.dirname(__file__)
-SAMPLE_DIRECTORY = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(CURRENT_DIR)))), "sample")
+TEST_SAMPLE_DIR = os.path.join(yolo.PROJECT_ROOT, "tests", "dataset")
 
 @pytest.fixture(scope='function')
 def setup_inputs(request):
-    annotation_dir = os.path.join(SAMPLE_DIRECTORY, "raccoon_train_annotations//")
-    image_dir = os.path.join(SAMPLE_DIRECTORY, "raccoon_train_imgs//")
+    annotation_dir = os.path.join(TEST_SAMPLE_DIR, "raccoon_train_annotations//")
+    image_dir = os.path.join(TEST_SAMPLE_DIR, "raccoon_train_imgs//")
     return annotation_dir, image_dir
 
 @pytest.fixture(scope='function')
