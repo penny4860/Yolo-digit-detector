@@ -5,15 +5,14 @@ import cv2
 import numpy as np
 import os
 from yolo.frontend import create_yolo
+import yolo
 
+TEST_SAMPLE_DIR = os.path.join(yolo.PROJECT_ROOT, "tests", "dataset")
 
-THIS_DIRECTORY = os.path.dirname(__file__)
-SAMPLE_DIRECTORY = os.path.join(os.path.dirname(THIS_DIRECTORY),
-                                "sample")
 
 @pytest.fixture(scope='function')
 def setup_inputs(request):
-    input_file = os.path.join(SAMPLE_DIRECTORY, "raccoon.jpg")
+    input_file = os.path.join(TEST_SAMPLE_DIR, "raccoon.jpg")
     image = cv2.imread(input_file)
     return image
 
@@ -33,7 +32,7 @@ def test_predict(setup_inputs, setup_outputs):
     # 2. When run
     yolo = create_yolo("MobileNet",
                        ["raccoon"],
-                       weights_path=os.path.join(SAMPLE_DIRECTORY, "mobilenet_raccoon.h5"))
+                       weights_path=os.path.join(TEST_SAMPLE_DIR, "mobilenet_raccoon.h5"))
     boxes, probs = yolo.predict(image)
 
     # 3. should
