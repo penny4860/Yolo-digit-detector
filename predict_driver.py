@@ -5,10 +5,14 @@ import json
 import cv2
 from yolo.frontend import create_yolo
 from yolo.backend.utils.box import draw_boxes
+import os
+import yolo
+
+TEST_SAMPLE_DIR = os.path.join(yolo.PROJECT_ROOT, "tests", "dataset")
 
 
-DEFAULT_CONFIG_FILE = "sample//pred_config.json"
-DEFAULT_INPUT_IMAGE = "sample//raccoon.jpg"
+DEFAULT_CONFIG_FILE = os.path.join(TEST_SAMPLE_DIR, "pred_config.json")
+DEFAULT_INPUT_IMAGE = os.path.join(TEST_SAMPLE_DIR, "raccoon.jpg")
 
 argparser = argparse.ArgumentParser(
     description='Train and validate YOLO_v2 model on any dataset')
@@ -40,7 +44,7 @@ if __name__ == '__main__':
                        config['input_size'],
                        config['max_box_per_image'],
                        config['anchors'],
-                       config['pretrained_weights'])
+                       os.path.join(TEST_SAMPLE_DIR, "mobilenet_raccoon.h5"))
     boxes, probs = yolo.predict(image)
 
     # 4. save detection result
