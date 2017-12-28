@@ -256,3 +256,6 @@ class Annotations(object):
             valid_index = i
         return valid_index
 
+    def __len__(self):
+        return len(self._components)
+
