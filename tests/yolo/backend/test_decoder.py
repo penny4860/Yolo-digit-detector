@@ -4,7 +4,7 @@ import numpy as np
 from yolo.backend.decoder import YoloDecoder
 import yolo
 
-SAMPLE_DIR = os.path.join(yolo.PROJECT_ROOT, "tests", "yolo", "test_sample")
+SAMPLE_DIR = os.path.join(yolo.PROJECT_ROOT, "tests", "dataset")
 
 
 def test_yolo_decoding():
