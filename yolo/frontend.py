@@ -84,8 +84,12 @@ class YOLO(object):
 
         netout = self._yolo_network.forward(image)
         boxes, probs = self._yolo_decoder.run(netout)
-        boxes = _to_original_scale(boxes)
-        return boxes, probs
+        
+        if len(boxes) > 0:
+            boxes = _to_original_scale(boxes)
+            return boxes, probs
+        else:
+            return [], []
 
     def train(self,
               img_folder,
