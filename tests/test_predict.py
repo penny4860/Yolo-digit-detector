@@ -37,7 +37,7 @@ def test_predict(setup_inputs, setup_outputs):
 
     # 3. should
     assert np.allclose(boxes, desired_boxes)
-    assert np.allclose(probs, desired_boxes)
+    assert np.allclose(probs, desired_probs)
     
 if __name__ == '__main__':
     pytest.main([__file__, "-v", "-s"])
