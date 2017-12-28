@@ -44,7 +44,8 @@ if __name__ == '__main__':
                        config['input_size'],
                        config['max_box_per_image'],
                        config['anchors'],
-                       os.path.join(TEST_SAMPLE_DIR, "mobilenet_raccoon.h5"))
+                       os.path.join(TEST_SAMPLE_DIR, "mobilenet_raccoon.h5"),
+                       None)
     boxes, probs = yolo.predict(image)
 
     # 4. save detection result
