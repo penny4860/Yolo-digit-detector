@@ -11,8 +11,9 @@ def create_yolo_network(architecture,
                         input_size,
                         nb_classes,
                         max_box_per_image,
-                        nb_box):
-    feature_extractor = create_feature_extractor(architecture, input_size)
+                        nb_box,
+                        feature_weights=None):
+    feature_extractor = create_feature_extractor(architecture, input_size, feature_weights)
     yolo_net = YoloNetwork(feature_extractor,
                            input_size,
                            nb_classes,
