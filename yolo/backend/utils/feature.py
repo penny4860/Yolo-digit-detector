@@ -8,16 +8,8 @@ from keras.applications import InceptionV3
 from keras.applications.vgg16 import VGG16
 from keras.applications.resnet50 import ResNet50
 
-FULL_YOLO_FEATURE_PATH  = "full_yolo_features.h5"   # should be hosted on a server
-TINY_YOLO_FEATURE_PATH  = "tiny_yolo_features.h5"   # should be hosted on a server
-SQUEEZENET_FEATURE_PATH = "squeezenet_features.h5"  # should be hosted on a server
-MOBILENET_FEATURE_PATH  = "mobilenet_features.h5"   # should be hosted on a server
-INCEPTION3_FEATURE_PATH = "inception_features.h5"   # should be hosted on a server
-VGG16_FEATURE_PATH      = "vgg16_features.h5"       # should be hosted on a server
-RESNET50_FEATURE_PATH   = "resnet50_features.h5"    # should be hosted on a server
 
-
-def create_feature_extractor(architecture, input_size):
+def create_feature_extractor(architecture, input_size, weights=None):
     """
     # Args
         architecture : str
@@ -27,19 +19,19 @@ def create_feature_extractor(architecture, input_size):
         feature_extractor : BaseFeatureExtractor instance
     """
     if architecture == 'Inception3':
-        feature_extractor = Inception3Feature(input_size)  
+        feature_extractor = Inception3Feature(input_size, weights)
     elif architecture == 'SqueezeNet':
-        feature_extractor = SqueezeNetFeature(input_size)        
+        feature_extractor = SqueezeNetFeature(input_size, weights)
     elif architecture == 'MobileNet':
-        feature_extractor = MobileNetFeature(input_size)
+        feature_extractor = MobileNetFeature(input_size, weights)
     elif architecture == 'Full Yolo':
-        feature_extractor = FullYoloFeature(input_size)
+        feature_extractor = FullYoloFeature(input_size, weights)
     elif architecture == 'Tiny Yolo':
-        feature_extractor = TinyYoloFeature(input_size)
+        feature_extractor = TinyYoloFeature(input_size, weights)
     elif architecture == 'VGG16':
-        feature_extractor = VGG16Feature(input_size)
+        feature_extractor = VGG16Feature(input_size, weights)
     elif architecture == 'ResNet50':
-        feature_extractor = ResNet50Feature(input_size)
+        feature_extractor = ResNet50Feature(input_size, weights)
     else:
         raise Exception('Architecture not supported! Only support Full Yolo, Tiny Yolo, MobileNet, SqueezeNet, VGG16, ResNet50, and Inception3 at the moment!')
     return feature_extractor
@@ -72,7 +64,7 @@ class BaseFeatureExtractor(object):
 
 class FullYoloFeature(BaseFeatureExtractor):
     """docstring for ClassName"""
-    def __init__(self, input_size):
+    def __init__(self, input_size, weights=None):
         input_image = Input(shape=(input_size, input_size, 3))
 
         # the function to implement the orgnization layer (thanks to github.com/allanzelener/YAD2K)
@@ -200,15 +192,16 @@ class FullYoloFeature(BaseFeatureExtractor):
         x = BatchNormalization(name='norm_22')(x)
         x = LeakyReLU(alpha=0.1)(x)
 
-        self.feature_extractor = Model(input_image, x)  
-        self.feature_extractor.load_weights(FULL_YOLO_FEATURE_PATH)
+        self.feature_extractor = Model(input_image, x)
+        if weights:
+            self.feature_extractor.load_weights(weights)
 
     def normalize(self, image):
         return image / 255.
 
 class TinyYoloFeature(BaseFeatureExtractor):
     """docstring for ClassName"""
-    def __init__(self, input_size):
+    def __init__(self, input_size, weights):
         input_image = Input(shape=(input_size, input_size, 3))
 
         # Layer 1
@@ -237,22 +230,24 @@ class TinyYoloFeature(BaseFeatureExtractor):
             x = LeakyReLU(alpha=0.1)(x)
 
         self.feature_extractor = Model(input_image, x)  
-        self.feature_extractor.load_weights(TINY_YOLO_FEATURE_PATH)
+        if weights:
+            self.feature_extractor.load_weights(weights)
+
 
     def normalize(self, image):
         return image / 255.
 
 class MobileNetFeature(BaseFeatureExtractor):
     """docstring for ClassName"""
-    def __init__(self, input_size):
+    def __init__(self, input_size, weights):
         input_image = Input(shape=(input_size, input_size, 3))
 
         mobilenet = MobileNet(input_shape=(224,224,3), include_top=False)
-        mobilenet.load_weights(MOBILENET_FEATURE_PATH)
-
         x = mobilenet(input_image)
 
         self.feature_extractor = Model(input_image, x)  
+        if weights:
+            self.feature_extractor.load_weights(weights)
 
     def normalize(self, image):
         image = image / 255.
@@ -263,7 +258,7 @@ class MobileNetFeature(BaseFeatureExtractor):
 
 class SqueezeNetFeature(BaseFeatureExtractor):
     """docstring for ClassName"""
-    def __init__(self, input_size):
+    def __init__(self, input_size, weights):
 
         # define some auxiliary variables and the fire module
         sq1x1  = "squeeze1x1"
@@ -308,7 +303,8 @@ class SqueezeNetFeature(BaseFeatureExtractor):
         x = fire_module(x, fire_id=9, squeeze=64, expand=256)
 
         self.feature_extractor = Model(input_image, x)  
-        self.feature_extractor.load_weights(SQUEEZENET_FEATURE_PATH)
+        if weights:
+            self.feature_extractor.load_weights(weights)
 
     def normalize(self, image):
         image = image[..., ::-1]
@@ -322,15 +318,15 @@ class SqueezeNetFeature(BaseFeatureExtractor):
 
 class Inception3Feature(BaseFeatureExtractor):
     """docstring for ClassName"""
-    def __init__(self, input_size):
+    def __init__(self, input_size, weights):
         input_image = Input(shape=(input_size, input_size, 3))
 
         inception = InceptionV3(input_shape=(input_size,input_size,3), include_top=False)
-        inception.load_weights(INCEPTION3_FEATURE_PATH)
-
         x = inception(input_image)
 
         self.feature_extractor = Model(input_image, x)  
+        if weights:
+            self.feature_extractor.load_weights(weights)
 
     def normalize(self, image):
         image = image / 255.
@@ -341,11 +337,12 @@ class Inception3Feature(BaseFeatureExtractor):
 
 class VGG16Feature(BaseFeatureExtractor):
     """docstring for ClassName"""
-    def __init__(self, input_size):
+    def __init__(self, input_size, weights):
         vgg16 = VGG16(input_shape=(input_size, input_size, 3), include_top=False)
-        #vgg16.load_weights(VGG16_FEATURE_PATH)
 
         self.feature_extractor = vgg16
+        if weights:
+            self.feature_extractor.load_weights(weights)
 
     def normalize(self, image):
         image = image[..., ::-1]
@@ -359,12 +356,13 @@ class VGG16Feature(BaseFeatureExtractor):
 
 class ResNet50Feature(BaseFeatureExtractor):
     """docstring for ClassName"""
-    def __init__(self, input_size):
+    def __init__(self, input_size, weights):
         resnet50 = ResNet50(input_shape=(input_size, input_size, 3), include_top=False)
         resnet50.layers.pop() # remove the average pooling layer
-        #resnet50.load_weights(RESNET50_FEATURE_PATH)
 
         self.feature_extractor = Model(resnet50.layers[0].input, resnet50.layers[-1].output)
+        if weights:
+            self.feature_extractor.load_weights(weights)
 
     def normalize(self, image):
         image = image[..., ::-1]
