@@ -229,7 +229,7 @@ class TinyYoloFeature(BaseFeatureExtractor):
             x = BatchNormalization(name='norm_' + str(i+7))(x)
             x = LeakyReLU(alpha=0.1)(x)
 
-        self.feature_extractor = Model(input_image, x)  
+        self.feature_extractor = Model(input_image, x)
         if weights:
             self.feature_extractor.load_weights(weights)
 
@@ -243,11 +243,11 @@ class MobileNetFeature(BaseFeatureExtractor):
         input_image = Input(shape=(input_size, input_size, 3))
 
         mobilenet = MobileNet(input_shape=(224,224,3), include_top=False)
-        x = mobilenet(input_image)
-
-        self.feature_extractor = Model(input_image, x)  
         if weights:
-            self.feature_extractor.load_weights(weights)
+            mobilenet.load_weights(weights)
+
+        x = mobilenet(input_image)
+        self.feature_extractor = Model(input_image, x)  
 
     def normalize(self, image):
         image = image / 255.
@@ -322,6 +322,8 @@ class Inception3Feature(BaseFeatureExtractor):
         input_image = Input(shape=(input_size, input_size, 3))
 
         inception = InceptionV3(input_shape=(input_size,input_size,3), include_top=False)
+        if weights:
+            inception.load_weights(weights)
         x = inception(input_image)
 
         self.feature_extractor = Model(input_image, x)  
@@ -339,10 +341,9 @@ class VGG16Feature(BaseFeatureExtractor):
     """docstring for ClassName"""
     def __init__(self, input_size, weights):
         vgg16 = VGG16(input_shape=(input_size, input_size, 3), include_top=False)
-
-        self.feature_extractor = vgg16
         if weights:
-            self.feature_extractor.load_weights(weights)
+            vgg16.load_weights(weights)
+        self.feature_extractor = vgg16
 
     def normalize(self, image):
         image = image[..., ::-1]
@@ -358,11 +359,10 @@ class ResNet50Feature(BaseFeatureExtractor):
     """docstring for ClassName"""
     def __init__(self, input_size, weights):
         resnet50 = ResNet50(input_shape=(input_size, input_size, 3), include_top=False)
-        resnet50.layers.pop() # remove the average pooling layer
-
-        self.feature_extractor = Model(resnet50.layers[0].input, resnet50.layers[-1].output)
         if weights:
-            self.feature_extractor.load_weights(weights)
+            resnet50.load_weights(weights)
+        resnet50.layers.pop() # remove the average pooling layer
+        self.feature_extractor = Model(resnet50.layers[0].input, resnet50.layers[-1].output)
 
     def normalize(self, image):
         image = image[..., ::-1]
