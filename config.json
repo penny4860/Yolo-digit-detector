@@ -6,6 +6,11 @@
         "max_box_per_image":    10,        
         "labels":               ["raccoon"]
     },
+    "weights" : {
+        "feature":   			"tests//dataset//mobilenet_features.h5",
+        "pretrained":   		"tests//dataset//mobilenet_raccoon.h5",
+        "save":   				"test_raccoon_weight.h5"
+    },
     "train" : {
         "train_image_folder":   "tests//dataset//raccoon_train_imgs/",
         "train_annot_folder":   "tests//dataset//raccoon_train_annotations/",
@@ -13,7 +18,6 @@
         "valid_image_folder":   "tests//dataset//raccoon_train_imgs/",
         "valid_annot_folder":   "tests//dataset//raccoon_train_annotations/",
         "valid_times":          1,
-        "pretrained_weights":   "tests//dataset//mobilenet_raccoon.h5",
         "batch_size":           1,
         "learning_rate":        1e-3,
         "nb_epoch":             1,
@@ -22,7 +26,6 @@
         "no_object_scale":      1.0,
         "coord_scale":          1.0,
         "class_scale":          1.0,
-        "saved_weights_name":   "test_raccoon_weight.h5",
         "jitter":	false
     }
 }
