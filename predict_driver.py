@@ -52,8 +52,9 @@ if __name__ == '__main__':
                        model_config['input_size'],
                        model_config['max_box_per_image'],
                        model_config['anchors'],
-                       os.path.join(TEST_SAMPLE_DIR, "mobilenet_raccoon.h5"),
-                       None)
+                       feature_weights_path=None)
+    yolo.load_weights(config['train']['pretrained_weights'])
+
     boxes, probs = yolo.predict(image, args.threshold)
 
     # 4. save detection result
