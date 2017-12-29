@@ -38,6 +38,7 @@ if __name__ == '__main__':
     # 2. read image
     image = cv2.imread(args.input)
 
+    # Todo : pretrained feature message
     # 3. create yolo instance & predict
     yolo = create_yolo(config['architecture'],
                        config['labels'],
