@@ -16,8 +16,8 @@
     		"nb_epoch" : 	2,
         	"batch_size":	1
     	},
-        "train_image_folder":   "tests//dataset//raccoon_train_imgs/",
-        "train_annot_folder":   "tests//dataset//raccoon_train_annotations/",
+        "train_image_folder":   "..//raccoon_dataset//images/",
+        "train_annot_folder":   "..//raccoon_dataset//annotations/",
         "train_times":          1,
         "valid_image_folder":   "",
         "valid_annot_folder":   "",
