@@ -47,7 +47,7 @@ if __name__ == '__main__':
                        config['anchors'],
                        os.path.join(TEST_SAMPLE_DIR, "mobilenet_raccoon.h5"),
                        None)
-    boxes, probs = yolo.predict(image)
+    boxes, probs = yolo.predict(image, config["threshold"])
 
     # 4. save detection result
     output_path = args.input[:-4] + '_detected' + args.input[-4:]
