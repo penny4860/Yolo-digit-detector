@@ -35,8 +35,8 @@ def get_train_annotations(labels,
                                          labels)
     else:
         train_valid_split = int(0.8*len(train_anns))
-        np.random.shuffle(train_anns)
-
+        train_anns.shuffle()
+        
         valid_anns = train_anns[train_valid_split:]
         train_anns = train_anns[:train_valid_split]
     
