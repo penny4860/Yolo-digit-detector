@@ -63,7 +63,7 @@ if __name__ == '__main__':
                config['train']['learning_rate'], 
                config['train']['train_times'],
                config['train']['valid_times'],
-               config['train']['warmup_epochs'],
+               0,
                config['train']['valid_image_folder'],
                config['train']['valid_annot_folder'])
     # loss: 2.1691, train batch jitter=False
