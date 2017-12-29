@@ -250,10 +250,7 @@ class Annotations(object):
         return labels
 
     def _valid_index(self, i):
-        if i >= len(self._components):
-            valid_index = i - len(self._components)
-        else:
-            valid_index = i
+        valid_index = i % len(self._components)
         return valid_index
 
     def __len__(self):
