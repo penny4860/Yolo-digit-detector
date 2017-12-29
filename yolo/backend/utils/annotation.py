@@ -35,10 +35,12 @@ def get_train_annotations(labels,
                                          labels)
     else:
         train_valid_split = int(0.8*len(train_anns))
-        np.random.shuffle(train_anns)
-
-        valid_anns = train_anns[train_valid_split:]
-        train_anns = train_anns[:train_valid_split]
+        train_anns.shuffle()
+        
+        # Todo : Hard coding
+        valid_anns = Annotations(train_anns._label_namings)
+        valid_anns._components = train_anns._components[train_valid_split:]
+        train_anns._components = train_anns._components[:train_valid_split]
     
     return train_anns, valid_anns
 
@@ -250,12 +252,12 @@ class Annotations(object):
         return labels
 
     def _valid_index(self, i):
-        if i >= len(self._components):
-            valid_index = i - len(self._components)
-        else:
-            valid_index = i
+        valid_index = i % len(self._components)
         return valid_index
 
     def __len__(self):
         return len(self._components)
+
+    def __getitem__(self, idx):
+        return self._components[idx]
 
