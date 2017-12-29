@@ -13,7 +13,7 @@
         "valid_image_folder":   "tests//dataset//raccoon_train_imgs/",
         "valid_annot_folder":   "tests//dataset//raccoon_train_annotations/",
         "valid_times":          1,
-        "pretrained_weights":   "",
+        "pretrained_weights":   "tests//dataset//mobilenet_raccoon.h5",
         "batch_size":           1,
         "learning_rate":        1e-3,
         "nb_epoch":             1,
