@@ -15,8 +15,7 @@ def create_yolo_network(architecture,
                         nb_box,
                         feature_weights=None):
     if feature_weights is not None and os.path.exists(feature_weights):
-        print("Loading pre-trained feature weights in", feature_weights)
-        print("The network is initialized pretrained feature weights")
+        print("The network is initialized pretrained feature weights in {}".format(feature_weights))
         weights = feature_weights
     else:
         print("The network is initialized random weights")
