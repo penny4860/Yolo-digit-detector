@@ -31,10 +31,10 @@ if __name__ == '__main__':
                        config['model']['input_size'],
                        config['model']['max_box_per_image'],
                        config['model']['anchors'],
-                       "tests/mobilenet_features.h5")
+                       config['weights']['feature'])
     
     # 2. Load the pretrained weights (if any) 
-    yolo.load_weights(config['train']['pretrained_weights'])
+    yolo.load_weights(config['weights']['pretrained'])
     
     # 3. Parse the annotations 
     yolo.train(config['train']['train_image_folder'],
