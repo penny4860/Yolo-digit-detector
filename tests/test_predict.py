@@ -31,8 +31,8 @@ def test_predict(setup_inputs, setup_outputs):
     
     # 2. When run
     yolo = create_yolo("MobileNet",
-                       ["raccoon"],
-                       weights_path=os.path.join(TEST_SAMPLE_DIR, "mobilenet_raccoon.h5"))
+                       ["raccoon"])
+    yolo.load_weights(os.path.join(TEST_SAMPLE_DIR, "mobilenet_raccoon.h5"))
     boxes, probs = yolo.predict(image)
 
     # 3. should
