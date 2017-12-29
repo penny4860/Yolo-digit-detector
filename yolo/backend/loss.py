@@ -20,6 +20,8 @@ class YoloLoss(object):
         self.nb_box = int(len(anchors)/2)
         self.nb_class = nb_class
         self.true_boxes = true_boxes
+        
+        # Todo : config parameters??
         self.object_scale    = 5.0
         self.no_object_scale = 1.0
         self.coord_scale     = 1.0
