@@ -43,12 +43,12 @@ if __name__ == '__main__':
                config['train']['nb_epoch'],
                config['train']['saved_weights_name'],
                config["train"]["batch_size"],
-               False,
+               config["train"]["jitter"],
                config['train']['learning_rate'], 
                config['train']['train_times'],
-               config['valid']['valid_times'],
+               config['train']['valid_times'],
                config['train']['warmup_epochs'],
-               config['valid']['valid_image_folder'],
-               config['valid']['valid_annot_folder'])
+               config['train']['valid_image_folder'],
+               config['train']['valid_annot_folder'])
     # loss: 2.1691, train batch jitter=False
 
