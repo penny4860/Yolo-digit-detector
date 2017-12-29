@@ -34,9 +34,26 @@ if __name__ == '__main__':
                        config['pretrained']['feature'])
     
     # 2. Load the pretrained weights (if any) 
-    # yolo.load_weights(config['pretrained']['full'])
+    yolo.load_weights(config['pretrained']['full'])
     
-    # 3. Parse the annotations 
+    # 3. warmup training
+    yolo.train(config['train']['train_image_folder'],
+               config['train']['train_annot_folder'],
+               config['train']['warmup']['nb_epoch'],
+               config['train']['saved_weights'],
+               config['train']['warmup']['batch_size'],
+               config["train"]["jitter"],
+               config['train']['learning_rate'], 
+               config['train']['train_times'],
+               config['train']['valid_times'],
+               config['train']['warmup']['nb_epoch'],
+               config['train']['valid_image_folder'],
+               config['train']['valid_annot_folder'])
+
+    # 4. Load the warmup trained weights
+    yolo.load_weights(config['train']['saved_weights'])
+    
+    # 5. actual training 
     yolo.train(config['train']['train_image_folder'],
                config['train']['train_annot_folder'],
                config['train']['nb_epoch'],
@@ -46,7 +63,7 @@ if __name__ == '__main__':
                config['train']['learning_rate'], 
                config['train']['train_times'],
                config['train']['valid_times'],
-               config['train']['warmup_epochs'],
+               0,
                config['train']['valid_image_folder'],
                config['train']['valid_annot_folder'])
     # loss: 2.1691, train batch jitter=False
