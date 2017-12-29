@@ -53,7 +53,7 @@ if __name__ == '__main__':
                        model_config['max_box_per_image'],
                        model_config['anchors'],
                        feature_weights_path=None)
-    yolo.load_weights(config['train']['pretrained_weights'])
+    yolo.load_weights(config['weights']['pretrained'])
 
     boxes, probs = yolo.predict(image, args.threshold)
 

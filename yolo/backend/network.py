@@ -14,7 +14,7 @@ def create_yolo_network(architecture,
                         max_box_per_image,
                         nb_box,
                         feature_weights=None):
-    if os.path.exists(feature_weights):
+    if feature_weights is not None and os.path.exists(feature_weights):
         print("Loading pre-trained feature weights in", feature_weights)
         print("The network is initialized pretrained feature weights")
         weights = feature_weights
