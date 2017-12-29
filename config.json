@@ -13,8 +13,8 @@
     "train" : {
     	"warmup":
     	{
-    		"nb_epoch" : 	3,
-        	"batch_size":	100
+    		"nb_epoch" : 	2,
+        	"batch_size":	1
     	},
         "train_image_folder":   "tests//dataset//raccoon_train_imgs/",
         "train_annot_folder":   "tests//dataset//raccoon_train_annotations/",
@@ -24,7 +24,7 @@
         "valid_times":          1,
         "batch_size":           1,
         "learning_rate":        1e-4,
-        "nb_epoch":             200,
+        "nb_epoch":             3,
         "object_scale":         5.0,
         "no_object_scale":      1.0,
         "coord_scale":          1.0,
