@@ -62,7 +62,7 @@ class BatchGenerator(Sequence):
         self.counter = 0
 
     def __len__(self):
-        return len(self.annotations._components)
+        return len(self.annotations)
 
     def __getitem__(self, idx):
         """
