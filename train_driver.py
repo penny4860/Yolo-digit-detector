@@ -31,24 +31,23 @@ if __name__ == '__main__':
                        config['model']['input_size'],
                        config['model']['max_box_per_image'],
                        config['model']['anchors'],
-                       None,
-                       "tests/mobilenet_features.h5")
+                       config['pretrained']['feature'])
     
     # 2. Load the pretrained weights (if any) 
-    yolo.load_weights(config['train']['pretrained_weights'])
+    # yolo.load_weights(config['pretrained']['full'])
     
     # 3. Parse the annotations 
     yolo.train(config['train']['train_image_folder'],
                config['train']['train_annot_folder'],
                config['train']['nb_epoch'],
-               config['train']['saved_weights_name'],
+               config['train']['saved_weights'],
                config["train"]["batch_size"],
-               False,
+               config["train"]["jitter"],
                config['train']['learning_rate'], 
                config['train']['train_times'],
-               config['valid']['valid_times'],
+               config['train']['valid_times'],
                config['train']['warmup_epochs'],
-               config['valid']['valid_image_folder'],
-               config['valid']['valid_annot_folder'])
+               config['train']['valid_image_folder'],
+               config['train']['valid_annot_folder'])
     # loss: 2.1691, train batch jitter=False
 

@@ -3,6 +3,7 @@ from keras.models import Model
 from keras.layers import Reshape, Conv2D, Input, Lambda
 import numpy as np
 import cv2
+import os
 
 from .utils.feature import create_feature_extractor
 
@@ -13,7 +14,14 @@ def create_yolo_network(architecture,
                         max_box_per_image,
                         nb_box,
                         feature_weights=None):
-    feature_extractor = create_feature_extractor(architecture, input_size, feature_weights)
+    if feature_weights is not None and os.path.exists(feature_weights):
+        print("The network is initialized pretrained feature weights in {}".format(feature_weights))
+        weights = feature_weights
+    else:
+        print("The network is initialized random weights")
+        weights = None
+
+    feature_extractor = create_feature_extractor(architecture, input_size, weights)
     yolo_net = YoloNetwork(feature_extractor,
                            input_size,
                            nb_classes,
