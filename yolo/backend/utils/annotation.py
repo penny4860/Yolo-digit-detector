@@ -37,8 +37,10 @@ def get_train_annotations(labels,
         train_valid_split = int(0.8*len(train_anns))
         train_anns.shuffle()
         
-        valid_anns = train_anns[train_valid_split:]
-        train_anns = train_anns[:train_valid_split]
+        # Todo : Hard coding
+        valid_anns = Annotations(train_anns._label_namings)
+        valid_anns._components = train_anns._components[train_valid_split:]
+        train_anns._components = train_anns._components[:train_valid_split]
     
     return train_anns, valid_anns
 
