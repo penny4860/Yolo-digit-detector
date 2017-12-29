@@ -20,7 +20,6 @@ def create_yolo(architecture,
                 input_size = 416,
                 max_box_per_image = 10,
                 anchors = [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828],
-                weights_path=None,
                 feature_weights_path=None):
 
     n_classes = len(labels)
@@ -31,8 +30,6 @@ def create_yolo(architecture,
                          n_classes, anchors)
     yolo_decoder = YoloDecoder(anchors)
     yolo = YOLO(yolo_network, yolo_loss, yolo_decoder, labels, input_size, max_box_per_image)
-    if weights_path:
-        yolo.load_weights(weights_path)
     return yolo
 
 
