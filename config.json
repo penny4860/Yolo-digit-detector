@@ -8,19 +8,23 @@
     },
     "pretrained" : {
         "feature":   			"tests//dataset//mobilenet_features.h5",
-        "full":   				"tests//dataset//mobilenet_raccoon.h5"
+        "full":   				""
     },
     "train" : {
-        "train_image_folder":   "tests//dataset//raccoon_train_imgs/",
-        "train_annot_folder":   "tests//dataset//raccoon_train_annotations/",
-        "train_times":          1,
-        "valid_image_folder":   "tests//dataset//raccoon_train_imgs/",
-        "valid_annot_folder":   "tests//dataset//raccoon_train_annotations/",
+    	"warmup":
+    	{
+    		"nb_epoch" : 	3,
+        	"batch_size":	100
+    	},
+        "train_image_folder":   "..//raccoon_dataset//images/",
+        "train_annot_folder":   "..//raccoon_dataset//annotations/",
+        "train_times":          10,
+        "valid_image_folder":   "",
+        "valid_annot_folder":   "",
         "valid_times":          1,
-        "batch_size":           1,
-        "learning_rate":        1e-3,
-        "nb_epoch":             1,
-        "warmup_epochs":        1,
+        "batch_size":           16,
+        "learning_rate":        1e-4,
+        "nb_epoch":             200,
         "object_scale":         5.0,
         "no_object_scale":      1.0,
         "coord_scale":          1.0,
