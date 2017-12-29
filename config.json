@@ -6,10 +6,9 @@
         "max_box_per_image":    10,        
         "labels":               ["raccoon"]
     },
-    "weights" : {
+    "pretrained" : {
         "feature":   			"tests//dataset//mobilenet_features.h5",
-        "pretrained":   		"tests//dataset//mobilenet_raccoon.h5",
-        "save":   				"test_raccoon_weight.h5"
+        "full":   				"tests//dataset//mobilenet_raccoon.h5"
     },
     "train" : {
         "train_image_folder":   "tests//dataset//raccoon_train_imgs/",
@@ -26,6 +25,7 @@
         "no_object_scale":      1.0,
         "coord_scale":          1.0,
         "class_scale":          1.0,
+        "saved_weights":   		"test_raccoon_weight.h5",
         "jitter":	false
     }
 }
