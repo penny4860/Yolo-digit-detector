@@ -29,6 +29,12 @@ argparser.add_argument(
     default=DEFAULT_INPUT_IMAGE,
     help='path to an image or an video (mp4 format)')
 
+argparser.add_argument(
+    '-t',
+    '--threshold',
+    default=0.3,
+    help='detection threshold')
+
 if __name__ == '__main__':
     # 1. extract arguments
     args = argparser.parse_args()
@@ -47,7 +53,7 @@ if __name__ == '__main__':
                        config['anchors'],
                        os.path.join(TEST_SAMPLE_DIR, "mobilenet_raccoon.h5"),
                        None)
-    boxes, probs = yolo.predict(image, config["threshold"])
+    boxes, probs = yolo.predict(image, args.threshold)
 
     # 4. save detection result
     output_path = args.input[:-4] + '_detected' + args.input[-4:]
