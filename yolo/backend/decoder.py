@@ -7,13 +7,11 @@ class YoloDecoder(object):
     
     def __init__(self,
                  anchors = [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828],
-                 obj_threshold=0.3,
                  nms_threshold=0.3):
         self._anchors = anchors
-        self._obj_threshold = obj_threshold
         self._nms_threshold = nms_threshold
 
-    def run(self, netout):
+    def run(self, netout, obj_threshold=0.3):
         """Convert Yolo network output to bounding box
         
         # Args
@@ -32,7 +30,7 @@ class YoloDecoder(object):
         # decode the output by the network
         netout[..., 4]  = _sigmoid(netout[..., 4])
         netout[..., 5:] = netout[..., 4][..., np.newaxis] * _softmax(netout[..., 5:])
-        netout[..., 5:] *= netout[..., 5:] > self._obj_threshold
+        netout[..., 5:] *= netout[..., 5:] > obj_threshold
         
         for row in range(grid_h):
             for col in range(grid_w):
@@ -52,7 +50,7 @@ class YoloDecoder(object):
                         box = BoundBox(x, y, w, h, confidence, classes)
                         boxes.append(box)
         
-        boxes = nms_boxes(boxes, len(classes), self._nms_threshold, self._obj_threshold)
+        boxes = nms_boxes(boxes, len(classes), self._nms_threshold, obj_threshold)
         boxes, probs = boxes_to_array(boxes)
         return boxes, probs
 

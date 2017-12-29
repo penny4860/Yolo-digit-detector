@@ -64,7 +64,7 @@ class YOLO(object):
         else:
             print("Fail to load pre-trained weights. Make sure weight file path.")
 
-    def predict(self, image):
+    def predict(self, image, threshold=0.3):
         """
         # Args
             image : 3d-array (BGR ordered)
@@ -83,7 +83,7 @@ class YOLO(object):
             return minmax_boxes.astype(np.int)
 
         netout = self._yolo_network.forward(image)
-        boxes, probs = self._yolo_decoder.run(netout)
+        boxes, probs = self._yolo_decoder.run(netout, threshold)
         
         if len(boxes) > 0:
             boxes = _to_original_scale(boxes)
