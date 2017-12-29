@@ -259,3 +259,6 @@ class Annotations(object):
     def __len__(self):
         return len(self._components)
 
+    def __getitem__(self, idx):
+        return self._components[idx]
+
