@@ -12,8 +12,6 @@ def train(model,
          valid_batch_gen,
          learning_rate = 1e-4,
          nb_epoch = 300,
-         train_times = 1,
-         valid_times = 1,
          saved_weights_name = 'best_weights.h5'):
     """A function that performs training on a general keras model.
 
@@ -25,8 +23,6 @@ def train(model,
         train_batch_gen : keras.utils.Sequence instance
         valid_batch_gen : keras.utils.Sequence instance
         learning_rate : float
-        train_times : int
-        valid_times : int
         saved_weights_name : str
     """
     # 1. create optimizer
@@ -39,11 +35,11 @@ def train(model,
     # 4. training
     train_start = time.time()
     model.fit_generator(generator = train_batch_gen,
-                        steps_per_epoch  = len(train_batch_gen) * train_times, 
+                        steps_per_epoch  = len(train_batch_gen), 
                         epochs           = nb_epoch, 
                         verbose          = 1,
                         validation_data  = valid_batch_gen,
-                        validation_steps = len(valid_batch_gen) * valid_times,
+                        validation_steps = len(valid_batch_gen),
                         callbacks        = _create_callbacks(saved_weights_name), 
                         workers          = 3,
                         max_queue_size   = 8)
