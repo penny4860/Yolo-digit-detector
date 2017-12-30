@@ -110,8 +110,8 @@ class YOLO(object):
                                                                      valid_ann_folder)
         
         # 1. get batch generator
-        train_batch_generator = self._get_batch_generator(train_annotations, batch_size, jitter=jitter)
-        valid_batch_generator = self._get_batch_generator(valid_annotations, batch_size, jitter=False)
+        train_batch_generator = self._get_batch_generator(train_annotations, batch_size, train_times, jitter=jitter)
+        valid_batch_generator = self._get_batch_generator(valid_annotations, batch_size, valid_times, jitter=False)
         
         # 2. To train model get keras model instance & loss fucntion
         model = self._yolo_network.get_model()
