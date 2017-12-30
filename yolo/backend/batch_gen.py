@@ -60,13 +60,13 @@ class BatchGenerator(Sequence):
         self._img_aug = img_aug
         self._yolo_box = yolo_box
 
-        self._batch_size = batch_size
+        self._batch_size = min(batch_size, len(annotations)*repeat_times)
         self._repeat_times = repeat_times
         self.annotations = annotations
         self.counter = 0
 
     def __len__(self):
-        return max(int(len(self.annotations) * self._repeat_times /self._batch_size), 1)
+        return int(len(self.annotations) * self._repeat_times /self._batch_size)
 
     def __getitem__(self, idx):
         """
