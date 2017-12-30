@@ -66,7 +66,7 @@ class BatchGenerator(Sequence):
         self.counter = 0
 
     def __len__(self):
-        return int(len(self.annotations)/self._batch_size) * self._repeat_times
+        return max(int(len(self.annotations) * self._repeat_times /self._batch_size), 1)
 
     def __getitem__(self, idx):
         """

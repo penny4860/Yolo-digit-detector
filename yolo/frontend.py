@@ -137,7 +137,7 @@ class YOLO(object):
         warmup_bs  = warmup_epochs * (train_times*(batch_size+1) + valid_times*(batch_size+1))
         return self._yolo_loss.custom_loss(batch_size, warmup_bs)
 
-    def _get_batch_generator(self, annotations, batch_size, jitter=True):
+    def _get_batch_generator(self, annotations, batch_size, repeat_times=1, jitter=True):
         """
         # Args
             annotations : Annotations instance
@@ -153,6 +153,7 @@ class YOLO(object):
                                                  batch_size,
                                                  self._max_box_per_image,
                                                  self._yolo_loss.anchors,
+                                                 repeat_times,
                                                  jitter=jitter,
                                                  norm=self._yolo_network.get_normalize_func())
         return batch_generator
