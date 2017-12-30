@@ -36,6 +36,8 @@ def train(model,
                   optimizer=optimizer)
 
     # 4. training
+    import time
+    train_start = time.time()
     model.fit_generator(generator = train_batch_gen,
                         steps_per_epoch  = len(train_batch_gen) * train_times, 
                         epochs           = nb_epoch, 
@@ -45,6 +47,8 @@ def train(model,
                         callbacks        = _create_callbacks(saved_weights_name), 
                         workers          = 3,
                         max_queue_size   = 8)
+    train_end = time.time()
+    print("It took a total of {}-seconds to train".format(train_end-train_start))
 
 def _create_callbacks(saved_weights_name):
     # Make a few callbacks
