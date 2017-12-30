@@ -59,7 +59,7 @@ if __name__ == '__main__':
     yolo.load_weights(args.weights)
 
     # 3. read image
-    image_files = glob.glob(os.path.join(DEFAULT_INPUT_IMAGE, "*.jpg"))
+    image_files = glob.glob(os.path.join(args.input, "*.jpg"))
     for fname in image_files:
         image = cv2.imread(fname)
         boxes, probs = yolo.predict(image, args.threshold)
