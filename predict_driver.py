@@ -11,7 +11,7 @@ import glob
 
 
 DEFAULT_CONFIG_FILE = "config.json"
-DEFAULT_INPUT_IMAGE = os.path.join("dataset", "images")
+DEFAULT_INPUT_IMAGE = os.path.join("tests", "dataset", "raccoon_train_imgs")
 
 argparser = argparse.ArgumentParser(
     description='Train and validate YOLO_v2 model on any dataset')
@@ -34,6 +34,13 @@ argparser.add_argument(
     default=0.3,
     help='detection threshold')
 
+argparser.add_argument(
+    '-w',
+    '--weights',
+    default="tests//dataset//mobilenet_raccoon.h5",
+    help='trained weight files')
+
+
 if __name__ == '__main__':
     # 1. extract arguments
     args = argparser.parse_args()
@@ -49,7 +56,7 @@ if __name__ == '__main__':
                        model_config['max_box_per_image'],
                        model_config['anchors'],
                        feature_weights_path=None)
-    yolo.load_weights(config['pretrained']['full'])
+    yolo.load_weights(args.weights)
 
     # 3. read image
     image_files = glob.glob(os.path.join(DEFAULT_INPUT_IMAGE, "*.jpg"))
