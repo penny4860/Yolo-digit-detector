@@ -40,6 +40,12 @@ argparser.add_argument(
     default="tests//dataset//mobilenet_raccoon.h5",
     help='trained weight files')
 
+def get_write_dir(image_dir):
+    par_dname = os.path.dirname(image_dir)
+    cur_dname = os.path.split(image_dir)[-1]
+    detected_dname = os.path.join(par_dname, cur_dname + "_detected")
+    if not os.path.exists(detected_dname): os.makedirs(detected_dname)
+    return detected_dname
 
 if __name__ == '__main__':
     # 1. extract arguments
@@ -59,14 +65,16 @@ if __name__ == '__main__':
     yolo.load_weights(args.weights)
 
     # 3. read image
+    write_dname = get_write_dir(args.input)
     image_files = glob.glob(os.path.join(args.input, "*.jpg"))
+    
     for fname in image_files:
         image = cv2.imread(fname)
         boxes, probs = yolo.predict(image, args.threshold)
     
         # 4. save detection result
-        output_path = fname[:-4] + '_detected' + fname[-4:]
         image = draw_boxes(image, boxes, probs, model_config['labels'])
+        output_path = os.path.join(write_dname, os.path.split(fname)[-1])
         cv2.imwrite(output_path, image)
         print("{}-boxes are detected. {} saved.".format(len(boxes), output_path))
 
