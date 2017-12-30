@@ -53,7 +53,7 @@ def _print_time(process_time):
     if process_time < 60:
         print("{:d}-seconds to train".format(int(process_time)))
     else:
-        print("{:d}-mins to train".format(int(process_time)/60))
+        print("{:d}-mins to train".format(int(process_time/60)))
 
 def _create_callbacks(saved_weights_name):
     # Make a few callbacks
