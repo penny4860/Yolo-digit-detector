@@ -4,3 +4,4 @@ tests/.cache
 params/
 *eclipse*
 yolo.egg-info
+dataset/raccoon
