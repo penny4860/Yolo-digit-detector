@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import time
 
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard
@@ -36,7 +37,6 @@ def train(model,
                   optimizer=optimizer)
 
     # 4. training
-    import time
     train_start = time.time()
     model.fit_generator(generator = train_batch_gen,
                         steps_per_epoch  = len(train_batch_gen) * train_times, 
@@ -48,7 +48,8 @@ def train(model,
                         workers          = 3,
                         max_queue_size   = 8)
     train_end = time.time()
-    print("It took a total of {}-seconds to train".format(train_end-train_start))
+    timed = int((train_end-train_start)/60)
+    print("{:d}-mins to train".format(timed))
 
 def _create_callbacks(saved_weights_name):
     # Make a few callbacks
