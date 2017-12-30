@@ -5,7 +5,11 @@ import numpy as np
 
 class YoloLoss(object):
     
-    def __init__(self, true_boxes, grid_size, nb_class, anchors):
+    def __init__(self,
+                 true_boxes,
+                 grid_size=13,
+                 nb_class=1,
+                 anchors=[0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828]):
         """
         # Args
             grid_size : int
