@@ -29,7 +29,7 @@
         "no_object_scale":      1.0,
         "coord_scale":          1.0,
         "class_scale":          1.0,
-        "saved_weights":   		"test_raccoon_weight.h5",
+        "saved_folder":   	"test_raccoon",
         "jitter":	false
     }
 }
