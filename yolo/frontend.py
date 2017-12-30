@@ -127,8 +127,6 @@ class YOLO(object):
                 valid_batch_generator,
                 learning_rate      = learning_rate, 
                 nb_epoch           = nb_epoch,
-                train_times        = train_times,
-                valid_times        = valid_times,
                 saved_weights_name = saved_weights_name)
 
     def _get_loss_func(self,
