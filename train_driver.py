@@ -19,11 +19,24 @@ argparser.add_argument(
     default="config.json",
     help='path to configuration file')
 
+def setup_training(config_file):
+    """make directory to save weights & its configuration """
+    import shutil
+    with open(config_file) as config_buffer:
+        config = json.loads(config_buffer.read())
+    dirname = config['train']['saved_folder']
+    if os.path.isdir(dirname):
+        print("{} is already exists. Weight file in directory will be overwritten".format(dirname))
+    else:
+        print("{} is created.".format(dirname, dirname))
+        os.makedirs(dirname)
+    print("Weight file and Config file will be saved in \"{}\"".format(dirname))
+    shutil.copyfile(config_file, os.path.join(dirname, "config.json"))
+    return config, os.path.join(dirname, "weights.h5")
+
 if __name__ == '__main__':
     args = argparser.parse_args()
-    
-    with open(args.conf) as config_buffer:
-        config = json.loads(config_buffer.read())
+    config, weight_file = setup_training(args.conf)
 
     # 1. Construct the model 
     yolo = create_yolo(config['model']['architecture'],
@@ -40,7 +53,7 @@ if __name__ == '__main__':
     yolo.train(config['train']['train_image_folder'],
                config['train']['train_annot_folder'],
                config['train']['warmup']['nb_epoch'],
-               config['train']['saved_weights'],
+               weight_file,
                config['train']['warmup']['batch_size'],
                config["train"]["jitter"],
                config['train']['learning_rate'], 
@@ -51,13 +64,13 @@ if __name__ == '__main__':
                config['train']['valid_annot_folder'])
 
     # 4. Load the warmup trained weights
-    yolo.load_weights(config['train']['saved_weights'])
+    yolo.load_weights(weight_file)
     
     # 5. actual training 
     yolo.train(config['train']['train_image_folder'],
                config['train']['train_annot_folder'],
                config['train']['nb_epoch'],
-               config['train']['saved_weights'],
+               weight_file,
                config["train"]["batch_size"],
                config["train"]["jitter"],
                config['train']['learning_rate'], 
