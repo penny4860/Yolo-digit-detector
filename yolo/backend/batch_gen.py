@@ -11,7 +11,8 @@ def create_batch_generator(annotations,
                            grid_size=13,
                            batch_size=8,
                            max_box_per_image=10,
-                           anchors=[0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828], 
+                           anchors=[0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828],
+                           repeat_times=1,
                            jitter=True, 
                            norm=None):
     """
@@ -33,7 +34,8 @@ def create_batch_generator(annotations,
                             yolo_box,
                             img_aug,
                             annotations,
-                            batch_size)
+                            batch_size,
+                            repeat_times)
     return worker
 
 
@@ -45,7 +47,8 @@ class BatchGenerator(Sequence):
                  yolo_box,
                  img_aug,
                  annotations,
-                 batch_size):
+                 batch_size,
+                 repeat_times):
         """
         # Args
             annotations : Annotations instance
@@ -57,12 +60,13 @@ class BatchGenerator(Sequence):
         self._img_aug = img_aug
         self._yolo_box = yolo_box
 
-        self._batch_size = batch_size
+        self._batch_size = min(batch_size, len(annotations)*repeat_times)
+        self._repeat_times = repeat_times
         self.annotations = annotations
         self.counter = 0
 
     def __len__(self):
-        return int(len(self.annotations)/self._batch_size)
+        return int(len(self.annotations) * self._repeat_times /self._batch_size)
 
     def __getitem__(self, idx):
         """

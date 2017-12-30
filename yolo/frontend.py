@@ -110,8 +110,8 @@ class YOLO(object):
                                                                      valid_ann_folder)
         
         # 1. get batch generator
-        train_batch_generator = self._get_batch_generator(train_annotations, batch_size, jitter=jitter)
-        valid_batch_generator = self._get_batch_generator(valid_annotations, batch_size, jitter=False)
+        train_batch_generator = self._get_batch_generator(train_annotations, batch_size, train_times, jitter=jitter)
+        valid_batch_generator = self._get_batch_generator(valid_annotations, batch_size, valid_times, jitter=False)
         
         # 2. To train model get keras model instance & loss fucntion
         model = self._yolo_network.get_model()
@@ -127,8 +127,6 @@ class YOLO(object):
                 valid_batch_generator,
                 learning_rate      = learning_rate, 
                 nb_epoch           = nb_epoch,
-                train_times        = train_times,
-                valid_times        = valid_times,
                 saved_weights_name = saved_weights_name)
 
     def _get_loss_func(self,
@@ -139,7 +137,7 @@ class YOLO(object):
         warmup_bs  = warmup_epochs * (train_times*(batch_size+1) + valid_times*(batch_size+1))
         return self._yolo_loss.custom_loss(batch_size, warmup_bs)
 
-    def _get_batch_generator(self, annotations, batch_size, jitter=True):
+    def _get_batch_generator(self, annotations, batch_size, repeat_times=1, jitter=True):
         """
         # Args
             annotations : Annotations instance
@@ -155,6 +153,7 @@ class YOLO(object):
                                                  batch_size,
                                                  self._max_box_per_image,
                                                  self._yolo_loss.anchors,
+                                                 repeat_times,
                                                  jitter=jitter,
                                                  norm=self._yolo_network.get_normalize_func())
         return batch_generator
