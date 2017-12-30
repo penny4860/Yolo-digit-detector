@@ -47,9 +47,13 @@ def train(model,
                         callbacks        = _create_callbacks(saved_weights_name), 
                         workers          = 3,
                         max_queue_size   = 8)
-    train_end = time.time()
-    timed = int((train_end-train_start)/60)
-    print("{:d}-mins to train".format(timed))
+    _print_time(time.time()-train_start)
+
+def _print_time(process_time):
+    if process_time < 60:
+        print("{:d}-seconds to train".format(int(process_time)))
+    else:
+        print("{:d}-mins to train".format(int(process_time)/60))
 
 def _create_callbacks(saved_weights_name):
     # Make a few callbacks
