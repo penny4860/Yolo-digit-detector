@@ -75,7 +75,7 @@ class YoloLoss(object):
         return true_box_xy, true_box_wh, true_box_conf, true_box_class
 
 
-    def _adjust_pred(self, y_pred, cell_grid):
+    def _activate_pred(self, y_pred, cell_grid):
         """
         # Args
             y_pred : (N, 13, 13, 5, 6)
@@ -121,7 +121,7 @@ class YoloLoss(object):
             total_recall = tf.Variable(0.)
             
             # Adjust prediction
-            pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = self._adjust_pred(y_pred, cell_grid)
+            pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = self._activate_pred(y_pred, cell_grid)
 
 #             y_pred = tf.Print(y_pred, [tf.shape(seen), seen], message="seen \t", summarize=1000)
             
