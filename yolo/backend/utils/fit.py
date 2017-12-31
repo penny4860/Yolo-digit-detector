@@ -38,7 +38,6 @@ def train(model,
                         steps_per_epoch  = len(train_batch_gen), 
                         epochs           = nb_epoch, 
                         verbose          = 1,
-                        callbacks        = _create_callbacks(saved_weights_name), 
                         workers          = 3,
                         max_queue_size   = 8)
     _print_time(time.time()-train_start)
