@@ -99,12 +99,6 @@ class YoloLoss(object):
         pred_box_class = y_pred[..., 5:]
         return pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class
     
-    def _create_mask(self, mask_shape):
-        coord_mask = tf.zeros(mask_shape)
-        conf_mask  = tf.zeros(mask_shape)
-        class_mask = tf.zeros(mask_shape)
-        return coord_mask, conf_mask, class_mask
-    
     def custom_loss(self, batch_size, warmup_bs):
         """
         # Args
@@ -113,9 +107,14 @@ class YoloLoss(object):
         
         """
         def loss_func(y_true, y_pred):
+            mask_shape = tf.shape(y_true)[:4]
+
             # (N, 13, 13, 5, 2)
             cell_grid = self._create_cell_grid(batch_size)
-            coord_mask, conf_mask, class_mask = self._create_mask(tf.shape(y_true)[:4])
+            
+            coord_mask = tf.zeros(mask_shape)
+            conf_mask  = tf.zeros(mask_shape)
+            class_mask = tf.zeros(mask_shape)
             
             seen = tf.Variable(0.)
             total_recall = tf.Variable(0.)
