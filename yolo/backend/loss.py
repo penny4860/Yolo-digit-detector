@@ -130,14 +130,15 @@ class YoloLoss(object):
             """
             Determine the masks
             """
-            # 1) confidence mask (N, 13, 13, 5)
-            conf_mask  = tf.zeros(tf.shape(y_true)[:4])
-
-            # 2) coordinate mask: simply the position of the ground truth boxes (the predictors)
+            # 1) coordinate mask: simply the position of the ground truth boxes (the predictors)
             #     BOX 별 confidence value 를 mask value 로 사용
             # [1 13 13 5 1]
             coord_mask = tf.expand_dims(y_true[..., BOX_IDX_CONFIDENCE], axis=-1) * self.coord_scale
-                    
+            
+            # 2) class mask: simply the position of the ground truth boxes (the predictors)
+            class_wt = np.ones(self.nb_class, dtype='float32')
+            class_mask = y_true[..., 4] * tf.gather(class_wt, true_box_class) * self.class_scale       
+
             ### confidence mask: penelize predictors + penalize boxes with low IOU
             # penalize the confidence of the boxes, which have IOU with some ground truth box < 0.6
             true_xy = self.true_boxes[..., 0:2]
@@ -166,14 +167,12 @@ class YoloLoss(object):
             iou_scores  = tf.truediv(intersect_areas, union_areas)
     
             best_ious = tf.reduce_max(iou_scores, axis=4)
+            # 1) confidence mask (N, 13, 13, 5)
+            conf_mask  = tf.zeros(tf.shape(y_true)[:4])
             conf_mask = conf_mask + tf.to_float(best_ious < 0.6) * (1 - y_true[..., 4]) * self.no_object_scale
             
             # penalize the confidence of the boxes, which are reponsible for corresponding ground truth box
             conf_mask = conf_mask + y_true[..., 4] * self.object_scale
-            
-            ### class mask: simply the position of the ground truth boxes (the predictors)
-            class_wt = np.ones(self.nb_class, dtype='float32')
-            class_mask = y_true[..., 4] * tf.gather(class_wt, true_box_class) * self.class_scale       
             
             """
             Warm-up training
