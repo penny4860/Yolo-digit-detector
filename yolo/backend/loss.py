@@ -113,6 +113,9 @@ class YoloLoss(object):
 
             # 2. activate prediction tensor
             pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = self._activate_pred(y_pred, cell_grid)
+
+            # 3. activate ground truth tensor
+            true_box_xy, true_box_wh, true_box_conf, true_box_class = self._adjust_true(y_true, pred_box_xy, pred_box_wh)
             
             conf_mask  = tf.zeros(tf.shape(y_true)[:4])
             
@@ -122,8 +125,6 @@ class YoloLoss(object):
 
 #             y_pred = tf.Print(y_pred, [tf.shape(seen), seen], message="seen \t", summarize=1000)
             
-            # Adjust ground truth
-            true_box_xy, true_box_wh, true_box_conf, true_box_class = self._adjust_true(y_true, pred_box_xy, pred_box_wh)
             
             """
             Determine the masks
