@@ -107,11 +107,9 @@ class YoloLoss(object):
         
         """
         def loss_func(y_true, y_pred):
-            mask_shape = tf.shape(y_true)[:4]
-
             # (N, 13, 13, 5, 2)
             cell_grid = self._create_cell_grid(batch_size)
-            conf_mask  = tf.zeros(mask_shape)
+            conf_mask  = tf.zeros(tf.shape(y_true)[:4])
             
             seen = tf.Variable(0.)
             total_recall = tf.Variable(0.)
