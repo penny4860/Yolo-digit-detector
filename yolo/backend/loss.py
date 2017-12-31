@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import tensorflow as tf
 import numpy as np
+np.random.seed(111)
 from keras.layers import Input
 
 
@@ -82,8 +83,13 @@ class YoloLoss(object):
         
         # Returns
             box_xy : (N, 13, 13, 5, 2)
+                1) sigmoid activation
+                2) grid offset added
             box_wh : (N, 13, 13, 5, 2)
+                1) exponential activation
+                2) anchor box multiplied
             box_conf : (N, 13, 13, 5, 1)
+                1) sigmoid activation
             box_classes : (N, 13, 13, 5, nb_class)
         """
         # bx = sigmoid(tx) + cx, by = sigmoid(ty) + cy
@@ -101,10 +107,9 @@ class YoloLoss(object):
         
         """
         def loss_func(y_true, y_pred):
-        
             mask_shape = tf.shape(y_true)[:4]
-            
-            # (batch_size, 13, 13, 5, 2)
+
+            # (N, 13, 13, 5, 2)
             cell_grid = self._create_cell_grid(batch_size)
             
             coord_mask = tf.zeros(mask_shape)
@@ -116,6 +121,8 @@ class YoloLoss(object):
             
             # Adjust prediction
             pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = self._adjust_pred(y_pred, cell_grid)
+
+#             y_pred = tf.Print(y_pred, [tf.shape(seen), seen], message="seen \t", summarize=1000)
             
             # Adjust ground truth
             true_box_xy, true_box_wh, true_box_conf, true_box_class = self._adjust_true(y_true, pred_box_xy, pred_box_wh)
@@ -191,42 +198,14 @@ class YoloLoss(object):
             loss_class = tf.reduce_sum(loss_class * class_mask) / (nb_class_box + 1e-6)
             
             loss = loss_xy + loss_wh + loss_conf + loss_class
-
-
-
-            loss = tf.Print(loss, [loss_xy], message='Loss XY \t', summarize=1000)
-            loss = tf.Print(loss, [loss_wh], message='Loss WH \t', summarize=1000)
-            loss = tf.Print(loss, [loss_conf], message='Loss Conf \t', summarize=1000)
-            loss = tf.Print(loss, [loss_class], message='Loss Class \t', summarize=1000)
-            loss = tf.Print(loss, [loss], message='Total Loss \t', summarize=1000)
-
-
-            
-    #         if self.debug:
-    #             nb_true_box = tf.reduce_sum(y_true[..., 4])
-    #             nb_pred_box = tf.reduce_sum(tf.to_float(true_box_conf > 0.5) * tf.to_float(pred_box_conf > 0.3))
-    #             
-    #             current_recall = nb_pred_box/(nb_true_box + 1e-6)
-    #             total_recall = tf.assign_add(total_recall, current_recall) 
-    # 
-    #             loss = tf.Print(loss, [tf.zeros((1))], message='Dummy Line \t', summarize=1000)
-    #             loss = tf.Print(loss, [loss_xy], message='Loss XY \t', summarize=1000)
-    #             loss = tf.Print(loss, [loss_wh], message='Loss WH \t', summarize=1000)
-    #             loss = tf.Print(loss, [loss_conf], message='Loss Conf \t', summarize=1000)
-    #             loss = tf.Print(loss, [loss_class], message='Loss Class \t', summarize=1000)
-    #             loss = tf.Print(loss, [loss], message='Total Loss \t', summarize=1000)
-    #             loss = tf.Print(loss, [current_recall], message='Current Recall \t', summarize=1000)
-    #             loss = tf.Print(loss, [total_recall/seen], message='Average Recall \t', summarize=1000)
-            
             return loss
         return loss_func
 
 
-if __name__ == '__main__':
-
+def test_loss_op():
     # 1. build loss function
     batch_size = 1
-    warmup_bs = 1
+    warmup_bs = 0
     yolo_loss = YoloLoss()
     custom_loss = yolo_loss.custom_loss(batch_size, warmup_bs)
 
@@ -237,16 +216,28 @@ if __name__ == '__main__':
     # 3. loss operation
     loss_op = custom_loss(y_true, y_pred)
     
-    # 4. session 에서 loss_op를 실행
+    # 4. setup feed values for each placeholders (true_boxes, y_true, y_pred
+    y_true_value = np.zeros((1,13,13,5,6))
+    y_true_value[0,7,6,4,:] = [6.015625, 7.71875, 8.84375, 10, 1, 1]    # (cx, cy, w, h, confidence, classes)
+    y_pred_value = np.random.randn(1,13,13,5,6) / 4
+    true_boxes_value = np.zeros((1,1,1,1,10,4))
+    true_boxes_value[0,0,0,0,0,:] = [6.015625, 7.71875, 8.84375, 10]
+    print(y_pred_value.max(), y_pred_value.min())
+    
+    # 5. run loss_op in session
     # y_true, y_pred에 실제 value를 insert
     sess = tf.Session()
     init_op = tf.global_variables_initializer()
-
     sess.run(init_op)
-    loss_value = sess.run(loss_op, feed_dict={yolo_loss.true_boxes: np.zeros((1,1,1,1,10,4)),
-                                              y_true: np.zeros((1,13,13,5,6)),
-                                              y_pred: np.zeros((1,13,13,5,6))})
+    loss_value = sess.run(loss_op, feed_dict={yolo_loss.true_boxes: true_boxes_value,
+                                              y_true: y_true_value,
+                                              y_pred: y_pred_value})
     sess.close()
-    print(loss_value)
+    assert np.allclose(loss_value, 11.471475)
+    
+
+import pytest
+if __name__ == '__main__':
+    pytest.main([__file__, "-v", "-s"])
 
 
