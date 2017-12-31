@@ -4,6 +4,13 @@ import numpy as np
 np.random.seed(111)
 from keras.layers import Input
 
+BOX_IDX_X = 0
+BOX_IDX_Y = 1
+BOX_IDX_W = 2
+BOX_IDX_H = 3
+BOX_IDX_CONFIDENCE = 4
+BOX_IDX_CLASS_START = 5
+
 
 class YoloLoss(object):
     
@@ -117,21 +124,28 @@ class YoloLoss(object):
             # 3. activate ground truth tensor
             true_box_xy, true_box_wh, true_box_conf, true_box_class = self._adjust_true(y_true, pred_box_xy, pred_box_wh)
             
-            conf_mask  = tf.zeros(tf.shape(y_true)[:4])
-            
             seen = tf.Variable(0.)
             total_recall = tf.Variable(0.)
-            
-
-#             y_pred = tf.Print(y_pred, [tf.shape(seen), seen], message="seen \t", summarize=1000)
-            
             
             """
             Determine the masks
             """
-            ### coordinate mask: simply the position of the ground truth boxes (the predictors)
-            coord_mask = tf.expand_dims(y_true[..., 4], axis=-1) * self.coord_scale
+            # 1) confidence mask (N, 13, 13, 5)
+            conf_mask  = tf.zeros(tf.shape(y_true)[:4])
+
+            # 2) coordinate mask: simply the position of the ground truth boxes (the predictors)
+            #     BOX 별 confidence value 를 mask value 로 사용
+            # [1 13 13 5 1]
+            coord_mask = tf.expand_dims(y_true[..., BOX_IDX_CONFIDENCE], axis=-1) * self.coord_scale
+            coord_mask = tf.Print(coord_mask, [tf.shape(coord_mask)], message="coord mask \t", summarize=1000)
             
+            for i in range(13):
+                for j in range(13):
+                    coord_mask = tf.Print(coord_mask,
+                                          [coord_mask[0, i, j, :, 0]],
+                                          message="coord mask {}, {}\t".format(i, j),
+                                          summarize=1000)
+                    
             ### confidence mask: penelize predictors + penalize boxes with low IOU
             # penalize the confidence of the boxes, which have IOU with some ground truth box < 0.6
             true_xy = self.true_boxes[..., 0:2]
