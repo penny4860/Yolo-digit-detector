@@ -137,14 +137,6 @@ class YoloLoss(object):
             #     BOX 별 confidence value 를 mask value 로 사용
             # [1 13 13 5 1]
             coord_mask = tf.expand_dims(y_true[..., BOX_IDX_CONFIDENCE], axis=-1) * self.coord_scale
-            coord_mask = tf.Print(coord_mask, [tf.shape(coord_mask)], message="coord mask \t", summarize=1000)
-            
-            for i in range(13):
-                for j in range(13):
-                    coord_mask = tf.Print(coord_mask,
-                                          [coord_mask[0, i, j, :, 0]],
-                                          message="coord mask {}, {}\t".format(i, j),
-                                          summarize=1000)
                     
             ### confidence mask: penelize predictors + penalize boxes with low IOU
             # penalize the confidence of the boxes, which have IOU with some ground truth box < 0.6
