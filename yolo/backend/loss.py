@@ -190,6 +190,16 @@ class YoloLoss(object):
             loss_class = tf.reduce_sum(loss_class * class_mask) / (nb_class_box + 1e-6)
             
             loss = loss_xy + loss_wh + loss_conf + loss_class
+
+
+
+            loss = tf.Print(loss, [loss_xy], message='Loss XY \t', summarize=1000)
+            loss = tf.Print(loss, [loss_wh], message='Loss WH \t', summarize=1000)
+            loss = tf.Print(loss, [loss_conf], message='Loss Conf \t', summarize=1000)
+            loss = tf.Print(loss, [loss_class], message='Loss Class \t', summarize=1000)
+            loss = tf.Print(loss, [loss], message='Total Loss \t', summarize=1000)
+
+
             
     #         if self.debug:
     #             nb_true_box = tf.reduce_sum(y_true[..., 4])
