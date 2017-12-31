@@ -111,10 +111,7 @@ class YoloLoss(object):
 
             # (N, 13, 13, 5, 2)
             cell_grid = self._create_cell_grid(batch_size)
-            
-            coord_mask = tf.zeros(mask_shape)
             conf_mask  = tf.zeros(mask_shape)
-            class_mask = tf.zeros(mask_shape)
             
             seen = tf.Variable(0.)
             total_recall = tf.Variable(0.)
