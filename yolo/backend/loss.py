@@ -108,14 +108,17 @@ class YoloLoss(object):
         """
         def loss_func(y_true, y_pred):
             # (N, 13, 13, 5, 2)
+            # 1. create grid offset tensor
             cell_grid = self._create_cell_grid(batch_size)
+
+            # 2. activate prediction tensor
+            pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = self._activate_pred(y_pred, cell_grid)
+            
             conf_mask  = tf.zeros(tf.shape(y_true)[:4])
             
             seen = tf.Variable(0.)
             total_recall = tf.Variable(0.)
             
-            # Adjust prediction
-            pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = self._activate_pred(y_pred, cell_grid)
 
 #             y_pred = tf.Print(y_pred, [tf.shape(seen), seen], message="seen \t", summarize=1000)
             
