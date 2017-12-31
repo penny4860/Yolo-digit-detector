@@ -220,3 +220,33 @@ class YoloLoss(object):
             
             return loss
         return loss_func
+
+
+if __name__ == '__main__':
+
+    # 1. build loss function
+    batch_size = 1
+    warmup_bs = 1
+    yolo_loss = YoloLoss()
+    custom_loss = yolo_loss.custom_loss(batch_size, warmup_bs)
+
+    # 2. placeholder : (y_true, y_pred)
+    y_true = tf.placeholder(tf.float32, [None, 13, 13, 5, 6], name='y_true')
+    y_pred = tf.placeholder(tf.float32, [None, 13, 13, 5, 6], name='y_pred')
+
+    # 3. loss operation
+    loss_op = custom_loss(y_true, y_pred)
+    
+    # 4. session 에서 loss_op를 실행
+    # y_true, y_pred에 실제 value를 insert
+    sess = tf.Session()
+    init_op = tf.global_variables_initializer()
+
+    sess.run(init_op)
+    loss_value = sess.run(loss_op, feed_dict={yolo_loss.true_boxes: np.zeros((1,1,1,1,10,4)),
+                                              y_true: np.zeros((1,13,13,5,6)),
+                                              y_pred: np.zeros((1,13,13,5,6))})
+    sess.close()
+    print(loss_value)
+
+
