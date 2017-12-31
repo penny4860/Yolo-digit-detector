@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 import tensorflow as tf
 import numpy as np
+from keras.layers import Input
 
 
 class YoloLoss(object):
     
     def __init__(self,
-                 true_boxes,
+                 true_boxes=Input(shape=(1, 1, 1, 10 , 4)),
                  grid_size=13,
                  nb_class=1,
                  anchors=[0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828]):
