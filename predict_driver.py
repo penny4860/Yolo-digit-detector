@@ -37,7 +37,7 @@ argparser.add_argument(
 argparser.add_argument(
     '-w',
     '--weights',
-    default="test_svhn//weights.h5",
+    default="test_svhn_recognizer//weights.h5",
     help='trained weight files')
 
 def get_write_dir(image_dir):
