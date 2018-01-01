@@ -188,14 +188,30 @@ class _Mask(object):
         self._no_object_scale = no_object_scale
         
     def create_coord_mask(self, y_true):
-        # 1) coordinate mask: simply the position of the ground truth boxes (the predictors)
+        """ Simply the position of the ground truth boxes (the predictors)
+
+        # Args
+            y_true : Tensor, shape of (None, grid, grid, nb_box, 4+1+n_classes)
+        
+        # Returns
+            mask : Tensor, shape of (None, grid, grid, nb_box, 1)
+        """
         #     BOX 별 confidence value 를 mask value 로 사용
         # [1 13 13 5 1]
         mask = tf.expand_dims(y_true[..., BOX_IDX_CONFIDENCE], axis=-1) * self._coord_scale
         return mask
     
     def create_class_mask(self, y_true, true_box_class):
-        # 2) class mask: simply the position of the ground truth boxes (the predictors)
+        """ Simply the position of the ground truth boxes (the predictors)
+
+        # Args
+            y_true : Tensor, shape of (None, grid, grid, nb_box, 4+1+n_classes)
+            true_box_class : Tensor, shape of (None, grid, grid, nb_box)
+                indicate class index per boxes
+        
+        # Returns
+            mask : Tensor, shape of (None, grid, grid, nb_box)
+        """
         class_wt = np.ones(self._nb_class, dtype='float32')
         mask = y_true[..., 4] * tf.gather(class_wt, true_box_class) * self._class_scale
         return mask
