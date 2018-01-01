@@ -231,13 +231,19 @@ class _Mask(object):
         return conf_mask
 
 
-def test_yolo_coord_masking():
-    # 1. setup y_true placeholder
+import pytest
+@pytest.fixture(scope='function')
+def setup_y_true_tensor(request):
     y_true = tf.placeholder(tf.float32, [None, 13, 13, 5, 6], name='y_true')
-
-    # 2. setup y_true feed value
     y_true_value = np.zeros((1,13,13,5,6))
     y_true_value[0,7,6,4,:] = [6.015625, 7.71875, 8.84375, 10, 1, 1]    # (cx, cy, w, h, confidence, classes)
+    return y_true, y_true_value
+
+
+def test_yolo_coord_masking(setup_y_true_tensor):
+    # 1. setup y_true placeholder
+    # 2. setup y_true feed value
+    y_true, y_true_value = setup_y_true_tensor
     
     # 3. create coord_mask operation
     yolo_mask = _Mask(nb_class=1, coord_scale=1.0, class_scale=1.0, object_scale=5.0, no_object_scale=1.0)
