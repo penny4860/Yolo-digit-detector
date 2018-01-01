@@ -58,14 +58,11 @@ class YoloLoss(object):
             class_mask = self._mask.create_class_mask(y_true, true_box_class)
             conf_mask = self._mask.create_conf_mask(y_true, self.true_boxes, pred_box_xy, pred_box_wh)
             
-            seen = tf.Variable(0.)
-            total_recall = tf.Variable(0.)
-            
             """
             Warm-up training
             """
             no_boxes_mask = tf.to_float(coord_mask < self.coord_scale/2.)
-            seen = tf.assign_add(seen, 1.)
+            seen = tf.assign_add(tf.Variable(0.), 1.)
             cell_grid = create_cell_grid(tf.shape(y_pred)[1], batch_size)
             true_box_xy, true_box_wh, coord_mask = tf.cond(tf.less(seen, warmup_bs), 
                                   lambda: [true_box_xy + (0.5 + cell_grid) * no_boxes_mask, 
