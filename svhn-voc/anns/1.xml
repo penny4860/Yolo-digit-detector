@@ -6,7 +6,7 @@
     <depth>3</depth>
   </size>
   <object>
-    <name>digit</name>
+    <name>1</name>
     <bndbox>
       <xmin>246</xmin>
       <ymin>77</ymin>
@@ -15,7 +15,7 @@
     </bndbox>
   </object>
   <object>
-    <name>digit</name>
+    <name>9</name>
     <bndbox>
       <xmin>323</xmin>
       <ymin>81</ymin>
