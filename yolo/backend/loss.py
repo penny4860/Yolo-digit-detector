@@ -232,23 +232,26 @@ class _Mask(object):
 
 
 def test_yolo_coord_masking():
-    yolo_mask = _Mask(nb_class=1, coord_scale=1.0, class_scale=1.0, object_scale=5.0, no_object_scale=1.0)
-
+    # 1. setup y_true placeholder
     y_true = tf.placeholder(tf.float32, [None, 13, 13, 5, 6], name='y_true')
+
+    # 2. setup y_true feed value
     y_true_value = np.zeros((1,13,13,5,6))
     y_true_value[0,7,6,4,:] = [6.015625, 7.71875, 8.84375, 10, 1, 1]    # (cx, cy, w, h, confidence, classes)
-
+    
+    # 3. create coord_mask operation
+    yolo_mask = _Mask(nb_class=1, coord_scale=1.0, class_scale=1.0, object_scale=5.0, no_object_scale=1.0)
     coord_mask_op = yolo_mask.create_coord_mask(y_true)
 
-    # 5. run loss_op in session
-    # y_true, y_pred에 실제 value를 insert
+    # 4. run loss_op in session
     sess = tf.Session()
     init_op = tf.global_variables_initializer()
     sess.run(init_op)
     coord_mask_value = sess.run(coord_mask_op, feed_dict={y_true: y_true_value})
     sess.close()
     
-    # (1, 13, 13, 5, 1)
+    # coordinate mask value : (N, grid, grid, nb_box, 1)
+    #     object 가 있는 (grid_x, grid_y, anchor_idx) 에만 1, 나머지는 0
     expected_coord_mask = np.zeros((1,13,13,5,1))
     expected_coord_mask[0, 7, 6, 4, :] = 1.0
     assert np.allclose(coord_mask_value, expected_coord_mask)
