@@ -264,7 +264,7 @@ def test_yolo_coord_masking(setup_y_true_tensor):
 
 
 
-def test_loss_op():
+def test_loss_op(setup_y_true_tensor):
     # 1. build loss function
     batch_size = 1
     warmup_bs = 0
@@ -272,15 +272,13 @@ def test_loss_op():
     custom_loss = yolo_loss.custom_loss(batch_size, warmup_bs)
 
     # 2. placeholder : (y_true, y_pred)
-    y_true = tf.placeholder(tf.float32, [None, 13, 13, 5, 6], name='y_true')
+    y_true, y_true_value = setup_y_true_tensor
     y_pred = tf.placeholder(tf.float32, [None, 13, 13, 5, 6], name='y_pred')
 
     # 3. loss operation
     loss_op = custom_loss(y_true, y_pred)
     
     # 4. setup feed values for each placeholders (true_boxes, y_true, y_pred
-    y_true_value = np.zeros((1,13,13,5,6))
-    y_true_value[0,7,6,4,:] = [6.015625, 7.71875, 8.84375, 10, 1, 1]    # (cx, cy, w, h, confidence, classes)
     y_pred_value = np.random.randn(1,13,13,5,6) / 4
     true_boxes_value = np.zeros((1,1,1,1,10,4))
     true_boxes_value[0,0,0,0,0,:] = [6.015625, 7.71875, 8.84375, 10]
