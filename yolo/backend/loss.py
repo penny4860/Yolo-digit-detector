@@ -92,7 +92,7 @@ class YoloLoss(object):
 
 class _Mask(object):
     
-    def __init__(self, nb_class, coord_scale=1.0, class_scale=1.0, object_scale=5.0, no_object_scale=1.0):
+    def __init__(self, nb_class=1, coord_scale=1.0, class_scale=1.0, object_scale=5.0, no_object_scale=1.0):
         self._nb_class = nb_class
         self._coord_scale = coord_scale
         self._class_scale = class_scale
