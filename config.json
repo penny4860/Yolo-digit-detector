@@ -29,7 +29,7 @@
         "no_object_scale":      1.0,
         "coord_scale":          1.0,
         "class_scale":          1.0,
-        "saved_folder":   	"test_svhn",
+        "saved_folder":   	"test_svhn_recognizer",
         "jitter":	false
     }
 }
