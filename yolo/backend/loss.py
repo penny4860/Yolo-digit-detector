@@ -33,6 +33,10 @@ class YoloLoss(object):
         self.nb_box = int(len(anchors)/2)
         self.nb_class = nb_class
         self.true_boxes = true_boxes
+
+        # Todo : create method를 따로 만들어서 주입받자.
+        self._activator = _Activator(self.anchors)
+
         
         # Todo : config parameters??
         self.object_scale    = 5.0
@@ -50,7 +54,6 @@ class YoloLoss(object):
         def loss_func(y_true, y_pred):
             # (N, 13, 13, 5, 2)
             # 1. activate prediction & truth tensor
-            activator = _Activator(self.anchors)
             # Todo : return tensor를 2개로 줄이자.
             pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class, true_box_xy, true_box_wh, true_box_conf, true_box_class = activator.run(y_true, y_pred)
             
