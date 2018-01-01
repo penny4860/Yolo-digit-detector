@@ -49,11 +49,9 @@ class YoloLoss(object):
         """
         def loss_func(y_true, y_pred):
             # (N, 13, 13, 5, 2)
-            # 2. activate prediction tensor
-            pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = activate_pred_tensor(y_pred, self.anchors)
-
-            # 3. activate ground truth tensor
-            true_box_xy, true_box_wh, true_box_conf, true_box_class = activate_truth_tensor(y_true, pred_box_xy, pred_box_wh)
+            # 1. activate prediction & truth tensor
+            activator = _Activator(self.anchors)
+            pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class, true_box_xy, true_box_wh, true_box_conf, true_box_class = activator.run(y_true, y_pred)
             
             seen = tf.Variable(0.)
             total_recall = tf.Variable(0.)
@@ -136,68 +134,79 @@ class YoloLoss(object):
             return loss
         return loss_func
 
-def activate_pred_tensor(y_pred, anchors):
-    """
-    # Args
-        y_pred : (N, 13, 13, 5, 6)
-        cell_grid : (N, 13, 13, 5, 2)
-    
-    # Returns
-        box_xy : (N, 13, 13, 5, 2)
-            1) sigmoid activation
-            2) grid offset added
-        box_wh : (N, 13, 13, 5, 2)
-            1) exponential activation
-            2) anchor box multiplied
-        box_conf : (N, 13, 13, 5, 1)
-            1) sigmoid activation
-        box_classes : (N, 13, 13, 5, nb_class)
-    """
-    # bx = sigmoid(tx) + cx, by = sigmoid(ty) + cy
-    batch_size = tf.shape(y_pred)[0]
-    grid_size = tf.shape(y_pred)[1]
-    cell_grid = create_cell_grid(grid_size, batch_size)
-    
-    nb_box = int(len(anchors)/2)
-    pred_box_xy = tf.sigmoid(y_pred[..., :2]) + cell_grid
-    pred_box_wh = tf.exp(y_pred[..., 2:4]) * np.reshape(anchors, [1,1,1,nb_box,2])
-    pred_box_conf = tf.sigmoid(y_pred[..., 4])
-    pred_box_class = y_pred[..., 5:]
-    return pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class
 
-def activate_truth_tensor(y_true, pred_box_xy, pred_box_wh):
-    ### adjust x and y
-    true_box_xy = y_true[..., 0:2] # relative position to the containing cell
+class _Activator(object):
     
-    ### adjust w and h
-    true_box_wh = y_true[..., 2:4] # number of cells accross, horizontally and vertically
+    def __init__(self, anchors):
+        self._anchor_boxes = np.reshape(anchors, [1,1,1,-1,2])
+        
+    def run(self, y_true, y_pred):
+        pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = self._activate_pred_tensor(y_pred)
+        true_box_xy, true_box_wh, true_box_conf, true_box_class = self._activate_true_tensor(y_true, pred_box_xy, pred_box_wh)
+        # Todo : many returns
+        return pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class, true_box_xy, true_box_wh, true_box_conf, true_box_class
     
-    ### adjust confidence
-    true_wh_half = true_box_wh / 2.
-    true_mins    = true_box_xy - true_wh_half
-    true_maxes   = true_box_xy + true_wh_half
-    
-    pred_wh_half = pred_box_wh / 2.
-    pred_mins    = pred_box_xy - pred_wh_half
-    pred_maxes   = pred_box_xy + pred_wh_half       
-    
-    intersect_mins  = tf.maximum(pred_mins,  true_mins)
-    intersect_maxes = tf.minimum(pred_maxes, true_maxes)
-    intersect_wh    = tf.maximum(intersect_maxes - intersect_mins, 0.)
-    intersect_areas = intersect_wh[..., 0] * intersect_wh[..., 1]
-    
-    true_areas = true_box_wh[..., 0] * true_box_wh[..., 1]
-    pred_areas = pred_box_wh[..., 0] * pred_box_wh[..., 1]
+    def _activate_pred_tensor(self, y_pred):
+        """
+        # Args
+            y_pred : (N, 13, 13, 5, 6)
+            cell_grid : (N, 13, 13, 5, 2)
+        
+        # Returns
+            box_xy : (N, 13, 13, 5, 2)
+                1) sigmoid activation
+                2) grid offset added
+            box_wh : (N, 13, 13, 5, 2)
+                1) exponential activation
+                2) anchor box multiplied
+            box_conf : (N, 13, 13, 5, 1)
+                1) sigmoid activation
+            box_classes : (N, 13, 13, 5, nb_class)
+        """
+        # bx = sigmoid(tx) + cx, by = sigmoid(ty) + cy
+        batch_size = tf.shape(y_pred)[0]
+        grid_size = tf.shape(y_pred)[1]
+        cell_grid = create_cell_grid(grid_size, batch_size)
+        
+        pred_box_xy = tf.sigmoid(y_pred[..., :2]) + cell_grid
+        pred_box_wh = tf.exp(y_pred[..., 2:4]) * self._anchor_boxes
+        pred_box_conf = tf.sigmoid(y_pred[..., 4])
+        pred_box_class = y_pred[..., 5:]
+        return pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class
 
-    union_areas = pred_areas + true_areas - intersect_areas
-    iou_scores  = tf.truediv(intersect_areas, union_areas)
+    def _activate_true_tensor(self, y_true, pred_box_xy, pred_box_wh):
+        ### adjust x and y
+        true_box_xy = y_true[..., 0:2] # relative position to the containing cell
+        
+        ### adjust w and h
+        true_box_wh = y_true[..., 2:4] # number of cells accross, horizontally and vertically
+        
+        ### adjust confidence
+        true_wh_half = true_box_wh / 2.
+        true_mins    = true_box_xy - true_wh_half
+        true_maxes   = true_box_xy + true_wh_half
+        
+        pred_wh_half = pred_box_wh / 2.
+        pred_mins    = pred_box_xy - pred_wh_half
+        pred_maxes   = pred_box_xy + pred_wh_half       
+        
+        intersect_mins  = tf.maximum(pred_mins,  true_mins)
+        intersect_maxes = tf.minimum(pred_maxes, true_maxes)
+        intersect_wh    = tf.maximum(intersect_maxes - intersect_mins, 0.)
+        intersect_areas = intersect_wh[..., 0] * intersect_wh[..., 1]
+        
+        true_areas = true_box_wh[..., 0] * true_box_wh[..., 1]
+        pred_areas = pred_box_wh[..., 0] * pred_box_wh[..., 1]
     
-    true_box_conf = iou_scores * y_true[..., 4]
-    
-    ### adjust class probabilities
-    true_box_class = tf.argmax(y_true[..., 5:], -1)
-    
-    return true_box_xy, true_box_wh, true_box_conf, true_box_class
+        union_areas = pred_areas + true_areas - intersect_areas
+        iou_scores  = tf.truediv(intersect_areas, union_areas)
+        
+        true_box_conf = iou_scores * y_true[..., 4]
+        
+        ### adjust class probabilities
+        true_box_class = tf.argmax(y_true[..., 5:], -1)
+        
+        return true_box_xy, true_box_wh, true_box_conf, true_box_class
 
 
 def create_cell_grid(grid_size, batch_size):
