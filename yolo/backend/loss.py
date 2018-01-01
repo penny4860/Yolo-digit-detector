@@ -282,7 +282,6 @@ def test_loss_op(setup_y_true_tensor):
     y_pred_value = np.random.randn(1,13,13,5,6) / 4
     true_boxes_value = np.zeros((1,1,1,1,10,4))
     true_boxes_value[0,0,0,0,0,:] = [6.015625, 7.71875, 8.84375, 10]
-    print(y_pred_value.max(), y_pred_value.min())
     
     # 5. run loss_op in session
     # y_true, y_pred에 실제 value를 insert
