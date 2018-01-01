@@ -87,12 +87,6 @@ class YoloLoss(object):
             
             loss = loss_xy + loss_wh + loss_conf + loss_class
             
-            # [1 13 13 5]
-            true_box_class = tf.Print(true_box_class,[tf.shape(true_box_class)], message="tensor shape: ", summarize=1000)
-            for i in range(13):
-                for j in range(13):
-                    loss = tf.Print(loss, [true_box_class[0, i, j, :]], message="true box class {}, {}".format(i, j), summarize=1000)
-            
             return loss
         return loss_func
 
