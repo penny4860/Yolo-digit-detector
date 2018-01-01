@@ -49,9 +49,6 @@ class YoloLoss(object):
         """
         def loss_func(y_true, y_pred):
             # (N, 13, 13, 5, 2)
-            # 1. create grid offset tensor
-            cell_grid = create_cell_grid(tf.shape(y_pred)[1], batch_size)
-
             # 2. activate prediction tensor
             pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = activate_pred_tensor(y_pred, self.anchors)
 
@@ -113,7 +110,7 @@ class YoloLoss(object):
             """
             no_boxes_mask = tf.to_float(coord_mask < self.coord_scale/2.)
             seen = tf.assign_add(seen, 1.)
-            
+            cell_grid = create_cell_grid(tf.shape(y_pred)[1], batch_size)
             true_box_xy, true_box_wh, coord_mask = tf.cond(tf.less(seen, warmup_bs), 
                                   lambda: [true_box_xy + (0.5 + cell_grid) * no_boxes_mask, 
                                            true_box_wh + tf.ones_like(true_box_wh) * np.reshape(self.anchors, [1,1,1,self.nb_box,2]) * no_boxes_mask, 
