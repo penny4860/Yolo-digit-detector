@@ -90,66 +90,6 @@ class YoloLoss(object):
         return loss_func
 
 
-class _Mask(object):
-    
-    def __init__(self, nb_class=1, coord_scale=1.0, class_scale=1.0, object_scale=5.0, no_object_scale=1.0):
-        self._nb_class = nb_class
-        self._coord_scale = coord_scale
-        self._class_scale = class_scale
-        self._object_scale = object_scale
-        self._no_object_scale = no_object_scale
-        
-    def create_coord_mask(self, y_true):
-        # 1) coordinate mask: simply the position of the ground truth boxes (the predictors)
-        #     BOX 별 confidence value 를 mask value 로 사용
-        # [1 13 13 5 1]
-        mask = tf.expand_dims(y_true[..., BOX_IDX_CONFIDENCE], axis=-1) * self._coord_scale
-        return mask
-    
-    def create_class_mask(self, y_true, true_box_class):
-        # 2) class mask: simply the position of the ground truth boxes (the predictors)
-        class_wt = np.ones(self._nb_class, dtype='float32')
-        mask = y_true[..., 4] * tf.gather(class_wt, true_box_class) * self._class_scale
-        return mask
-    
-    def create_conf_mask(self, y_true, true_boxes, pred_box_xy, pred_box_wh):
-        ### confidence mask: penelize predictors + penalize boxes with low IOU
-        # penalize the confidence of the boxes, which have IOU with some ground truth box < 0.6
-        true_xy = true_boxes[..., 0:2]
-        true_wh = true_boxes[..., 2:4]
-        
-        true_wh_half = true_wh / 2.
-        true_mins    = true_xy - true_wh_half
-        true_maxes   = true_xy + true_wh_half
-        
-        pred_xy = tf.expand_dims(pred_box_xy, 4)
-        pred_wh = tf.expand_dims(pred_box_wh, 4)
-        
-        pred_wh_half = pred_wh / 2.
-        pred_mins    = pred_xy - pred_wh_half
-        pred_maxes   = pred_xy + pred_wh_half    
-        
-        intersect_mins  = tf.maximum(pred_mins,  true_mins)
-        intersect_maxes = tf.minimum(pred_maxes, true_maxes)
-        intersect_wh    = tf.maximum(intersect_maxes - intersect_mins, 0.)
-        intersect_areas = intersect_wh[..., 0] * intersect_wh[..., 1]
-        
-        true_areas = true_wh[..., 0] * true_wh[..., 1]
-        pred_areas = pred_wh[..., 0] * pred_wh[..., 1]
-
-        union_areas = pred_areas + true_areas - intersect_areas
-        iou_scores  = tf.truediv(intersect_areas, union_areas)
-
-        best_ious = tf.reduce_max(iou_scores, axis=4)
-        # 1) confidence mask (N, 13, 13, 5)
-        conf_mask  = tf.zeros(tf.shape(y_true)[:4])
-        conf_mask = conf_mask + tf.to_float(best_ious < 0.6) * (1 - y_true[..., 4]) * self._no_object_scale
-        
-        # penalize the confidence of the boxes, which are reponsible for corresponding ground truth box
-        conf_mask = conf_mask + y_true[..., 4] * self._object_scale
-        return conf_mask
-
-
 class _Activator(object):
     
     def __init__(self, anchors):
@@ -229,6 +169,66 @@ def create_cell_grid(grid_size, batch_size):
     cell_y = tf.transpose(cell_x, (0,2,1,3,4))
     cell_grid = tf.tile(tf.concat([cell_x, cell_y], -1), [batch_size, 1, 1, 5, 1])
     return cell_grid
+
+
+class _Mask(object):
+    
+    def __init__(self, nb_class=1, coord_scale=1.0, class_scale=1.0, object_scale=5.0, no_object_scale=1.0):
+        self._nb_class = nb_class
+        self._coord_scale = coord_scale
+        self._class_scale = class_scale
+        self._object_scale = object_scale
+        self._no_object_scale = no_object_scale
+        
+    def create_coord_mask(self, y_true):
+        # 1) coordinate mask: simply the position of the ground truth boxes (the predictors)
+        #     BOX 별 confidence value 를 mask value 로 사용
+        # [1 13 13 5 1]
+        mask = tf.expand_dims(y_true[..., BOX_IDX_CONFIDENCE], axis=-1) * self._coord_scale
+        return mask
+    
+    def create_class_mask(self, y_true, true_box_class):
+        # 2) class mask: simply the position of the ground truth boxes (the predictors)
+        class_wt = np.ones(self._nb_class, dtype='float32')
+        mask = y_true[..., 4] * tf.gather(class_wt, true_box_class) * self._class_scale
+        return mask
+    
+    def create_conf_mask(self, y_true, true_boxes, pred_box_xy, pred_box_wh):
+        ### confidence mask: penelize predictors + penalize boxes with low IOU
+        # penalize the confidence of the boxes, which have IOU with some ground truth box < 0.6
+        true_xy = true_boxes[..., 0:2]
+        true_wh = true_boxes[..., 2:4]
+        
+        true_wh_half = true_wh / 2.
+        true_mins    = true_xy - true_wh_half
+        true_maxes   = true_xy + true_wh_half
+        
+        pred_xy = tf.expand_dims(pred_box_xy, 4)
+        pred_wh = tf.expand_dims(pred_box_wh, 4)
+        
+        pred_wh_half = pred_wh / 2.
+        pred_mins    = pred_xy - pred_wh_half
+        pred_maxes   = pred_xy + pred_wh_half    
+        
+        intersect_mins  = tf.maximum(pred_mins,  true_mins)
+        intersect_maxes = tf.minimum(pred_maxes, true_maxes)
+        intersect_wh    = tf.maximum(intersect_maxes - intersect_mins, 0.)
+        intersect_areas = intersect_wh[..., 0] * intersect_wh[..., 1]
+        
+        true_areas = true_wh[..., 0] * true_wh[..., 1]
+        pred_areas = pred_wh[..., 0] * pred_wh[..., 1]
+
+        union_areas = pred_areas + true_areas - intersect_areas
+        iou_scores  = tf.truediv(intersect_areas, union_areas)
+
+        best_ious = tf.reduce_max(iou_scores, axis=4)
+        # 1) confidence mask (N, 13, 13, 5)
+        conf_mask  = tf.zeros(tf.shape(y_true)[:4])
+        conf_mask = conf_mask + tf.to_float(best_ious < 0.6) * (1 - y_true[..., 4]) * self._no_object_scale
+        
+        # penalize the confidence of the boxes, which are reponsible for corresponding ground truth box
+        conf_mask = conf_mask + y_true[..., 4] * self._object_scale
+        return conf_mask
 
 
 def test_loss_op():
