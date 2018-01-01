@@ -39,13 +39,6 @@ class YoloLoss(object):
         self.no_object_scale = 1.0
         self.coord_scale     = 1.0
         self.class_scale     = 1.0
-        
-        
-    def _create_cell_grid(self, batch_size):
-        cell_x = tf.to_float(tf.reshape(tf.tile(tf.range(self.grid_size), [self.grid_size]), (1, self.grid_size, self.grid_size, 1, 1)))
-        cell_y = tf.transpose(cell_x, (0,2,1,3,4))
-        cell_grid = tf.tile(tf.concat([cell_x,cell_y], -1), [batch_size, 1, 1, 5, 1])
-        return cell_grid
 
     def custom_loss(self, batch_size, warmup_bs):
         """
@@ -57,10 +50,10 @@ class YoloLoss(object):
         def loss_func(y_true, y_pred):
             # (N, 13, 13, 5, 2)
             # 1. create grid offset tensor
-            cell_grid = self._create_cell_grid(batch_size)
+            cell_grid = create_cell_grid(tf.shape(y_pred)[1], batch_size)
 
             # 2. activate prediction tensor
-            pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = activate_pred_tensor(y_pred, cell_grid, self.anchors)
+            pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = activate_pred_tensor(y_pred, self.anchors)
 
             # 3. activate ground truth tensor
             true_box_xy, true_box_wh, true_box_conf, true_box_class = activate_truth_tensor(y_true, pred_box_xy, pred_box_wh)
@@ -146,7 +139,7 @@ class YoloLoss(object):
             return loss
         return loss_func
 
-def activate_pred_tensor(y_pred, cell_grid, anchors):
+def activate_pred_tensor(y_pred, anchors):
     """
     # Args
         y_pred : (N, 13, 13, 5, 6)
@@ -164,6 +157,10 @@ def activate_pred_tensor(y_pred, cell_grid, anchors):
         box_classes : (N, 13, 13, 5, nb_class)
     """
     # bx = sigmoid(tx) + cx, by = sigmoid(ty) + cy
+    batch_size = tf.shape(y_pred)[0]
+    grid_size = tf.shape(y_pred)[1]
+    cell_grid = create_cell_grid(grid_size, batch_size)
+    
     nb_box = int(len(anchors)/2)
     pred_box_xy = tf.sigmoid(y_pred[..., :2]) + cell_grid
     pred_box_wh = tf.exp(y_pred[..., 2:4]) * np.reshape(anchors, [1,1,1,nb_box,2])
@@ -206,9 +203,11 @@ def activate_truth_tensor(y_true, pred_box_xy, pred_box_wh):
     return true_box_xy, true_box_wh, true_box_conf, true_box_class
 
 
-
-
-    
+def create_cell_grid(grid_size, batch_size):
+    cell_x = tf.to_float(tf.reshape(tf.tile(tf.range(grid_size), [grid_size]), (1, grid_size, grid_size, 1, 1)))
+    cell_y = tf.transpose(cell_x, (0,2,1,3,4))
+    cell_grid = tf.tile(tf.concat([cell_x, cell_y], -1), [batch_size, 1, 1, 5, 1])
+    return cell_grid
 
 
 def test_loss_op():
