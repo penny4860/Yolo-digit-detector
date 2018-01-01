@@ -250,6 +250,7 @@ def setup_y_true_tensor(request):
 def setup_true_box_tensor(request):
     true_box_class = tf.placeholder(tf.int32, [None, 13, 13, 5], name='y_true')
     true_box_class_value = np.zeros((1, 13, 13, 5))
+    true_box_class_value[0,7,6,4] = 0    # class index
     return true_box_class, true_box_class_value
 
 def test_yolo_class_masking(setup_y_true_tensor, setup_true_box_tensor):
@@ -270,7 +271,7 @@ def test_yolo_class_masking(setup_y_true_tensor, setup_true_box_tensor):
                                                           true_box_class : true_box_class_value})
     sess.close()
     
-    # coordinate mask value : (N, grid, grid, nb_box, 1)
+    # coordinate mask value : (N, grid, grid, nb_box)
     #     object 가 있는 (grid_x, grid_y, anchor_idx) 에만 1, 나머지는 0
     expected_class_mask = np.zeros((1,13,13,5))
     expected_class_mask[0, 7, 6, 4] = 1.0
