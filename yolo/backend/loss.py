@@ -52,7 +52,7 @@ class YoloLoss(object):
             # 1. activate prediction & truth tensor
             # Todo : return tensor를 2개로 줄이자.
             pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class, true_box_xy, true_box_wh, true_box_conf, true_box_class = self._activator.run(y_true, y_pred)
-
+            
             # 2. mask
             coord_mask = self._mask.create_coord_mask(y_true)
             class_mask = self._mask.create_class_mask(y_true, true_box_class)
@@ -86,6 +86,13 @@ class YoloLoss(object):
             loss_class = tf.reduce_sum(loss_class * class_mask) / (nb_class_box + 1e-6)
             
             loss = loss_xy + loss_wh + loss_conf + loss_class
+            
+            # [1 13 13 5]
+            true_box_class = tf.Print(true_box_class,[tf.shape(true_box_class)], message="tensor shape: ", summarize=1000)
+            for i in range(13):
+                for j in range(13):
+                    loss = tf.Print(loss, [true_box_class[0, i, j, :]], message="true box class {}, {}".format(i, j), summarize=1000)
+            
             return loss
         return loss_func
 
