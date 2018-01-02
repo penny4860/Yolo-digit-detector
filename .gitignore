@@ -1,7 +1,9 @@
 *.pyc
 tests/.cache
 *project*
+.coverage
 params/
 *eclipse*
 yolo.egg-info
 dataset/raccoon
+
