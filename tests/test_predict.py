@@ -7,7 +7,7 @@ import os
 from yolo.frontend import create_yolo
 import yolo
 
-TEST_SAMPLE_DIR = os.path.join(yolo.PROJECT_ROOT, "tests", "dataset")
+TEST_SAMPLE_DIR = os.path.join(yolo.PROJECT_ROOT, "tests", "dataset", "svhn")
 
 
 @pytest.fixture(scope='function')
