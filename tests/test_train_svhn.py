@@ -69,61 +69,61 @@ def setup_centroid_true_boxes(request):
     return true_boxes
 
 
-# def test_train_yolo_framework(setup_model_config,
-#                               setup_weights_file,
-#                               setup_dataset_folder,
-#                               setup_input_image,
-#                               setup_centroid_true_boxes):
-#     model_config = setup_model_config
-#     pretrained_feature_file, weight_file = setup_weights_file
-#     img_folder, ann_folder = setup_dataset_folder
-# 
-#     # 1. Construct the model 
-#     yolo = create_yolo(model_config['architecture'],
-#                        model_config['labels'],
-#                        model_config['input_size'],
-#                        model_config['max_box_per_image'],
-#                        model_config['anchors'],
-#                        pretrained_feature_file)
-#     
-#     # 2. warmup training
-#     yolo.train(img_folder, ann_folder,
-#                3,
-#                weight_file,
-#                2,
-#                False,
-#                1e-4, 
-#                10,
-#                1,
-#                3,
-#                img_folder, ann_folder)
-#     # 3. Load the warmup trained weights
-#     yolo.load_weights(weight_file)
-#     
-#     # 4. actual training 
-#     yolo.train(img_folder, ann_folder,
-#                25,
-#                weight_file,
-#                2,
-#                False,
-#                1e-4, 
-#                10,
-#                1,
-#                0,
-#                img_folder, ann_folder)
-# 
-#     # 5. Load training image & predict objects
-#     image = setup_input_image
-#     boxes, probs = yolo.predict(image)
-#     boxes = to_centroid(boxes)
-#     true_boxes = setup_centroid_true_boxes
-# 
-#     assert len(boxes) == 2
-#     assert len(probs) == 2
-#     assert np.allclose(np.argmax(probs, axis=1), [0, 3])
-#     for box, true_box in zip(boxes, true_boxes):
-#         iou = centroid_box_iou(box, true_box)
-#         assert iou > 0.5
+def test_train_yolo_framework(setup_model_config,
+                              setup_weights_file,
+                              setup_dataset_folder,
+                              setup_input_image,
+                              setup_centroid_true_boxes):
+    model_config = setup_model_config
+    pretrained_feature_file, weight_file = setup_weights_file
+    img_folder, ann_folder = setup_dataset_folder
+
+    # 1. Construct the model 
+    yolo = create_yolo(model_config['architecture'],
+                       model_config['labels'],
+                       model_config['input_size'],
+                       model_config['max_box_per_image'],
+                       model_config['anchors'],
+                       pretrained_feature_file)
+    
+    # 2. warmup training
+    yolo.train(img_folder, ann_folder,
+               3,
+               weight_file,
+               2,
+               False,
+               1e-4, 
+               10,
+               1,
+               3,
+               img_folder, ann_folder)
+    # 3. Load the warmup trained weights
+    yolo.load_weights(weight_file)
+    
+    # 4. actual training 
+    yolo.train(img_folder, ann_folder,
+               25,
+               weight_file,
+               2,
+               False,
+               1e-4, 
+               10,
+               1,
+               0,
+               img_folder, ann_folder)
+
+    # 5. Load training image & predict objects
+    image = setup_input_image
+    boxes, probs = yolo.predict(image)
+    boxes = to_centroid(boxes)
+    true_boxes = setup_centroid_true_boxes
+
+    assert len(boxes) == 2
+    assert len(probs) == 2
+    assert np.allclose(np.argmax(probs, axis=1), [0, 3])
+    for box, true_box in zip(boxes, true_boxes):
+        iou = centroid_box_iou(box, true_box)
+        assert iou > 0.5
 
 if __name__ == '__main__':
     pytest.main([__file__, "-v", "-s"])
