@@ -108,6 +108,21 @@ def test_train_yolo_framework(setup_model_config,
     image = setup_input_image
     boxes, probs = yolo.predict(image)
     assert len(boxes) == 2
+    assert len(probs) == 2
+    assert np.argmax(probs, axis=1) == [0, 3]
+    
+# "1.png"
+# (246, 77, 327, 296)
+# (323, 81, 419, 300)
+# ((1, 0, 0, 0))
+# ((0, 0, 0, 1))
+# 
+# "2.png"
+# (77, 29, 100, 61)
+# (98, 25, 124, 57)
+# ((0, 1, 0, 0))
+# ((0, 0, 1, 0))
+
 
 if __name__ == '__main__':
     pytest.main([__file__, "-v", "-s"])
