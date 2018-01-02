@@ -88,21 +88,21 @@ def test_train_yolo_framework(setup_model_config,
     
     # 2. warmup training
     yolo.train(img_folder, ann_folder,
-               3,
+               2,
                weight_file,
                2,
                False,
                1e-4, 
                10,
                1,
-               3,
+               2,
                img_folder, ann_folder)
     # 3. Load the warmup trained weights
     yolo.load_weights(weight_file)
     
     # 4. actual training 
     yolo.train(img_folder, ann_folder,
-               20,
+               12,
                weight_file,
                2,
                False,
