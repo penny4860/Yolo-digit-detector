@@ -2,11 +2,12 @@
 
 import numpy as np
 np.random.seed(111)
-from yolo.frontend import create_yolo
 import os
-import yolo
 import pytest
 import cv2
+from yolo.frontend import create_yolo
+from yolo.backend.utils.box import to_centroid, centroid_box_iou
+import yolo
 
 TEST_SAMPLE_DIR = os.path.join(yolo.PROJECT_ROOT, "tests", "dataset", "svhn")
 
@@ -109,20 +110,15 @@ def test_train_yolo_framework(setup_model_config,
     boxes, probs = yolo.predict(image)
     assert len(boxes) == 2
     assert len(probs) == 2
-    assert np.argmax(probs, axis=1) == [0, 3]
-    
-# "1.png"
-# (246, 77, 327, 296)
-# (323, 81, 419, 300)
-# ((1, 0, 0, 0))
-# ((0, 0, 0, 1))
-# 
-# "2.png"
-# (77, 29, 100, 61)
-# (98, 25, 124, 57)
-# ((0, 1, 0, 0))
-# ((0, 0, 1, 0))
+    assert np.allclose(np.argmax(probs, axis=1), [0, 3])
 
+    boxes = to_centroid(boxes)
+    true_boxes = to_centroid(np.array([[246, 77, 327, 296],
+                                       [323, 81, 419, 300]]))
+    
+    for box, true_box in zip(boxes, true_boxes):
+        iou = centroid_box_iou(box, true_box)
+        assert iou > 0.5
 
 if __name__ == '__main__':
     pytest.main([__file__, "-v", "-s"])
