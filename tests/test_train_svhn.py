@@ -62,11 +62,18 @@ def setup_input_image(request):
     image = cv2.imread(input_file)
     return image
 
+@pytest.fixture(scope='function')
+def setup_centroid_true_boxes(request):
+    true_boxes = to_centroid(np.array([[246, 77, 327, 296],
+                                       [323, 81, 419, 300]]))
+    return true_boxes
+
 
 def test_train_yolo_framework(setup_model_config,
                               setup_weights_file,
                               setup_dataset_folder,
-                              setup_input_image):
+                              setup_input_image,
+                              setup_centroid_true_boxes):
     model_config = setup_model_config
     pretrained_feature_file, weight_file = setup_weights_file
     img_folder, ann_folder = setup_dataset_folder
@@ -108,14 +115,12 @@ def test_train_yolo_framework(setup_model_config,
     # 5. Load training image & predict objects
     image = setup_input_image
     boxes, probs = yolo.predict(image)
+    boxes = to_centroid(boxes)
+    true_boxes = setup_centroid_true_boxes
+
     assert len(boxes) == 2
     assert len(probs) == 2
     assert np.allclose(np.argmax(probs, axis=1), [0, 3])
-
-    boxes = to_centroid(boxes)
-    true_boxes = to_centroid(np.array([[246, 77, 327, 296],
-                                       [323, 81, 419, 300]]))
-    
     for box, true_box in zip(boxes, true_boxes):
         iou = centroid_box_iou(box, true_box)
         assert iou > 0.5
