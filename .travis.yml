@@ -27,6 +27,7 @@ install:
   - pip install tqdm
   - pip install imgaug
   - pip install pytest-cov
+  - pip install codecov
   - pip install -e .
 
 # command to run tests
