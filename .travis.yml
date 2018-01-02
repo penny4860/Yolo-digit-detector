@@ -26,10 +26,11 @@ install:
   - pip install opencv-python
   - pip install tqdm
   - pip install imgaug
+  - pip install pytest-cov
   - pip install -e .
 
 # command to run tests
-script: pytest -x
+script: pytest -x --cov=./
 
 #Upload code coverage statistics
 #after_success:
