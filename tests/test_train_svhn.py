@@ -102,7 +102,7 @@ def test_train_yolo_framework(setup_model_config,
     
     # 4. actual training 
     yolo.train(img_folder, ann_folder,
-               50,
+               25,
                weight_file,
                2,
                False,
