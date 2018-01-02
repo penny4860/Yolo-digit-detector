@@ -11,7 +11,7 @@ import glob
 
 
 DEFAULT_CONFIG_FILE = "config.json"
-DEFAULT_INPUT_IMAGE = os.path.join("tests", "dataset", "raccoon_train_imgs")
+DEFAULT_INPUT_IMAGE = os.path.join("svhn-voc", "imgs")
 
 argparser = argparse.ArgumentParser(
     description='Train and validate YOLO_v2 model on any dataset')
@@ -37,7 +37,7 @@ argparser.add_argument(
 argparser.add_argument(
     '-w',
     '--weights',
-    default="tests//dataset//mobilenet_raccoon.h5",
+    default="test_svhn_recognizer//weights.h5",
     help='trained weight files')
 
 def get_write_dir(image_dir):
@@ -66,7 +66,7 @@ if __name__ == '__main__':
 
     # 3. read image
     write_dname = get_write_dir(args.input)
-    image_files = glob.glob(os.path.join(args.input, "*.jpg"))
+    image_files = glob.glob(os.path.join(args.input, "*.png"))
     
     for fname in image_files:
         image = cv2.imread(fname)
