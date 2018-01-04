@@ -24,7 +24,6 @@ install:
   - pip install tensorflow==1.2.1
   - pip install keras==2.0.8
   - pip install opencv-python
-  - pip install tqdm
   - pip install imgaug
   - pip install pytest-cov
   - pip install codecov
