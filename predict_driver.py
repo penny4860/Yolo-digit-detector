@@ -11,7 +11,7 @@ import glob
 
 
 DEFAULT_CONFIG_FILE = "config.json"
-DEFAULT_INPUT_IMAGE = os.path.join("svhn-voc", "imgs")
+DEFAULT_INPUT_IMAGE = os.path.join("tests", "dataset", "svhn", "imgs")
 
 argparser = argparse.ArgumentParser(
     description='Train and validate YOLO_v2 model on any dataset')
@@ -37,7 +37,7 @@ argparser.add_argument(
 argparser.add_argument(
     '-w',
     '--weights',
-    default="test_svhn_recognizer//weights.h5",
+    default="tests//dataset//svhn//mobile_288_weights.h5",
     help='trained weight files')
 
 def get_write_dir(image_dir):
