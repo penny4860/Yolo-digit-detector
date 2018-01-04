@@ -26,19 +26,6 @@ def setup_weights_file(request):
     return pretrained_feature_file, weight_file
 
 @pytest.fixture(scope='function')
-def setup_model_config(request):
-    model_config = {"architecture":         "MobileNet",
-                    "input_size":           288,
-                    "anchors":              [0.57273, 0.677385,
-                                             1.87446, 2.06253,
-                                             3.33843, 5.47434,
-                                             7.88282, 3.52778,
-                                             9.77052, 9.16828],
-                    "max_box_per_image":    10,        
-                    "labels":               ["1", "2", "3", "9"]}
-    return model_config
-    
-@pytest.fixture(scope='function')
 def setup_train_config(request):
     config = {
         "train_times":          10,
@@ -61,13 +48,6 @@ def setup_input_image(request):
     input_file = os.path.join(TEST_SAMPLE_DIR, "imgs", "1.png")
     image = cv2.imread(input_file)
     return image
-
-@pytest.fixture(scope='function')
-def setup_centroid_true_boxes(request):
-    true_boxes = to_centroid(np.array([[246, 77, 327, 296],
-                                       [323, 81, 419, 300]]))
-    return true_boxes
-
 
 def test_train_yolo_framework(setup_model_config,
                               setup_weights_file,
