@@ -17,11 +17,10 @@ def setup_inputs(request):
 @pytest.fixture(scope='function')
 def setup_expected_outputs(request, setup_inputs):
     _, image_dir = setup_inputs
-    seen_labels = {'raccoon': 1}
-    filenames = [os.path.join(image_dir, 'raccoon-1.jpg')]
-    minmax_boxes = np.array([[81, 88, 522, 408]])
-    labels = [["raccoon"]]
-    return filenames, minmax_boxes, labels, seen_labels
+    filenames = [os.path.join(image_dir, '1.png')]
+    minmax_boxes = [np.array([[246,  77, 327, 296],
+                             [323,  81, 419, 300]])]
+    return filenames, minmax_boxes
 
 
 def test_parse_annotation(setup_inputs, setup_expected_outputs):
@@ -32,9 +31,8 @@ def test_parse_annotation(setup_inputs, setup_expected_outputs):
     # When
     annotations = parse_annotation(annotation_dir, image_dir)
     
-    filenames, minmax_boxes, labels, seen_labels_ = setup_expected_outputs
+    filenames, minmax_boxes = setup_expected_outputs
     
-    assert seen_labels == seen_labels_
     assert annotations.fname(0) == filenames[0]
     assert np.allclose(annotations.boxes(0), minmax_boxes[0])
     
