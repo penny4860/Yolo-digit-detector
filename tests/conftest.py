@@ -1,5 +1,6 @@
 
 import pytest
+import numpy as np
 from yolo.backend.utils.box import to_centroid
 
 # Todo : test_train duplicated code

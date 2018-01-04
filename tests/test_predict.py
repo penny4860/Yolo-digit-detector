@@ -11,12 +11,6 @@ import yolo
 TEST_SAMPLE_DIR = os.path.join(yolo.PROJECT_ROOT, "tests", "dataset", "svhn")
 
 @pytest.fixture(scope='function')
-def setup_centroid_true_boxes(request):
-    true_boxes = to_centroid(np.array([[246, 77, 327, 296],
-                                       [323, 81, 419, 300]]))
-    return true_boxes
-
-@pytest.fixture(scope='function')
 def setup_inputs(request):
     input_image_file = os.path.join(TEST_SAMPLE_DIR, "imgs", "1.png")
     image = cv2.imread(input_image_file)
