@@ -4,7 +4,6 @@ import numpy as np
 np.random.seed(111)
 import os
 import pytest
-import cv2
 from yolo.frontend import create_yolo
 from yolo.backend.utils.box import to_centroid, centroid_box_iou
 import yolo
@@ -42,12 +41,6 @@ def setup_dataset_folder(request):
     img_folder = os.path.join(TEST_SAMPLE_DIR, "imgs/")
     ann_folder = os.path.join(TEST_SAMPLE_DIR, "anns/")
     return img_folder, ann_folder
-
-@pytest.fixture(scope='function')
-def setup_input_image(request):
-    input_file = os.path.join(TEST_SAMPLE_DIR, "imgs", "1.png")
-    image = cv2.imread(input_file)
-    return image
 
 def test_train_yolo_framework(setup_model_config,
                               setup_weights_file,
