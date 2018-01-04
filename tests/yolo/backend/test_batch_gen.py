@@ -20,7 +20,7 @@ def setup():
     max_box_per_image = config["model"]["max_box_per_image"]
     anchors = config["model"]["anchors"]
 
-    train_annotations, _ = parse_annotation(config['train']['train_annot_folder'], 
+    train_annotations = parse_annotation(config['train']['train_annot_folder'], 
                                                        config['train']['train_image_folder'], 
                                                        config['model']['labels'])
     return train_annotations, input_size, grid_size, batch_size, max_box_per_image, anchors
