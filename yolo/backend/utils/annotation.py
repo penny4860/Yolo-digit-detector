@@ -24,13 +24,13 @@ def get_train_annotations(labels,
         valid_anns : Annotations instance
     """
     # parse annotations of the training set
-    train_anns, _ = parse_annotation(ann_folder,
+    train_anns = parse_annotation(ann_folder,
                                      img_folder,
                                      labels)
 
     # parse annotations of the validation set, if any, otherwise split the training set
     if os.path.exists(valid_ann_folder):
-        valid_anns, _ = parse_annotation(valid_ann_folder,
+        valid_anns = parse_annotation(valid_ann_folder,
                                          valid_img_folder,
                                          labels)
     else:
@@ -150,11 +150,7 @@ def parse_annotation(ann_dir, img_dir, labels_naming=[]):
     
     # Returns
         all_imgs : list of dict
-        seen_labels : dict
-            {'raccoon': 1, ...}
     """
-    seen_labels = {}
-    
     parser = PascalVocXmlParser()
     
     annotations = Annotations(labels_naming)
@@ -162,9 +158,7 @@ def parse_annotation(ann_dir, img_dir, labels_naming=[]):
         annotation_file = os.path.join(ann_dir, ann)
         fname = parser.get_fname(annotation_file)
 
-        ##################################################################################
         annotation = Annotation(os.path.join(img_dir, fname))
-        ##################################################################################
 
         labels = parser.get_labels(annotation_file)
         boxes = parser.get_boxes(annotation_file)
@@ -173,21 +167,11 @@ def parse_annotation(ann_dir, img_dir, labels_naming=[]):
         for label, box in zip(labels, boxes):
             x1, y1, x2, y2 = box
             objects.append({'name': label, 'xmin': x1, 'ymin': y1, 'xmax': x2, 'ymax': y2})
-
-            ##################################################################################
             annotation.add_object(x1, y1, x2, y2, name=label)
-            ##################################################################################
-            
-            if label in seen_labels:
-                seen_labels[label] += 1
-            else:
-                seen_labels[label] = 1
 
-        ##################################################################################
         annotations.add(annotation)
-        ##################################################################################
                         
-    return annotations, seen_labels
+    return annotations
             
 
 class Annotation(object):
