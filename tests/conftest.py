@@ -1,7 +1,14 @@
+# -*- coding: utf-8 -*-
 
+import os
 import pytest
 import numpy as np
+import cv2
+
 from yolo.backend.utils.box import to_centroid
+import yolo
+
+TEST_SAMPLE_DIR = os.path.join(yolo.PROJECT_ROOT, "tests", "dataset", "svhn")
 
 # Todo : test_train duplicated code
 @pytest.fixture(scope='module')
@@ -21,3 +28,9 @@ def setup_centroid_true_boxes(request):
     true_boxes = to_centroid(np.array([[246, 77, 327, 296],
                                        [323, 81, 419, 300]]))
     return true_boxes
+
+@pytest.fixture(scope='module')
+def setup_input_image(request):
+    input_file = os.path.join(TEST_SAMPLE_DIR, "imgs", "1.png")
+    image = cv2.imread(input_file)
+    return image

@@ -1,7 +1,6 @@
-
+# -*- coding: utf-8 -*-
 
 import pytest
-import cv2
 import numpy as np
 import os
 from yolo.frontend import create_yolo
@@ -11,21 +10,15 @@ import yolo
 TEST_SAMPLE_DIR = os.path.join(yolo.PROJECT_ROOT, "tests", "dataset", "svhn")
 
 @pytest.fixture(scope='function')
-def setup_inputs(request):
-    input_image_file = os.path.join(TEST_SAMPLE_DIR, "imgs", "1.png")
-    image = cv2.imread(input_image_file)
-    return image
-
-@pytest.fixture(scope='function')
 def setup_outputs(request):
     desired_boxes = np.array([[104, 86, 546, 402]])
     desired_probs = np.array([[ 0.57606441]])
     return desired_boxes, desired_probs
 
-def test_predict(setup_inputs, setup_outputs, setup_centroid_true_boxes, setup_model_config):
+def test_predict(setup_input_image, setup_outputs, setup_centroid_true_boxes, setup_model_config):
 
     # 1. Given 
-    image = setup_inputs
+    image = setup_input_image
     model_config = setup_model_config
 
     desired_boxes, desired_probs = setup_outputs
