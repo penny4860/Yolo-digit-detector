@@ -1,35 +1,8 @@
 [![Build Status](https://travis-ci.org/penny4860/YOLO-detector.svg?branch=master)](https://travis-ci.org/penny4860/YOLO-detector) [![codecov](https://codecov.io/gh/penny4860/YOLO-detector/branch/master/graph/badge.svg)](https://codecov.io/gh/penny4860/YOLO-detector)
 
-# YOLOv2 in Keras and Applications
+# SVHN yolo-v2 digit detector
 
-This repo contains the implementation of YOLOv2 in Keras with Tensorflow backend. It supports training YOLOv2 network with various backends such as MobileNet and InceptionV3. Links to demo applications are shown below. Check out https://experiencor.github.io/yolo_demo/demo.html for a Raccoon Detector demo run entirely in brower with DeepLearn.js and MobileNet backend (it somehow breaks in Window). Source code of this demo is located at https://git.io/vF7vG.
-
-## Some example applications (click for videos):
-
-### Raccon detection
-<a href="https://www.youtube.com/watch?v=aibuvj2-zxA" rel="some text"><p align="center"><img src="https://i.imgur.com/6okeDjz.jpg" height="300"></p></a>
-
-Dataset => https://github.com/experiencor/raccoon_dataset
-
-### Kangaroo detection
-<a href="https://youtu.be/vjmFzEP1qZw?t=34" rel="some text"><p align="center"><img src="https://i.imgur.com/v606VZX.jpg" height="300"></p></a>
-
-Dataset => https://github.com/experiencor/kangaroo
-
-### Self-driving Car
-<a href="https://www.youtube.com/watch?v=oYCaILZxEWM" rel="some text"><p align="center"><img src="https://i.imgur.com/kEc9ptL.jpg" height="300"></p></a>
-
-Dataset => http://cocodataset.org/#detections-challenge2017
-
-### Red blod cell detection
-<a href="https://www.youtube.com/watch?v=oYCaILZxEWM" rel="some text"><p align="center"><img src="https://i.imgur.com/1vmIJKL.jpg" height="300"></p></a>
-
-Dataset => https://github.com/cosmicad/dataset
-
-### Hand detection
-<a href="https://www.youtube.com/watch?v=p3-3kN_fIz0" rel="some text"><p align="center"><img src="https://i.imgur.com/75imQQz.jpg" height="300"></p></a>
-
-Dataset => http://cvrr.ucsd.edu/vivachallenge/index.php/hands/hand-detection/
+<img src="images/svhn.png" height="300">
 
 ## Usage for python code
 
@@ -40,7 +13,6 @@ Dataset => http://cvrr.ucsd.edu/vivachallenge/index.php/hands/hand-detection/
 * tensorflow 1.2.1
 * keras 2.0.8
 * opencv 3.3.0
-* tqdm 
 * imgaug
 * Etc.
 
@@ -52,7 +24,6 @@ $ activate yolo # in linux "source activate yolo"
 (yolo) $ pip install tensorflow==1.2.1
 (yolo) $ pip install keras==2.0.8
 (yolo) $ pip install opencv-python
-(yolo) $ pip install tqdm
 (yolo) $ pip install imgaug
 ```
 
