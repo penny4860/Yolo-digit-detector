@@ -15,10 +15,10 @@ def setup_outputs(request):
     desired_probs = np.array([[ 0.57606441]])
     return desired_boxes, desired_probs
 
-def test_predict(setup_input_image, setup_outputs, setup_centroid_true_boxes, setup_model_config):
+def test_predict(setup_image_and_its_boxes, setup_outputs, setup_model_config):
 
     # 1. Given 
-    image = setup_input_image
+    image, true_boxes = setup_image_and_its_boxes
     model_config = setup_model_config
 
     desired_boxes, desired_probs = setup_outputs
@@ -35,7 +35,6 @@ def test_predict(setup_input_image, setup_outputs, setup_centroid_true_boxes, se
     boxes, probs = yolo.predict(image)
 
     boxes = to_centroid(boxes)
-    true_boxes = setup_centroid_true_boxes
 
     assert len(boxes) == 2
     assert len(probs) == 2

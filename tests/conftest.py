@@ -23,14 +23,16 @@ def setup_model_config(request):
                     "max_box_per_image":    10,        
                     "labels":               ["1", "2", "3", "9"]}
     return model_config
-@pytest.fixture(scope='module')
-def setup_centroid_true_boxes(request):
-    true_boxes = to_centroid(np.array([[246, 77, 327, 296],
-                                       [323, 81, 419, 300]]))
-    return true_boxes
 
 @pytest.fixture(scope='module')
-def setup_input_image(request):
+def setup_image_and_its_boxes(request):
     input_file = os.path.join(TEST_SAMPLE_DIR, "imgs", "1.png")
     image = cv2.imread(input_file)
-    return image
+    true_boxes = to_centroid(np.array([[246, 77, 327, 296],
+                                       [323, 81, 419, 300]]))
+    
+    return image, true_boxes
+
+
+
+

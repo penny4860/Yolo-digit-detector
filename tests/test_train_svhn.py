@@ -45,8 +45,7 @@ def setup_dataset_folder(request):
 def test_train_yolo_framework(setup_model_config,
                               setup_weights_file,
                               setup_dataset_folder,
-                              setup_input_image,
-                              setup_centroid_true_boxes):
+                              setup_image_and_its_boxes):
     model_config = setup_model_config
     pretrained_feature_file, weight_file = setup_weights_file
     img_folder, ann_folder = setup_dataset_folder
@@ -86,10 +85,9 @@ def test_train_yolo_framework(setup_model_config,
                img_folder, ann_folder)
 
     # 5. Load training image & predict objects
-    image = setup_input_image
+    image, true_boxes = setup_image_and_its_boxes
     boxes, probs = yolo.predict(image)
     boxes = to_centroid(boxes)
-    true_boxes = setup_centroid_true_boxes
 
     assert len(boxes) == 2
     assert len(probs) == 2
