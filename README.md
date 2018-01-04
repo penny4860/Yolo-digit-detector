@@ -1,35 +1,15 @@
 [![Build Status](https://travis-ci.org/penny4860/YOLO-detector.svg?branch=master)](https://travis-ci.org/penny4860/YOLO-detector) [![codecov](https://codecov.io/gh/penny4860/YOLO-detector/branch/master/graph/badge.svg)](https://codecov.io/gh/penny4860/YOLO-detector)
 
-# YOLOv2 in Keras and Applications
+# SVHN yolo-v2 digit detector
 
-This repo contains the implementation of YOLOv2 in Keras with Tensorflow backend. It supports training YOLOv2 network with various backends such as MobileNet and InceptionV3. Links to demo applications are shown below. Check out https://experiencor.github.io/yolo_demo/demo.html for a Raccoon Detector demo run entirely in brower with DeepLearn.js and MobileNet backend (it somehow breaks in Window). Source code of this demo is located at https://git.io/vF7vG.
+I have implemented a digit detector that applies yolo-v2 to svhn dataset. This is an ongoing project.
 
-## Some example applications (click for videos):
+<img src="images/svhn.png" height="300">
 
-### Raccon detection
-<a href="https://www.youtube.com/watch?v=aibuvj2-zxA" rel="some text"><p align="center"><img src="https://i.imgur.com/6okeDjz.jpg" height="300"></p></a>
 
-Dataset => https://github.com/experiencor/raccoon_dataset
+## Design Principle and Source Code Structure
 
-### Kangaroo detection
-<a href="https://youtu.be/vjmFzEP1qZw?t=34" rel="some text"><p align="center"><img src="https://i.imgur.com/v606VZX.jpg" height="300"></p></a>
-
-Dataset => https://github.com/experiencor/kangaroo
-
-### Self-driving Car
-<a href="https://www.youtube.com/watch?v=oYCaILZxEWM" rel="some text"><p align="center"><img src="https://i.imgur.com/kEc9ptL.jpg" height="300"></p></a>
-
-Dataset => http://cocodataset.org/#detections-challenge2017
-
-### Red blod cell detection
-<a href="https://www.youtube.com/watch?v=oYCaILZxEWM" rel="some text"><p align="center"><img src="https://i.imgur.com/1vmIJKL.jpg" height="300"></p></a>
-
-Dataset => https://github.com/cosmicad/dataset
-
-### Hand detection
-<a href="https://www.youtube.com/watch?v=p3-3kN_fIz0" rel="some text"><p align="center"><img src="https://i.imgur.com/75imQQz.jpg" height="300"></p></a>
-
-Dataset => http://cvrr.ucsd.edu/vivachallenge/index.php/hands/hand-detection/
+A description will be added....
 
 ## Usage for python code
 
@@ -40,7 +20,6 @@ Dataset => http://cvrr.ucsd.edu/vivachallenge/index.php/hands/hand-detection/
 * tensorflow 1.2.1
 * keras 2.0.8
 * opencv 3.3.0
-* tqdm 
 * imgaug
 * Etc.
 
@@ -52,116 +31,48 @@ $ activate yolo # in linux "source activate yolo"
 (yolo) $ pip install tensorflow==1.2.1
 (yolo) $ pip install keras==2.0.8
 (yolo) $ pip install opencv-python
-(yolo) $ pip install tqdm
 (yolo) $ pip install imgaug
+(yolo) $ pip install pytest-cov
+(yolo) $ pip install codecov
+(yolo) $ pip install -e .
 ```
 
 ### 1. Data preparation
-Download the Raccoon dataset from from https://github.com/experiencor/raccoon_dataset.
+Download the SVHN dataset from http://ufldl.stanford.edu/housenumbers/.
+
+Chnage annotation format to VOC format.
+(Todo : format change script added)
 
 Organize the dataset into 4 folders:
 
-+ train_image_folder <= the folder that contains the train images.
+* train_image_folder
+	* the folder that contains the train images.
 
-+ train_annot_folder <= the folder that contains the train annotations in VOC format.
+* train_annot_folder
+	* the folder that contains the train annotations in VOC format.
 
-+ valid_image_folder <= the folder that contains the validation images.
+* valid_image_folder
+	* the folder that contains the validation images.
 
-+ valid_annot_folder <= the folder that contains the validation annotations in VOC format.
+* valid_annot_folder
+	* the folder that contains the validation annotations in VOC format.
     
 There is a one-to-one correspondence by file name between images and annotations. If the validation set is empty, the training set will be automatically splitted into the training set and validation set using the ratio of 0.8.
 
 ### 2. Edit the configuration file
-The configuration file is a json file, which looks like this:
 
-```python
-{
-    "model" : {
-        "architecture":         "Full Yolo",    # "Tiny Yolo" or "Full Yolo" or "MobileNet" or "SqueezeNet" or "Inception3"
-        "input_size":           416,
-        "anchors":              [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828],
-        "max_box_per_image":    10,        
-        "labels":               ["raccoon"]
-    },
-
-    "train": {
-        "train_image_folder":   "/home/andy/data/raccoon_dataset/images/",
-        "train_annot_folder":   "/home/andy/data/raccoon_dataset/anns/",      
-          
-        "train_times":          10,             # the number of time to cycle through the training set, useful for small datasets
-        "pretrained_weights":   "",             # specify the path of the pretrained weights, but it's fine to start from scratch
-        "batch_size":           16,             # the number of images to read in each batch
-        "learning_rate":        1e-4,           # the base learning rate of the default Adam rate scheduler
-        "nb_epoch":             50,             # number of epoches
-        "warmup_epochs":        3,              # the number of initial epochs during which the sizes of the 5 boxes in each cell is forced to match the sizes of the 5 anchors, this trick seems to improve precision emperically
-
-        "object_scale":         5.0 ,           # determine how much to penalize wrong prediction of confidence of object predictors
-        "no_object_scale":      1.0,            # determine how much to penalize wrong prediction of confidence of non-object predictors
-        "coord_scale":          1.0,            # determine how much to penalize wrong position and size predictions (x, y, w, h)
-        "class_scale":          1.0,            # determine how much to penalize wrong class prediction
-
-        "debug":                true            # turn on/off the line that prints current confidence, position, size, class losses and recall
-    },
-
-    "valid": {
-        "valid_image_folder":   "",
-        "valid_annot_folder":   "",
-
-        "valid_times":          1
-    }
-}
-
-```
-
-The model section defines the type of the model to construct as well as other parameters of the model such as the input image size and the list of anchors. The ```labels``` setting lists the labels to be trained on. Only images, which has labels being listed, are fed to the network. The rest images are simply ignored. By this way, a Dog Detector can easily be trained using VOC or COCO dataset by setting ```labels``` to ```['dog']```.
-
-Download pretrained weights for backend (tiny yolo, full yolo, squeezenet, mobilenet, and inceptionV3) at:
-
-https://1drv.ms/f/s!ApLdDEW3ut5fec2OzK4S4RpT-SU
-
-**These weights must be put in the root folder of the repository. They are the pretrained weights for the backend only and will be loaded during model creation. The code does not work without these weights.**
-
-The link to the pretrained weights for the whole model (both frontend and backend) of the raccoon detector can be downloaded at:
-
-https://1drv.ms/f/s!ApLdDEW3ut5feoZAEUwmSMYdPlY
-
-These weights can be used as the pretrained weights for any one class object detectors.
+A description will be added....
 
 ### 3. Start the training process
 
-#### Warm up the network
-
-Set ```warmup_epochs``` in config.json to some number to 3 (emperically found, 4 or 5 is also fine).
-
-`python train.py -c config.json`
-
-#### Actual network training
-
-Set ```warmup_epochs``` in config.json to 0.
-
-`python train.py -c config.json`
-
-By the end of this process, the code will write the weights of the best model to file best_weights.h5 (or whatever name specified in the setting "saved_weights_name" in the config.json file). The training process stops when the loss on the validation set is not improved in 3 consecutive epoches.
-
-### 4. Perform detection using trained weights on an image by running
-`python predict.py -c config.json -w /path/to/best_weights.h5 -i /path/to/image/or/video`
-
-It carries out detection on the image and write the image with detected bounding boxes to the same folder.
-
-## Usage for jupyter notebook
-
-Refer to the notebook (https://github.com/experiencor/basic-yolo-keras/blob/master/Yolo%20Step-by-Step.ipynb) for a complete walk-through implementation of YOLOv2 from scratch (training, testing, and scoring).
+A description will be added....
 
 ## Evaluation of the current implementation:
 
-| Train        | Test          | mAP (with this implementation) | mAP (on released weights) |
-| -------------|:--------------|:------------------------:|:-------------------------:|
-| COCO train   | COCO val      | 28.6 |    42.1 |
-
-The code to evaluate detection results can be found at https://github.com/experiencor/basic-yolo-keras/issues/27.
+A description will be added....
 
 ## Copyright
 
 * See [LICENSE](LICENSE) for details.
-* The original repository for this project is [basic-yolo-keras](https://github.com/experiencor/basic-yolo-keras). I modified [basic-yolo-keras](https://github.com/experiencor/basic-yolo-keras), implemented in python 2.7, to python 3.5, and modified the structure of other source code. Thanks to the [Huynh Ngoc Anh](https://github.com/experiencor) for providing a good project as open source.
+* This project started at [basic-yolo-keras] (https://github.com/experiencor/basic-yolo-keras). I refactored the source code structure of [basic-yolo-keras] (https://github.com/experiencor/basic-yolo-keras) and added the CI test. I also applied the SVHN dataset to implement the digit detector. Thanks to the [Huynh Ngoc Anh](https://github.com/experiencor) for providing a good project as open source.
 
