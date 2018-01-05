@@ -340,7 +340,6 @@ def test_loss_op(setup_y_true_tensor):
     assert np.allclose(loss_value, 11.471475)
     
 
-import pytest
 if __name__ == '__main__':
     pytest.main([__file__, "-v", "-s"])
 
