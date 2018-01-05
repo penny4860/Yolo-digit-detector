@@ -50,7 +50,6 @@ class YoloLoss(object):
         """
         def loss_func(y_true, y_pred):
             # 1. activate prediction & truth tensor
-            # Todo : return tensor를 2개로 줄이자.
             true_tensor, pred_tensor = self._activator.run(y_true, y_pred)
             pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = pred_tensor[..., :2], pred_tensor[..., 2:4], pred_tensor[..., 4], pred_tensor[..., 5:]
             true_box_xy, true_box_wh, true_box_conf, true_box_class = true_tensor[..., :2], true_tensor[..., 2:4], true_tensor[..., 4], true_tensor[..., 5]
