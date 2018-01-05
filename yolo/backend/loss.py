@@ -77,20 +77,24 @@ class YoloLoss(object):
             """
             Finalize the loss
             """
-            nb_coord_box = tf.reduce_sum(tf.to_float(coord_mask > 0.0))
-            nb_conf_box  = tf.reduce_sum(tf.to_float(conf_mask  > 0.0))
-            nb_class_box = tf.reduce_sum(tf.to_float(class_mask > 0.0))
-            
-            loss_xy    = tf.reduce_sum(tf.square(true_box_xy-pred_box_xy)     * coord_mask) / (nb_coord_box + 1e-6) / 2.
-            loss_wh    = tf.reduce_sum(tf.square(true_box_wh-pred_box_wh)     * coord_mask) / (nb_coord_box + 1e-6) / 2.
-            loss_conf  = tf.reduce_sum(tf.square(true_box_conf-pred_box_conf) * conf_mask)  / (nb_conf_box  + 1e-6) / 2.
-            loss_class = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=true_box_class, logits=pred_box_class)
-            loss_class = tf.reduce_sum(loss_class * class_mask) / (nb_class_box + 1e-6)
-            
-            loss = loss_xy + loss_wh + loss_conf + loss_class
+            loss = get_loss(coord_mask, conf_mask, class_mask, true_box_xy, pred_box_xy, true_box_wh, pred_box_wh, true_box_conf, pred_box_conf, true_box_class, pred_box_class)
             
             return loss
         return loss_func
+
+def get_loss(coord_mask, conf_mask, class_mask,
+             true_box_xy, pred_box_xy, true_box_wh, pred_box_wh, true_box_conf, pred_box_conf, true_box_class, pred_box_class):
+    nb_coord_box = tf.reduce_sum(tf.to_float(coord_mask > 0.0))
+    nb_conf_box  = tf.reduce_sum(tf.to_float(conf_mask  > 0.0))
+    nb_class_box = tf.reduce_sum(tf.to_float(class_mask > 0.0))
+    
+    loss_xy    = tf.reduce_sum(tf.square(true_box_xy-pred_box_xy)     * coord_mask) / (nb_coord_box + 1e-6) / 2.
+    loss_wh    = tf.reduce_sum(tf.square(true_box_wh-pred_box_wh)     * coord_mask) / (nb_coord_box + 1e-6) / 2.
+    loss_conf  = tf.reduce_sum(tf.square(true_box_conf-pred_box_conf) * conf_mask)  / (nb_conf_box  + 1e-6) / 2.
+    loss_class = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=true_box_class, logits=pred_box_class)
+    loss_class = tf.reduce_sum(loss_class * class_mask) / (nb_class_box + 1e-6)
+    loss = loss_xy + loss_wh + loss_conf + loss_class
+    return loss
 
 
 class _Activator(object):
