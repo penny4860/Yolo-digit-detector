@@ -63,17 +63,11 @@ class YoloLoss(object):
             """
             Warm-up training
             """
-            no_boxes_mask = tf.to_float(coord_mask < self.coord_scale/2.)
-            seen = tf.assign_add(tf.Variable(0.), 1.)
             cell_grid = create_cell_grid(tf.shape(y_pred)[1], batch_size)
-            true_box_xy, true_box_wh, coord_mask = tf.cond(tf.less(seen, warmup_bs), 
-                                  lambda: [true_box_xy + (0.5 + cell_grid) * no_boxes_mask, 
-                                           true_box_wh + tf.ones_like(true_box_wh) * np.reshape(self.anchors, [1,1,1,self.nb_box,2]) * no_boxes_mask, 
-                                           tf.ones_like(coord_mask)],
-                                  lambda: [true_box_xy, 
-                                           true_box_wh,
-                                           coord_mask])
-            
+            true_box_xy, true_box_wh, coord_mask = warmup(true_box_xy, true_box_wh,
+                                                          coord_mask, self.coord_scale,
+                                                          cell_grid, warmup_bs, self.nb_box, self.anchors)
+
             """
             Finalize the loss
             """
@@ -81,6 +75,20 @@ class YoloLoss(object):
             
             return loss
         return loss_func
+
+    
+
+def warmup(true_box_xy, true_box_wh, coord_mask, coord_scale, cell_grid, warmup_bs, nb_box, anchors):
+    no_boxes_mask = tf.to_float(coord_mask < coord_scale/2.)
+    seen = tf.assign_add(tf.Variable(0.), 1.)
+    true_box_xy, true_box_wh, coord_mask = tf.cond(tf.less(seen, warmup_bs), 
+                          lambda: [true_box_xy + (0.5 + cell_grid) * no_boxes_mask, 
+                                   true_box_wh + tf.ones_like(true_box_wh) * np.reshape(anchors, [1,1,1,nb_box,2]) * no_boxes_mask, 
+                                   tf.ones_like(coord_mask)],
+                          lambda: [true_box_xy, 
+                                   true_box_wh,
+                                   coord_mask])
+    return true_box_xy, true_box_wh, coord_mask
 
 def get_loss(coord_mask, conf_mask, class_mask, true_tensor, pred_tensor):
     nb_coord_box = tf.reduce_sum(tf.to_float(coord_mask > 0.0))
