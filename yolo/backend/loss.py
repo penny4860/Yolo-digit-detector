@@ -341,14 +341,16 @@ def test_activator(setup_y_true_tensor):
     
     activator = _Activator([0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828])
     pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class, true_box_xy, true_box_wh, true_box_conf, true_box_class = activator.run(y_true, y_pred)
+    pred_box_conf = tf.expand_dims(pred_box_conf, -1)
 
     print("================================================")
-    print(pred_box_xy.shape, pred_box_wh.shape, pred_box_conf.shape, pred_box_class.shape)
-    print(true_box_xy.shape, true_box_wh.shape, true_box_conf.shape, true_box_class.shape)
+#     print(pred_box_xy.shape, pred_box_wh.shape, pred_box_conf.shape, pred_box_class.shape)
+#     print(true_box_xy.shape, true_box_wh.shape, true_box_conf.shape, true_box_class.shape)
 #     (?, 13, 13, 5, 2) (?, 13, 13, 5, 2) (?, 13, 13, 5) (?, 13, 13, 5, 1)
 #     (?, 13, 13, 5, 2) (?, 13, 13, 5, 2) (?, 13, 13, 5) (?, 13, 13, 5)
+    pred_tensor = tf.concat([pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class], axis=-1)
+    print(pred_tensor.shape)
     print("================================================")
-
     
 
 if __name__ == '__main__':
