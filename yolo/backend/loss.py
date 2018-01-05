@@ -71,8 +71,7 @@ class YoloLoss(object):
             """
             Finalize the loss
             """
-            loss = get_loss(coord_mask, conf_mask, class_mask, true_tensor, pred_tensor)
-            
+            loss = get_loss(coord_mask, conf_mask, class_mask, pred_tensor, true_box_xy, true_box_wh, true_box_conf, true_box_class)
             return loss
         return loss_func
 
@@ -90,13 +89,13 @@ def warmup(true_box_xy, true_box_wh, coord_mask, coord_scale, cell_grid, warmup_
                                    coord_mask])
     return true_box_xy, true_box_wh, coord_mask
 
-def get_loss(coord_mask, conf_mask, class_mask, true_tensor, pred_tensor):
+def get_loss(coord_mask, conf_mask, class_mask, pred_tensor, true_box_xy, true_box_wh, true_box_conf, true_box_class):
     nb_coord_box = tf.reduce_sum(tf.to_float(coord_mask > 0.0))
     nb_conf_box  = tf.reduce_sum(tf.to_float(conf_mask  > 0.0))
     nb_class_box = tf.reduce_sum(tf.to_float(class_mask > 0.0))
 
     pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = pred_tensor[..., :2], pred_tensor[..., 2:4], pred_tensor[..., 4], pred_tensor[..., 5:]
-    true_box_xy, true_box_wh, true_box_conf, true_box_class = true_tensor[..., :2], true_tensor[..., 2:4], true_tensor[..., 4], true_tensor[..., 5]
+    # true_box_xy, true_box_wh, true_box_conf, true_box_class = true_tensor[..., :2], true_tensor[..., 2:4], true_tensor[..., 4], true_tensor[..., 5]
     true_box_class = tf.cast(true_box_class, tf.int64)
     
     loss_xy    = tf.reduce_sum(tf.square(true_box_xy-pred_box_xy)     * coord_mask) / (nb_coord_box + 1e-6) / 2.
