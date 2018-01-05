@@ -95,7 +95,7 @@ class YoloLoss(object):
 
 class _Activator(object):
     
-    def __init__(self, anchors):
+    def __init__(self, anchors=[0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828]):
         self._anchor_boxes = np.reshape(anchors, [1,1,1,-1,2])
         
     def run(self, y_true, y_pred):
@@ -346,7 +346,7 @@ def test_loss_op(setup_y_true_tensor):
                                             y_pred: y_pred_value})
     assert np.allclose(loss_value, 11.471475)
 
-def test_activator(setup_y_true_tensor):
+def test_y_tensor_activation(setup_y_true_tensor):
     y_pred = tf.placeholder(tf.float32, [None, 13, 13, 5, 6], name='y_pred')
     y_true, y_true_value = setup_y_true_tensor
     
