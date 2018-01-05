@@ -381,14 +381,14 @@ def test_loss_op(setup_y_true_tensor):
                                             y_pred: y_pred_value})
     assert np.allclose(loss_value, 5.47542)
 
-# def test_y_tensor_activation(setup_y_true_tensor):
-#     y_pred = tf.placeholder(tf.float32, [None, 13, 13, 5, 6], name='y_pred')
-#     y_true, y_true_value = setup_y_true_tensor
-#     
-#     activator = _Activator([0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828])
-#     pred_tensor, true_tensor = activator.run(y_true, y_pred)
-#     print("================================================")
-#     print("================================================")
+def test_y_tensor_activation(setup_y_true_tensor):
+    y_pred = tf.placeholder(tf.float32, [None, 9, 9, 5, 9], name='y_pred')
+    y_true, y_true_value = setup_y_true_tensor
+     
+    activator = _Activator()
+    pred_tensor, true_tensor = activator.run(y_true, y_pred)
+    print("================================================")
+    print("================================================")
     
 
 if __name__ == '__main__':
@@ -396,5 +396,4 @@ if __name__ == '__main__':
     
     # Todo 
     # 1. warmup 과정을 수행하는 integration test 추가
-    # 2. svhn 1.png 로 test input 을 수정
     
