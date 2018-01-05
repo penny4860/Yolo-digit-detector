@@ -373,3 +373,7 @@ def test_y_tensor_activation(setup_y_true_tensor):
 if __name__ == '__main__':
     pytest.main([__file__, "-v", "-s"])
     
+    # Todo 
+    # 1. warmup 과정을 수행하는 integration test 추가
+    # 2. svhn 1.png 로 test input 을 수정
+    
