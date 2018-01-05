@@ -54,7 +54,7 @@ class YoloLoss(object):
             pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = pred_tensor[..., :2], pred_tensor[..., 2:4], pred_tensor[..., 4], pred_tensor[..., 5:]
             true_box_xy, true_box_wh, true_box_conf, true_box_class = true_tensor[..., :2], true_tensor[..., 2:4], true_tensor[..., 4], true_tensor[..., 5]
             true_box_class = tf.cast(true_box_class, tf.int64)
-            
+
             # 2. mask
             coord_mask = self._mask.create_coord_mask(y_true)
             class_mask = self._mask.create_class_mask(y_true, true_box_class)
@@ -72,6 +72,20 @@ class YoloLoss(object):
             Finalize the loss
             """
             loss = get_loss(coord_mask, conf_mask, class_mask, pred_tensor, true_box_xy, true_box_wh, true_box_conf, true_box_class)
+            
+            ###############################################################################################################
+            loss = tf.Print(loss, [self.true_boxes], message="true_boxes", summarize=2000)
+            loss = tf.Print(loss, [y_true], message="y_true", summarize=2000)
+            
+            for i in range(9):
+                for j in range(9):
+                    for b in range(5):
+                        loss = tf.Print(loss, [y_true[0, i, j, b, :]], message="y_true {}, {}, {}".format(i,j,b), summarize=2000)
+            for b in range(10):
+                loss = tf.Print(loss, [self.true_boxes[0, 0,0,0, b, :]], message="true_boxes {}".format(b), summarize=2000)
+            ###############################################################################################################
+
+            
             return loss
         return loss_func
 
