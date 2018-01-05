@@ -333,23 +333,24 @@ def run_op(operation, feed_dict):
 #     expected_class_mask[0, 7, 6, 4] = 1.0
 #     assert np.allclose(class_mask_value, expected_class_mask)
 
-# def test_yolo_coord_masking(setup_y_true_tensor):
-#     # 1. setup y_true placeholder
-#     # 2. setup y_true feed value
-#     y_true, y_true_value = setup_y_true_tensor
-#     
-#     # 3. create coord_mask operation
-#     yolo_mask = _Mask(nb_class=1, coord_scale=1.0, class_scale=1.0, object_scale=5.0, no_object_scale=1.0)
-#     coord_mask_op = yolo_mask.create_coord_mask(y_true)
-# 
-#     # 4. run loss_op in session
-#     coord_mask_value = run_op(coord_mask_op, feed_dict={y_true: y_true_value})
-#     
-#     # coordinate mask value : (N, grid, grid, nb_box, 1)
-#     #     object 가 있는 (grid_x, grid_y, anchor_idx) 에만 1, 나머지는 0
-#     expected_coord_mask = np.zeros((1,13,13,5,1))
-#     expected_coord_mask[0, 7, 6, 4, :] = 1.0
-#     assert np.allclose(coord_mask_value, expected_coord_mask)
+def test_yolo_coord_masking(setup_y_true_tensor):
+    # 1. setup y_true placeholder
+    # 2. setup y_true feed value
+    y_true, y_true_value = setup_y_true_tensor
+     
+    # 3. create coord_mask operation
+    yolo_mask = _Mask(nb_class=4, coord_scale=1.0, class_scale=1.0, object_scale=5.0, no_object_scale=1.0)
+    coord_mask_op = yolo_mask.create_coord_mask(y_true)
+ 
+    # 4. run loss_op in session
+    coord_mask_value = run_op(coord_mask_op, feed_dict={y_true: y_true_value})
+     
+    # coordinate mask value : (N, grid, grid, nb_box, 1)
+    #     object 가 있는 (grid_x, grid_y, anchor_idx) 에만 1, 나머지는 0
+    expected_coord_mask = np.zeros((1,9,9,5,1))
+    expected_coord_mask[0, 4, 3, 2, :] = 1.0
+    expected_coord_mask[0, 4, 4, 2, :] = 1.0
+    assert np.allclose(coord_mask_value, expected_coord_mask)
 
 def test_loss_op(setup_y_true_tensor):
     # 1. build loss function
