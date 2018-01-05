@@ -301,11 +301,7 @@ def test_yolo_coord_masking(setup_y_true_tensor):
     coord_mask_op = yolo_mask.create_coord_mask(y_true)
 
     # 4. run loss_op in session
-    sess = tf.Session()
-    init_op = tf.global_variables_initializer()
-    sess.run(init_op)
-    coord_mask_value = sess.run(coord_mask_op, feed_dict={y_true: y_true_value})
-    sess.close()
+    coord_mask_value = run_op(coord_mask_op, feed_dict={y_true: y_true_value})
     
     # coordinate mask value : (N, grid, grid, nb_box, 1)
     #     object 가 있는 (grid_x, grid_y, anchor_idx) 에만 1, 나머지는 0
@@ -334,13 +330,9 @@ def test_loss_op(setup_y_true_tensor):
     
     # 5. run loss_op in session
     # y_true, y_pred에 실제 value를 insert
-    sess = tf.Session()
-    init_op = tf.global_variables_initializer()
-    sess.run(init_op)
-    loss_value = sess.run(loss_op, feed_dict={yolo_loss.true_boxes: true_boxes_value,
-                                              y_true: y_true_value,
-                                              y_pred: y_pred_value})
-    sess.close()
+    loss_value = run_op(loss_op, feed_dict={yolo_loss.true_boxes: true_boxes_value,
+                                            y_true: y_true_value,
+                                            y_pred: y_pred_value})
     assert np.allclose(loss_value, 11.471475)
     
 
