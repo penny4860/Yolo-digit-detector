@@ -77,12 +77,12 @@ class YoloLoss(object):
             loss = tf.Print(loss, [self.true_boxes], message="true_boxes", summarize=2000)
             loss = tf.Print(loss, [y_true], message="y_true", summarize=2000)
             
-            for i in range(9):
-                for j in range(9):
-                    for b in range(5):
-                        loss = tf.Print(loss, [y_true[0, i, j, b, :]], message="y_true {}, {}, {}".format(i,j,b), summarize=2000)
-            for b in range(10):
-                loss = tf.Print(loss, [self.true_boxes[0, 0,0,0, b, :]], message="true_boxes {}".format(b), summarize=2000)
+#             for i in range(9):
+#                 for j in range(9):
+#                     for b in range(5):
+#                         loss = tf.Print(loss, [y_true[0, i, j, b, :]], message="y_true {}, {}, {}".format(i,j,b), summarize=2000)
+#             for b in range(10):
+#                 loss = tf.Print(loss, [self.true_boxes[0, 0,0,0, b, :]], message="true_boxes {}".format(b), summarize=2000)
             ###############################################################################################################
 
             
@@ -290,9 +290,12 @@ class _Mask(object):
 import pytest
 @pytest.fixture(scope='function')
 def setup_y_true_tensor(request):
-    y_true = tf.placeholder(tf.float32, [None, 13, 13, 5, 6], name='y_true')
-    y_true_value = np.zeros((1,13,13,5,6))
-    y_true_value[0,7,6,4,:] = [6.015625, 7.71875, 8.84375, 10, 1, 1]    # (cx, cy, w, h, confidence, classes)
+    N_COORD = 4
+    n_classes = 4
+    y_true = tf.placeholder(tf.float32, [None, 9, 9, 5, N_COORD+1+n_classes], name='y_true')
+    y_true_value = np.zeros((1, 9, 9, 5, N_COORD+1+n_classes))
+    y_true_value[0,4,3,2,:] = [3.46875, 4.78125, 1, 5.625, 1, 1, 0, 0, 0]           # (cx, cy, w, h, confidence, classes)
+    y_true_value[0,4,4,2,:] = [4.484375, 4.875, 1.15625, 5.625, 1, 0, 0, 0, 1]      # (cx, cy, w, h, confidence, classes)
     return y_true, y_true_value
 
 @pytest.fixture(scope='function')
