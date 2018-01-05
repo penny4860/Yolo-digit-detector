@@ -350,6 +350,8 @@ def test_activator(setup_y_true_tensor):
 #     (?, 13, 13, 5, 2) (?, 13, 13, 5, 2) (?, 13, 13, 5) (?, 13, 13, 5)
     pred_tensor = tf.concat([pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class], axis=-1)
     print(pred_tensor.shape)
+    pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = pred_tensor[..., :2], pred_tensor[..., 2:4], pred_tensor[..., 4], pred_tensor[..., 5:]
+    print(pred_box_xy.shape, pred_box_wh.shape, pred_box_conf.shape, pred_box_class.shape)
     print("================================================")
     
 
