@@ -263,6 +263,14 @@ def setup_true_box_tensor(request):
     true_box_class_value[0,7,6,4] = 0    # class index
     return true_box_class, true_box_class_value
 
+def run_op(operation, feed_dict):
+    sess = tf.Session()
+    init_op = tf.global_variables_initializer()
+    sess.run(init_op)
+    op_value = sess.run(operation, feed_dict=feed_dict)
+    sess.close()
+    return op_value
+
 def test_yolo_class_masking(setup_y_true_tensor, setup_true_box_tensor):
     # 1. setup y_true placeholder
     # 2. setup y_true feed value
@@ -274,12 +282,8 @@ def test_yolo_class_masking(setup_y_true_tensor, setup_true_box_tensor):
     class_mask_op = yolo_mask.create_class_mask(y_true, true_box_class)
 
     # 4. run loss_op in session
-    sess = tf.Session()
-    init_op = tf.global_variables_initializer()
-    sess.run(init_op)
-    class_mask_value = sess.run(class_mask_op, feed_dict={y_true: y_true_value,
-                                                          true_box_class : true_box_class_value})
-    sess.close()
+    class_mask_value = run_op(class_mask_op, feed_dict={y_true: y_true_value,
+                                                        true_box_class : true_box_class_value})
     
     # coordinate mask value : (N, grid, grid, nb_box)
     #     object 가 있는 (grid_x, grid_y, anchor_idx) 에만 1, 나머지는 0
