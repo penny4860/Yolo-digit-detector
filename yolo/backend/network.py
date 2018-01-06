@@ -58,10 +58,6 @@ class YoloNetwork(object):
         layer = self._model.layers[-2]
         weights = layer.get_weights()
         
-        print("================================================================")
-        print(weights[0].shape)
-        print("================================================================")
-
         new_kernel = np.random.normal(size=weights[0].shape)/(grid_size*grid_size)
         new_bias   = np.random.normal(size=weights[1].shape)/(grid_size*grid_size)
 
