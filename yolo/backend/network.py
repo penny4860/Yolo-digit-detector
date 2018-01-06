@@ -44,9 +44,6 @@ class YoloNetwork(object):
         features = feature_extractor.extract(input_tensor)
         grid_size = feature_extractor.get_output_size()
         
-        # truth tensor
-        true_boxes = Input(shape=(1, 1, 1, max_box_per_image , 4))
-    
         # make the object detection layer
         output_tensor = Conv2D(nb_box * (4 + 1 + nb_classes), 
                         (1,1), strides=(1,1), 
@@ -54,13 +51,10 @@ class YoloNetwork(object):
                         name='conv_23', 
                         kernel_initializer='lecun_normal')(features)
         output_tensor = Reshape((grid_size, grid_size, nb_box, 4 + 1 + nb_classes))(output_tensor)
-        # output_tensor = Lambda(lambda args: args[0])([output_tensor, true_boxes])
     
         model = Model(input_tensor, output_tensor)
-
         self._norm = feature_extractor.normalize
         self._model = model
-        self._true_boxes = true_boxes
         self._model.summary()
         self._init_layer(grid_size)
 
@@ -108,5 +102,3 @@ class YoloNetwork(object):
     def get_normalize_func(self):
         return self._norm
 
-    def get_true_boxes(self):
-        return self._true_boxes
