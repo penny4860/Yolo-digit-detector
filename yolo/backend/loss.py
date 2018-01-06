@@ -364,7 +364,7 @@ def test_yolo_coord_masking(setup_y_true_tensor):
 #     conf_mask_op = yolo_mask.create_conf_mask(y_true)
     
 
-def test_loss_op(setup_y_true_tensor, setup_y_pred_tensor):
+def test_loss_op(setup_y_true_tensor, setup_y_pred_tensor, setup_true_boxes_tensor):
     # 1. build loss function
     batch_size = 1
     warmup_bs = 0
@@ -379,9 +379,7 @@ def test_loss_op(setup_y_true_tensor, setup_y_pred_tensor):
     loss_op = custom_loss(y_true, y_pred)
     
     # 4. setup feed values for each placeholders (true_boxes, y_true, y_pred
-    true_boxes_value = np.zeros((1,1,1,1,10,4))
-    true_boxes_value[0,0,0,0,0,:] = [3.46875, 4.78125, 1, 5.625]
-    true_boxes_value[0,0,0,0,1,:] = [4.484375, 4.875, 1.15625, 5.625]
+    _, true_boxes_value = setup_true_boxes_tensor
     
     # 5. run loss_op in session
     # y_true, y_pred에 실제 value를 insert
