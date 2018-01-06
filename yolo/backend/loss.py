@@ -358,11 +358,21 @@ def test_yolo_coord_masking(setup_y_true_tensor):
     expected_coord_mask[0, 4, 4, 2, :] = 1.0
     assert np.allclose(coord_mask_value, expected_coord_mask)
 
-# def test_yolo_conf_masking(setup_y_true_tensor):
-#     y_true, y_true_value = setup_y_true_tensor
-#     
-#     yolo_mask = _Mask(nb_class=4, coord_scale=1.0, class_scale=1.0, object_scale=5.0, no_object_scale=1.0)
-#     conf_mask_op = yolo_mask.create_conf_mask(y_true)
+def test_yolo_conf_masking(setup_y_true_tensor, setup_true_boxes_tensor, setup_y_pred_tensor):
+    y_true, y_true_value = setup_y_true_tensor
+    true_boxes, true_boxes_value = setup_true_boxes_tensor
+    y_pred, y_pred_value = setup_y_pred_tensor
+     
+    yolo_mask = _Mask(nb_class=4, coord_scale=1.0, class_scale=1.0, object_scale=5.0, no_object_scale=1.0)
+    conf_mask_op = yolo_mask.create_conf_mask(y_true, true_boxes, y_pred)
+    conf_mask_value = run_op(conf_mask_op, feed_dict={y_true:y_true_value,
+                                                      true_boxes: true_boxes_value,
+                                                      y_pred:y_pred_value})
+    # (1, 9, 9, 5)
+    print("=================================================")
+    print(conf_mask_value.shape)
+    print(conf_mask_value)
+    print("=================================================")
     
 
 def test_loss_op(setup_y_true_tensor, setup_y_pred_tensor, setup_true_boxes_tensor):
