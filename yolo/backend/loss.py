@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import tensorflow as tf
 import numpy as np
+from numpy.random import RandomState
 from keras.layers import Input
 
 BOX_IDX_X = 0
@@ -308,10 +309,8 @@ def setup_true_box_tensor(request):
 
 @pytest.fixture(scope='function')
 def setup_y_pred(request):
-    from numpy.random import RandomState
     prng = RandomState(1337)
     y_pred_value = prng.randn(1,9,9,5,9) / 4
-    print(y_pred_value[0,0,0,0,:])
     return y_pred_value
 
 def run_op(operation, feed_dict):
@@ -393,7 +392,7 @@ def test_loss_op(setup_y_true_tensor, setup_y_pred):
 def test_loss_op_for_warmup(setup_y_true_tensor, setup_y_pred):
     # 1. build loss function
     batch_size = 1
-    warmup_bs = 0
+    warmup_bs = 100
     yolo_loss = YoloLoss(grid_size=9, nb_class=4)
     custom_loss = yolo_loss.custom_loss(batch_size, warmup_bs)
   
@@ -415,7 +414,7 @@ def test_loss_op_for_warmup(setup_y_true_tensor, setup_y_pred):
     loss_value = run_op(loss_op, feed_dict={yolo_loss.true_boxes: true_boxes_value,
                                             y_true: y_true_value,
                                             y_pred: y_pred_value})
-    assert np.allclose(loss_value, 5.47542)
+    assert np.allclose(loss_value, 3.1930623)
 
 def test_y_tensor_activation(setup_y_true_tensor):
     y_pred = tf.placeholder(tf.float32, [None, 9, 9, 5, 9], name='y_pred')
@@ -423,8 +422,6 @@ def test_y_tensor_activation(setup_y_true_tensor):
      
     activator = _Activator()
     pred_tensor, true_tensor = activator.run(y_true, y_pred)
-    print("================================================")
-    print("================================================")
     
 
 if __name__ == '__main__':
