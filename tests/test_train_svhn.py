@@ -54,7 +54,6 @@ def test_train_yolo_framework(setup_model_config,
     yolo = create_yolo(model_config['architecture'],
                        model_config['labels'],
                        model_config['input_size'],
-                       model_config['max_box_per_image'],
                        model_config['anchors'],
                        pretrained_feature_file)
     
