@@ -50,12 +50,6 @@ class YoloLoss(object):
         
         """
         def loss_func(y_true, y_pred):
-            true_boxes = y_true[..., :4]
-            true_boxes = tf.reshape(true_boxes, [batch_size, -1, 4])
-            true_boxes = tf.expand_dims(true_boxes, 1)
-            true_boxes = tf.expand_dims(true_boxes, 1)
-            true_boxes = tf.expand_dims(true_boxes, 1)
-
             # 1. activate prediction & truth tensor
             true_tensor, pred_tensor = self._activator.run(y_true, y_pred)
             true_box_xy, true_box_wh, true_box_conf, true_box_class = true_tensor[..., :2], true_tensor[..., 2:4], true_tensor[..., 4], true_tensor[..., 5]
@@ -64,10 +58,7 @@ class YoloLoss(object):
             # 2. mask
             coord_mask = self._mask.create_coord_mask(y_true)
             class_mask = self._mask.create_class_mask(y_true, true_box_class)
-            
-            
-            
-            conf_mask = self._mask.create_conf_mask(y_true, true_boxes, pred_tensor)
+            conf_mask = self._mask.create_conf_mask(y_true, pred_tensor, batch_size)
             
             """
             Warm-up training
@@ -244,10 +235,16 @@ class _Mask(object):
         mask = y_true[..., 4] * tf.gather(class_wt, true_box_class) * self._class_scale
         return mask
     
-    def create_conf_mask(self, y_true, true_boxes, pred_tensor):
+    def create_conf_mask(self, y_true, pred_tensor, batch_size):
         ### confidence mask: penelize predictors + penalize boxes with low IOU
         # penalize the confidence of the boxes, which have IOU with some ground truth box < 0.6
         pred_box_xy, pred_box_wh = pred_tensor[..., :2], pred_tensor[..., 2:4]
+        
+        true_boxes = y_true[..., :4]
+        true_boxes = tf.reshape(true_boxes, [batch_size, -1, 4])
+        true_boxes = tf.expand_dims(true_boxes, 1)
+        true_boxes = tf.expand_dims(true_boxes, 1)
+        true_boxes = tf.expand_dims(true_boxes, 1)
         
         true_xy = true_boxes[..., 0:2]
         true_wh = true_boxes[..., 2:4]
@@ -372,7 +369,7 @@ def test_yolo_conf_masking(setup_y_true_tensor, setup_true_boxes_tensor, setup_y
     y_pred, y_pred_value = setup_y_pred_tensor
      
     yolo_mask = _Mask(nb_class=4, coord_scale=1.0, class_scale=1.0, object_scale=5.0, no_object_scale=1.0)
-    conf_mask_op = yolo_mask.create_conf_mask(y_true, true_boxes, y_pred)
+    conf_mask_op = yolo_mask.create_conf_mask(y_true, y_pred, batch_size=1)
     conf_mask_value = run_op(conf_mask_op, feed_dict={y_true:y_true_value,
                                                       true_boxes: true_boxes_value,
                                                       y_pred:y_pred_value})
