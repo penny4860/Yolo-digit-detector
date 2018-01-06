@@ -14,7 +14,6 @@ BOX_IDX_CLASS_START = 5
 
 class YoloLoss(object):
     
-    # Todo : true_boxes 를 model에서 삭제하자.    
     def __init__(self,
                  grid_size=13,
                  nb_class=1,
