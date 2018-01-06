@@ -27,10 +27,8 @@ def create_batch_generator(annotations,
     yolo_box = _YoloBox(input_size, grid_size)
     netin_gen = _NetinGen(input_size, norm)
     netout_gen = _NetoutGen(grid_size, annotations.n_classes(), anchors)
-    true_box_gen = _TrueBoxGen(max_box_per_image)
     worker = BatchGenerator(netin_gen,
                             netout_gen,
-                            true_box_gen,
                             yolo_box,
                             img_aug,
                             annotations,
@@ -43,7 +41,6 @@ class BatchGenerator(Sequence):
     def __init__(self,
                  netin_gen,
                  netout_gen,
-                 true_box_gen,
                  yolo_box,
                  img_aug,
                  annotations,
@@ -56,7 +53,6 @@ class BatchGenerator(Sequence):
         """
         self._netin_gen = netin_gen
         self._netout_gen = netout_gen
-        self._true_box_gen = true_box_gen
         self._img_aug = img_aug
         self._yolo_box = yolo_box
 
@@ -75,7 +71,6 @@ class BatchGenerator(Sequence):
         """
         x_batch = []
         y_batch= []
-        true_box_batch = []
         for i in range(self._batch_size):
             # 1. get input file & its annotation
             fname = self.annotations.fname(self._batch_size*idx + i)
@@ -91,11 +86,9 @@ class BatchGenerator(Sequence):
             # 4. generate x_batch
             x_batch.append(self._netin_gen.run(img))
             y_batch.append(self._netout_gen.run(norm_boxes, labels))
-            true_box_batch.append(self._true_box_gen.run(norm_boxes))
 
         x_batch = np.array(x_batch)
         y_batch = np.array(y_batch)
-        true_box_batch = np.array(true_box_batch)
         self.counter += 1
         return x_batch, y_batch
 
@@ -141,36 +134,6 @@ class _NetinGen(object):
         else:
             return norm
 
-
-class _TrueBoxGen(object):
-    def __init__(self, max_box_per_image):
-        self._max_box_per_image = max_box_per_image
-
-    def run(self, norm_boxes):
-        """
-        # Args
-            labels : list of integers
-            
-            y_shape : tuple
-                (grid_size, grid_size, nb_boxes, 4+1+nb_classes)
-            b_shape : tuple
-                (1, 1, 1, max_box_per_image, 4)
-        """
-        
-        # construct output from object's x, y, w, h
-        true_box_index = 0
-        true_boxes = np.zeros(self._get_tensor_shape())
-        
-        # loop over objects in one image
-        for norm_box in norm_boxes:
-            # assign the true box to b_batch
-            true_boxes[:,:,:,true_box_index, :] = norm_box
-            true_box_index += 1
-            true_box_index = true_box_index % self._max_box_per_image
-        return true_boxes
-
-    def _get_tensor_shape(self):
-        return (1, 1, 1, self._max_box_per_image, 4)
 
 class _NetoutGen(object):
     def __init__(self,
