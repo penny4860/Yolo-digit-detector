@@ -54,9 +54,9 @@ class YoloNetwork(object):
                         name='conv_23', 
                         kernel_initializer='lecun_normal')(features)
         output_tensor = Reshape((grid_size, grid_size, nb_box, 4 + 1 + nb_classes))(output_tensor)
-        output_tensor = Lambda(lambda args: args[0])([output_tensor, true_boxes])
+        # output_tensor = Lambda(lambda args: args[0])([output_tensor, true_boxes])
     
-        model = Model([input_tensor, true_boxes], output_tensor)
+        model = Model(input_tensor, output_tensor)
 
         self._norm = feature_extractor.normalize
         self._model = model
@@ -65,8 +65,12 @@ class YoloNetwork(object):
         self._init_layer(grid_size)
 
     def _init_layer(self, grid_size):
-        layer = self._model.layers[-4]
+        layer = self._model.layers[-2]
         weights = layer.get_weights()
+        
+        print("================================================================")
+        print(weights[0].shape)
+        print("================================================================")
 
         new_kernel = np.random.normal(size=weights[0].shape)/(grid_size*grid_size)
         new_bias   = np.random.normal(size=weights[1].shape)/(grid_size*grid_size)
@@ -77,13 +81,8 @@ class YoloNetwork(object):
         self._model.load_weights(weight_path)
         
     def forward(self, image):
-        def _get_dummy_true_boxes():
-            _, true_boxes_shape = self._model.get_input_shape_at(0)
-            array = np.zeros(true_boxes_shape[1:])
-            return np.expand_dims(array, 0)
-        
         def _get_input_size():
-            input_shape, _ = self._model.get_input_shape_at(0)
+            input_shape = self._model.get_input_shape_at(0)
             _, h, w, _ = input_shape
             return h
             
@@ -93,10 +92,9 @@ class YoloNetwork(object):
 
         input_image = image[:,:,::-1]
         input_image = np.expand_dims(input_image, 0)
-        dummy_array = _get_dummy_true_boxes()
 
         # (13,13,5,6)
-        netout = self._model.predict([input_image, dummy_array])[0]
+        netout = self._model.predict(input_image)[0]
         return netout
 
     def get_model(self):
