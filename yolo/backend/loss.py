@@ -307,6 +307,12 @@ def setup_true_box_tensor(request):
     true_box_class_value[0,4,4,2] = 3    # class index
     return true_box_class, true_box_class_value
 
+@pytest.fixture(scope='function')
+def setup_y_pred(request):
+    y_pred_value = np.random.randn(1,9,9,5,9) / 4
+    return y_pred_value
+
+
 def run_op(operation, feed_dict):
     sess = tf.Session()
     init_op = tf.global_variables_initializer()
@@ -355,7 +361,7 @@ def test_yolo_coord_masking(setup_y_true_tensor):
     expected_coord_mask[0, 4, 4, 2, :] = 1.0
     assert np.allclose(coord_mask_value, expected_coord_mask)
 
-def test_loss_op(setup_y_true_tensor):
+def test_loss_op(setup_y_true_tensor, setup_y_pred):
     # 1. build loss function
     batch_size = 1
     warmup_bs = 0
@@ -370,7 +376,7 @@ def test_loss_op(setup_y_true_tensor):
     loss_op = custom_loss(y_true, y_pred)
     
     # 4. setup feed values for each placeholders (true_boxes, y_true, y_pred
-    y_pred_value = np.random.randn(1,9,9,5,9) / 4
+    y_pred_value = setup_y_pred
     true_boxes_value = np.zeros((1,1,1,1,10,4))
     true_boxes_value[0,0,0,0,0,:] = [3.46875, 4.78125, 1, 5.625]
     true_boxes_value[0,0,0,0,1,:] = [4.484375, 4.875, 1.15625, 5.625]
