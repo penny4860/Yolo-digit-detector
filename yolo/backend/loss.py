@@ -303,8 +303,7 @@ def setup_y_pred_tensor(request):
 
 @pytest.fixture(scope='function')
 def setup_true_boxes_tensor(request):
-    true_boxes = Input(shape=(1, 1, 1, 10 , 4))
-    # true_boxes = tf.placeholder(tf.int32, [None, 1,1,1, 10,4], name='y_true')
+    true_boxes = tf.placeholder(tf.float32, [None, 1,1,1, 10,4], name='y_true')
     true_boxes_value = np.zeros((1,1,1,1,10,4))
     true_boxes_value[0,0,0,0,0,:] = [3.46875, 4.78125, 1, 5.625]
     true_boxes_value[0,0,0,0,1,:] = [4.484375, 4.875, 1.15625, 5.625]
