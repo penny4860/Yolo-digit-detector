@@ -75,7 +75,7 @@ class YoloLoss(object):
             
             
             
-            conf_mask = self._mask.create_conf_mask(y_true, self.true_boxes, pred_tensor)
+            conf_mask = self._mask.create_conf_mask(y_true, true_boxes, pred_tensor)
             
             """
             Warm-up training
