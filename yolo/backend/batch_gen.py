@@ -97,7 +97,7 @@ class BatchGenerator(Sequence):
         y_batch = np.array(y_batch)
         true_box_batch = np.array(true_box_batch)
         self.counter += 1
-        return [x_batch, true_box_batch], y_batch
+        return x_batch, y_batch
 
     def on_epoch_end(self):
         self.annotations.shuffle()
