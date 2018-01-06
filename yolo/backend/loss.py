@@ -50,6 +50,20 @@ class YoloLoss(object):
         
         """
         def loss_func(y_true, y_pred):
+            true_boxes = y_true[..., :4]
+            true_boxes = tf.reshape(true_boxes, [batch_size, -1, 4])
+            
+            y_true = tf.Print(y_true, [tf.shape(y_true)], message="y_true tensor", summarize=1000)
+            y_true = tf.Print(y_true, [tf.shape(true_boxes)], message="true_boxes tensor", summarize=1000)
+            # [1 405 4]
+            
+            true_boxes = tf.expand_dims(true_boxes, 1)
+            true_boxes = tf.expand_dims(true_boxes, 1)
+            true_boxes = tf.expand_dims(true_boxes, 1)
+
+            y_true = tf.Print(y_true, [tf.shape(true_boxes)], message="true_boxes tensor", summarize=1000)
+            # [1 405 4]
+            
             # 1. activate prediction & truth tensor
             true_tensor, pred_tensor = self._activator.run(y_true, y_pred)
             true_box_xy, true_box_wh, true_box_conf, true_box_class = true_tensor[..., :2], true_tensor[..., 2:4], true_tensor[..., 4], true_tensor[..., 5]
@@ -58,6 +72,9 @@ class YoloLoss(object):
             # 2. mask
             coord_mask = self._mask.create_coord_mask(y_true)
             class_mask = self._mask.create_class_mask(y_true, true_box_class)
+            
+            
+            
             conf_mask = self._mask.create_conf_mask(y_true, self.true_boxes, pred_tensor)
             
             """
