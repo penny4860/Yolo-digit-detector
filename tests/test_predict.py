@@ -28,7 +28,6 @@ def test_predict(setup_image_and_its_boxes, setup_outputs, setup_model_config):
     yolo = create_yolo(model_config['architecture'],
                        model_config['labels'],
                        model_config['input_size'],
-                       model_config['max_box_per_image'],
                        model_config['anchors'])
     
     yolo.load_weights(os.path.join(TEST_SAMPLE_DIR, "mobile_288_weights.h5"))
