@@ -42,7 +42,6 @@ if __name__ == '__main__':
     yolo = create_yolo(config['model']['architecture'],
                        config['model']['labels'],
                        config['model']['input_size'],
-                       config['model']['max_box_per_image'],
                        config['model']['anchors'],
                        config['pretrained']['feature'])
     

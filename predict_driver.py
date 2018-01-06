@@ -59,7 +59,6 @@ if __name__ == '__main__':
     yolo = create_yolo(model_config['architecture'],
                        model_config['labels'],
                        model_config['input_size'],
-                       model_config['max_box_per_image'],
                        model_config['anchors'],
                        feature_weights_path=None)
     yolo.load_weights(args.weights)
