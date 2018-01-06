@@ -240,12 +240,13 @@ class _Mask(object):
         # penalize the confidence of the boxes, which have IOU with some ground truth box < 0.6
         pred_box_xy, pred_box_wh = pred_tensor[..., :2], pred_tensor[..., 2:4]
         
-        true_xy = true_boxes[..., 0:2]
-        true_wh = true_boxes[..., 2:4]
+        true_xy = tf.cast(true_boxes[..., 0:2], tf.float32)
+        true_wh = tf.cast(true_boxes[..., 2:4], tf.float32)
         
-        true_wh_half = true_wh / 2.
-        true_mins    = true_xy - true_wh_half
-        true_maxes   = true_xy + true_wh_half
+        true_wh_half = tf.truediv(true_wh, tf.constant(2, tf.float32))
+        
+        true_mins    = tf.subtract(true_xy, true_wh_half)
+        true_maxes   = tf.add(true_xy, true_wh_half)
         
         pred_xy = tf.expand_dims(pred_box_xy, 4)
         pred_wh = tf.expand_dims(pred_box_wh, 4)
@@ -303,8 +304,8 @@ def setup_y_pred_tensor(request):
 
 @pytest.fixture(scope='function')
 def setup_true_boxes_tensor(request):
-    true_boxes = Input(shape=(1, 1, 1, 10 , 4))
-    # true_boxes = tf.placeholder(tf.int32, [None, 1,1,1, 10,4], name='y_true')
+    # true_boxes = Input(shape=(1, 1, 1, 10 , 4))
+    true_boxes = tf.placeholder(tf.int32, [None, 1,1,1, 10,4], name='y_true')
     true_boxes_value = np.zeros((1,1,1,1,10,4))
     true_boxes_value[0,0,0,0,0,:] = [3.46875, 4.78125, 1, 5.625]
     true_boxes_value[0,0,0,0,1,:] = [4.484375, 4.875, 1.15625, 5.625]
@@ -318,52 +319,29 @@ def run_op(operation, feed_dict):
     sess.close()
     return op_value
 
-def test_yolo_class_masking(setup_y_true_tensor, setup_true_box_tensor):
-    # 1. setup y_true placeholder
-    # 2. setup y_true feed value
-    y_true, y_true_value = setup_y_true_tensor
-    true_box_class, true_box_class_value = setup_true_box_tensor
-     
-    # 3. create coord_mask operation
-    yolo_mask = _Mask(nb_class=4, coord_scale=1.0, class_scale=1.0, object_scale=5.0, no_object_scale=1.0)
-    class_mask_op = yolo_mask.create_class_mask(y_true, true_box_class)
- 
-    # 4. run loss_op in session
-    class_mask_value = run_op(class_mask_op, feed_dict={y_true: y_true_value,
-                                                        true_box_class : true_box_class_value})
-     
-    # coordinate mask value : (N, grid, grid, nb_box)
-    #     object 가 있는 (grid_x, grid_y, anchor_idx) 에만 1, 나머지는 0
-    expected_class_mask = np.zeros((1,9,9,5))
-    expected_class_mask[0, 4, 3, 2] = 1.0
-    expected_class_mask[0, 4, 4, 2] = 1.0
-    assert np.allclose(class_mask_value, expected_class_mask)
-
-def test_yolo_coord_masking(setup_y_true_tensor):
-    # 1. setup y_true placeholder
-    # 2. setup y_true feed value
-    y_true, y_true_value = setup_y_true_tensor
-     
-    # 3. create coord_mask operation
-    yolo_mask = _Mask(nb_class=4, coord_scale=1.0, class_scale=1.0, object_scale=5.0, no_object_scale=1.0)
-    coord_mask_op = yolo_mask.create_coord_mask(y_true)
- 
-    # 4. run loss_op in session
-    coord_mask_value = run_op(coord_mask_op, feed_dict={y_true: y_true_value})
-     
-    # coordinate mask value : (N, grid, grid, nb_box, 1)
-    #     object 가 있는 (grid_x, grid_y, anchor_idx) 에만 1, 나머지는 0
-    expected_coord_mask = np.zeros((1,9,9,5,1))
-    expected_coord_mask[0, 4, 3, 2, :] = 1.0
-    expected_coord_mask[0, 4, 4, 2, :] = 1.0
-    assert np.allclose(coord_mask_value, expected_coord_mask)
-
 def test_yolo_conf_masking(setup_y_true_tensor, setup_true_boxes_tensor, setup_y_pred_tensor):
     y_true, y_true_value = setup_y_true_tensor
     true_boxes, true_boxes_value = setup_true_boxes_tensor
     y_pred, y_pred_value = setup_y_pred_tensor
      
     yolo_mask = _Mask(nb_class=4, coord_scale=1.0, class_scale=1.0, object_scale=5.0, no_object_scale=1.0)
+
+    print("========================================================")    
+    print(y_true_value.shape, true_boxes.shape)
+    for i in range(9):
+        for j in range(9):
+            for b in range(5):
+                print(y_true_value[0, i, j, b, :])
+    # (1, 9, 9, 5, 9) (?, 1, 1, 1, 10, 4)
+    print("========================================================")    
+    for b in range(10):
+        print(true_boxes_value[0, 0, 0, 0, b, :])
+    print("========================================================")    
+    
+#     true_xy = true_boxes[..., 0:2]
+#     true_wh = true_boxes[..., 2:4]
+
+    
     conf_mask_op = yolo_mask.create_conf_mask(y_true, true_boxes, y_pred)
     conf_mask_value = run_op(conf_mask_op, feed_dict={y_true:y_true_value,
                                                       true_boxes: true_boxes_value,
@@ -373,65 +351,6 @@ def test_yolo_conf_masking(setup_y_true_tensor, setup_true_boxes_tensor, setup_y
     expected_conf_mask_value[0,4,3,2] = 5
     expected_conf_mask_value[0,4,4,2] = 5
     assert np.allclose(conf_mask_value, expected_conf_mask_value)
-
-def test_loss_op(setup_y_true_tensor, setup_y_pred_tensor, setup_true_boxes_tensor):
-    # 1. build loss function
-    batch_size = 1
-    warmup_bs = 0
-    yolo_loss = YoloLoss(grid_size=9, nb_class=4)
-    custom_loss = yolo_loss.custom_loss(batch_size, warmup_bs)
-
-    # 2. placeholder : (y_true, y_pred)
-    y_true, y_true_value = setup_y_true_tensor
-    y_pred, y_pred_value = setup_y_pred_tensor
-
-    # 3. loss operation
-    loss_op = custom_loss(y_true, y_pred)
-    
-    # 4. setup feed values for each placeholders (true_boxes, y_true, y_pred
-    _, true_boxes_value = setup_true_boxes_tensor
-    
-    # 5. run loss_op in session
-    # y_true, y_pred에 실제 value를 insert
-    loss_value = run_op(loss_op, feed_dict={yolo_loss.true_boxes: true_boxes_value,
-                                            y_true: y_true_value,
-                                            y_pred: y_pred_value})
-
-    assert np.allclose(loss_value, 5.47542)
-
-def test_loss_op_for_warmup(setup_y_true_tensor, setup_y_pred_tensor):
-    # 1. build loss function
-    batch_size = 1
-    warmup_bs = 100
-    yolo_loss = YoloLoss(grid_size=9, nb_class=4)
-    custom_loss = yolo_loss.custom_loss(batch_size, warmup_bs)
-  
-    # 2. placeholder : (y_true, y_pred)
-    y_true, y_true_value = setup_y_true_tensor
-    y_pred, y_pred_value = setup_y_pred_tensor
-  
-    # 3. loss operation
-    loss_op = custom_loss(y_true, y_pred)
-      
-    # 4. setup feed values for each placeholders (true_boxes, y_true, y_pred
-    true_boxes_value = np.zeros((1,1,1,1,10,4))
-    true_boxes_value[0,0,0,0,0,:] = [3.46875, 4.78125, 1, 5.625]
-    true_boxes_value[0,0,0,0,1,:] = [4.484375, 4.875, 1.15625, 5.625]
-      
-    # 5. run loss_op in session
-    # y_true, y_pred에 실제 value를 insert
-    loss_value = run_op(loss_op, feed_dict={yolo_loss.true_boxes: true_boxes_value,
-                                            y_true: y_true_value,
-                                            y_pred: y_pred_value})
-    assert np.allclose(loss_value, 3.1930623)
-
-def test_y_tensor_activation(setup_y_true_tensor):
-    y_pred = tf.placeholder(tf.float32, [None, 9, 9, 5, 9], name='y_pred')
-    y_true, y_true_value = setup_y_true_tensor
-    
-    activator = _Activator()
-    pred_tensor, true_tensor = activator.run(y_true, y_pred)
-    
 
 if __name__ == '__main__':
     pytest.main([__file__, "-v", "-s"])
