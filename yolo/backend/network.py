@@ -11,7 +11,6 @@ from .utils.feature import create_feature_extractor
 def create_yolo_network(architecture,
                         input_size,
                         nb_classes,
-                        max_box_per_image,
                         nb_box,
                         feature_weights=None):
     if feature_weights is not None and os.path.exists(feature_weights):
@@ -25,7 +24,6 @@ def create_yolo_network(architecture,
     yolo_net = YoloNetwork(feature_extractor,
                            input_size,
                            nb_classes,
-                           max_box_per_image,
                            nb_box)
     return yolo_net
 
@@ -36,7 +34,6 @@ class YoloNetwork(object):
                  feature_extractor,
                  input_size,
                  nb_classes,
-                 max_box_per_image,
                  nb_box):
         
         # 1. create full network

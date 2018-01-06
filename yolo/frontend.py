@@ -18,18 +18,17 @@ from yolo.backend.utils.box import to_minmax
 def create_yolo(architecture,
                 labels,
                 input_size = 416,
-                max_box_per_image = 10,
                 anchors = [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828],
                 feature_weights_path=None):
 
     n_classes = len(labels)
     n_boxes = int(len(anchors)/2)
-    yolo_network = create_yolo_network(architecture, input_size, n_classes, max_box_per_image, n_boxes, feature_weights_path)
+    yolo_network = create_yolo_network(architecture, input_size, n_classes, n_boxes, feature_weights_path)
     yolo_loss = YoloLoss(yolo_network.get_grid_size(),
                          n_classes,
                          anchors)
     yolo_decoder = YoloDecoder(anchors)
-    yolo = YOLO(yolo_network, yolo_loss, yolo_decoder, labels, input_size, max_box_per_image)
+    yolo = YOLO(yolo_network, yolo_loss, yolo_decoder, labels, input_size)
     return yolo
 
 
@@ -39,8 +38,7 @@ class YOLO(object):
                  yolo_loss,
                  yolo_decoder,
                  labels,
-                 input_size = 416,
-                 max_box_per_image = 10):
+                 input_size = 416):
         """
         # Args
             feature_extractor : BaseFeatureExtractor instance
@@ -52,7 +50,6 @@ class YOLO(object):
         self._labels = labels
         # Batch를 생성할 때만 사용한다.
         self._input_size = input_size
-        self._max_box_per_image = max_box_per_image
 
     def load_weights(self, weight_path):
         if os.path.exists(weight_path):
@@ -151,7 +148,6 @@ class YOLO(object):
                                                  self._input_size,
                                                  self._yolo_network.get_grid_size(),
                                                  batch_size,
-                                                 self._max_box_per_image,
                                                  self._yolo_loss.anchors,
                                                  repeat_times,
                                                  jitter=jitter,
