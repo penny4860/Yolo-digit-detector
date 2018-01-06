@@ -16,7 +16,6 @@ class YoloLoss(object):
     
     # Todo : true_boxes 를 model에서 삭제하자.    
     def __init__(self,
-                 true_boxes=Input(shape=(1, 1, 1, 10 , 4)),
                  grid_size=13,
                  nb_class=1,
                  anchors=[0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828]):
@@ -33,8 +32,7 @@ class YoloLoss(object):
         self.anchors = anchors
         self.nb_box = int(len(anchors)/2)
         self.nb_class = nb_class
-        self.true_boxes = true_boxes
-        
+
         self.coord_scale = 1.0
 
         # Todo : create method를 따로 만들어서 주입받자.
@@ -58,7 +56,7 @@ class YoloLoss(object):
             # 2. mask
             coord_mask = self._mask.create_coord_mask(y_true)
             class_mask = self._mask.create_class_mask(y_true, true_box_class)
-            conf_mask = self._mask.create_conf_mask(y_true, self.true_boxes, pred_tensor)
+            conf_mask = self._mask.create_conf_mask(y_true, pred_tensor, batch_size)
             
             """
             Warm-up training
@@ -235,10 +233,16 @@ class _Mask(object):
         mask = y_true[..., 4] * tf.gather(class_wt, true_box_class) * self._class_scale
         return mask
     
-    def create_conf_mask(self, y_true, true_boxes, pred_tensor):
+    def create_conf_mask(self, y_true, pred_tensor, batch_size):
         ### confidence mask: penelize predictors + penalize boxes with low IOU
         # penalize the confidence of the boxes, which have IOU with some ground truth box < 0.6
         pred_box_xy, pred_box_wh = pred_tensor[..., :2], pred_tensor[..., 2:4]
+        
+        true_boxes = y_true[..., :4]
+        true_boxes = tf.reshape(true_boxes, [batch_size, -1, 4])
+        true_boxes = tf.expand_dims(true_boxes, 1)
+        true_boxes = tf.expand_dims(true_boxes, 1)
+        true_boxes = tf.expand_dims(true_boxes, 1)
         
         true_xy = true_boxes[..., 0:2]
         true_wh = true_boxes[..., 2:4]
@@ -363,7 +367,7 @@ def test_yolo_conf_masking(setup_y_true_tensor, setup_true_boxes_tensor, setup_y
     y_pred, y_pred_value = setup_y_pred_tensor
      
     yolo_mask = _Mask(nb_class=4, coord_scale=1.0, class_scale=1.0, object_scale=5.0, no_object_scale=1.0)
-    conf_mask_op = yolo_mask.create_conf_mask(y_true, true_boxes, y_pred)
+    conf_mask_op = yolo_mask.create_conf_mask(y_true, y_pred, batch_size=1)
     conf_mask_value = run_op(conf_mask_op, feed_dict={y_true:y_true_value,
                                                       true_boxes: true_boxes_value,
                                                       y_pred:y_pred_value})
@@ -392,8 +396,7 @@ def test_loss_op(setup_y_true_tensor, setup_y_pred_tensor, setup_true_boxes_tens
     
     # 5. run loss_op in session
     # y_true, y_pred에 실제 value를 insert
-    loss_value = run_op(loss_op, feed_dict={yolo_loss.true_boxes: true_boxes_value,
-                                            y_true: y_true_value,
+    loss_value = run_op(loss_op, feed_dict={y_true: y_true_value,
                                             y_pred: y_pred_value})
 
     assert np.allclose(loss_value, 5.47542)
@@ -419,8 +422,7 @@ def test_loss_op_for_warmup(setup_y_true_tensor, setup_y_pred_tensor):
       
     # 5. run loss_op in session
     # y_true, y_pred에 실제 value를 insert
-    loss_value = run_op(loss_op, feed_dict={yolo_loss.true_boxes: true_boxes_value,
-                                            y_true: y_true_value,
+    loss_value = run_op(loss_op, feed_dict={y_true: y_true_value,
                                             y_pred: y_pred_value})
     assert np.allclose(loss_value, 3.1930623)
 
