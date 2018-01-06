@@ -52,14 +52,13 @@ class YoloLoss(object):
         def loss_func(y_true, y_pred):
             # 1. activate prediction & truth tensor
             true_tensor, pred_tensor = self._activator.run(y_true, y_pred)
-            pred_box_xy, pred_box_wh, pred_box_conf, pred_box_class = pred_tensor[..., :2], pred_tensor[..., 2:4], pred_tensor[..., 4], pred_tensor[..., 5:]
             true_box_xy, true_box_wh, true_box_conf, true_box_class = true_tensor[..., :2], true_tensor[..., 2:4], true_tensor[..., 4], true_tensor[..., 5]
             true_box_class = tf.cast(true_box_class, tf.int64)
 
             # 2. mask
             coord_mask = self._mask.create_coord_mask(y_true)
             class_mask = self._mask.create_class_mask(y_true, true_box_class)
-            conf_mask = self._mask.create_conf_mask(y_true, self.true_boxes, pred_box_xy, pred_box_wh)
+            conf_mask = self._mask.create_conf_mask(y_true, self.true_boxes, pred_tensor)
             
             """
             Warm-up training
@@ -250,9 +249,11 @@ class _Mask(object):
         mask = y_true[..., 4] * tf.gather(class_wt, true_box_class) * self._class_scale
         return mask
     
-    def create_conf_mask(self, y_true, true_boxes, pred_box_xy, pred_box_wh):
+    def create_conf_mask(self, y_true, true_boxes, pred_tensor):
         ### confidence mask: penelize predictors + penalize boxes with low IOU
         # penalize the confidence of the boxes, which have IOU with some ground truth box < 0.6
+        pred_box_xy, pred_box_wh = pred_tensor[..., :2], pred_tensor[..., 2:4]
+        
         true_xy = true_boxes[..., 0:2]
         true_wh = true_boxes[..., 2:4]
         
