@@ -16,7 +16,6 @@ class YoloLoss(object):
     
     # Todo : true_boxes 를 model에서 삭제하자.    
     def __init__(self,
-                 true_boxes=Input(shape=(1, 1, 1, 10 , 4)),
                  grid_size=13,
                  nb_class=1,
                  anchors=[0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828]):
@@ -33,8 +32,7 @@ class YoloLoss(object):
         self.anchors = anchors
         self.nb_box = int(len(anchors)/2)
         self.nb_class = nb_class
-        self.true_boxes = true_boxes
-        
+
         self.coord_scale = 1.0
 
         # Todo : create method를 따로 만들어서 주입받자.
@@ -398,8 +396,7 @@ def test_loss_op(setup_y_true_tensor, setup_y_pred_tensor, setup_true_boxes_tens
     
     # 5. run loss_op in session
     # y_true, y_pred에 실제 value를 insert
-    loss_value = run_op(loss_op, feed_dict={yolo_loss.true_boxes: true_boxes_value,
-                                            y_true: y_true_value,
+    loss_value = run_op(loss_op, feed_dict={y_true: y_true_value,
                                             y_pred: y_pred_value})
 
     assert np.allclose(loss_value, 5.47542)
@@ -425,8 +422,7 @@ def test_loss_op_for_warmup(setup_y_true_tensor, setup_y_pred_tensor):
       
     # 5. run loss_op in session
     # y_true, y_pred에 실제 value를 insert
-    loss_value = run_op(loss_op, feed_dict={yolo_loss.true_boxes: true_boxes_value,
-                                            y_true: y_true_value,
+    loss_value = run_op(loss_op, feed_dict={y_true: y_true_value,
                                             y_pred: y_pred_value})
     assert np.allclose(loss_value, 3.1930623)
 
