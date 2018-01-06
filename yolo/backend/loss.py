@@ -368,12 +368,11 @@ def test_yolo_conf_masking(setup_y_true_tensor, setup_true_boxes_tensor, setup_y
     conf_mask_value = run_op(conf_mask_op, feed_dict={y_true:y_true_value,
                                                       true_boxes: true_boxes_value,
                                                       y_pred:y_pred_value})
-    # (1, 9, 9, 5)
-    print("=================================================")
-    print(conf_mask_value.shape)
-    print(conf_mask_value)
-    print("=================================================")
-    
+
+    expected_conf_mask_value = np.ones((1,9,9,5))
+    expected_conf_mask_value[0,4,3,2] = 5
+    expected_conf_mask_value[0,4,4,2] = 5
+    assert np.allclose(conf_mask_value, expected_conf_mask_value)
 
 def test_loss_op(setup_y_true_tensor, setup_y_pred_tensor, setup_true_boxes_tensor):
     # 1. build loss function
