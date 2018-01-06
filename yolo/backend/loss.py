@@ -301,6 +301,14 @@ def setup_y_pred_tensor(request):
     y_pred = tf.placeholder(tf.float32, [None, 9, 9, 5, 9], name='y_pred')
     return y_pred, y_pred_value
 
+@pytest.fixture(scope='function')
+def setup_true_boxes_tensor(request):
+    true_boxes = tf.placeholder(tf.int32, [None, 1,1,1, 10,4], name='y_true')
+    true_boxes_value = np.zeros((1,1,1,1,10,4))
+    true_boxes_value[0,0,0,0,0,:] = [3.46875, 4.78125, 1, 5.625]
+    true_boxes_value[0,0,0,0,1,:] = [4.484375, 4.875, 1.15625, 5.625]
+    return true_boxes, true_boxes_value
+
 def run_op(operation, feed_dict):
     sess = tf.Session()
     init_op = tf.global_variables_initializer()
