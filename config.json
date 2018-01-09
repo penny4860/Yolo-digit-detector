@@ -13,7 +13,6 @@
     	"warmup":
     	{
     		"nb_epoch" : 	3,
-        	"batch_size":	2
     	},
         "train_image_folder":   "tests//dataset//svhn//imgs/",
         "train_annot_folder":   "tests//dataset//svhn//anns/",
