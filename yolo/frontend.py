@@ -97,14 +97,16 @@ class YOLO(object):
               valid_times=1,
               warmup_epochs=None,
               valid_img_folder="",
-              valid_ann_folder=""):
+              valid_ann_folder="",
+              is_only_detect=False):
 
         # 1. get annotations        
         train_annotations, valid_annotations = get_train_annotations(self._labels,
                                                                      img_folder,
                                                                      ann_folder,
                                                                      valid_img_folder,
-                                                                     valid_ann_folder)
+                                                                     valid_ann_folder,
+                                                                     is_only_detect)
         
         # 1. get batch generator
         train_batch_generator = self._get_batch_generator(train_annotations, batch_size, train_times, jitter=jitter)
