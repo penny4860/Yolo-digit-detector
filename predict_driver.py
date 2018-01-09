@@ -69,7 +69,7 @@ if __name__ == '__main__':
     
     for fname in image_files:
         image = cv2.imread(fname)
-        boxes, probs = yolo.predict(image, args.threshold)
+        boxes, probs = yolo.predict(image, float(args.threshold))
     
         # 4. save detection result
         image = draw_boxes(image, boxes, probs, model_config['labels'])
