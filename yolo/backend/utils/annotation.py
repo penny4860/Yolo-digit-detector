@@ -165,8 +165,7 @@ def parse_annotation(ann_dir, img_dir, labels_naming=[]):
         
         for label, box in zip(labels, boxes):
             x1, y1, x2, y2 = box
-            annotation.add_object(x1, y1, x2, y2, name=label)
-
+            annotation.add_object(x1, y1, x2, y2, name="digit")
         annotations.add(annotation)
                         
     return annotations
