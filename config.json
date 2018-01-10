@@ -12,7 +12,7 @@
     "train" : {
     	"warmup":
     	{
-    		"nb_epoch" : 	3,
+    		"nb_epoch" : 	3
     	},
         "train_image_folder":   "..//dataset//svhn//train_imgs//",
         "train_annot_folder":   "train_voc_anns//",
