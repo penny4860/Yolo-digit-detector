@@ -60,16 +60,12 @@ if __name__ == '__main__':
         img_fname = fname_ + ".png"
         img_path = os.path.join(config['train']['train_image_folder'], img_fname)
         image = cv2.imread(img_path)
-        print(image.shape)
         
         boxes, probs = yolo.predict(image, float(args.threshold))
-        print(boxes)
-      
       
         # 4. save detection result
         image = draw_boxes(image, boxes, probs, model_config['labels'])
         output_path = os.path.join(write_dname, os.path.split(img_fname)[-1])
-        print(output_path)
         
         cv2.imwrite(output_path, image)
         print("{}-boxes are detected. {} saved.".format(len(boxes), output_path))
