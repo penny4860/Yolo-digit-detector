@@ -31,13 +31,13 @@ argparser.add_argument(
 argparser.add_argument(
     '-t',
     '--threshold',
-    default=0.3,
+    default=0.4,
     help='detection threshold')
 
 argparser.add_argument(
     '-w',
     '--weights',
-    default="tests//dataset//svhn//mobile_288_weights.h5",
+    default="overfit//weights.h5",
     help='trained weight files')
 
 def get_write_dir(image_dir):
@@ -67,10 +67,18 @@ if __name__ == '__main__':
     write_dname = get_write_dir(args.input)
     image_files = glob.glob(os.path.join(args.input, "*.png"))
     
-    for fname in image_files:
+    
+    # 4. 
+    files = os.listdir(config['train']['train_annot_folder'])
+    
+    for fname in files:
+        fname_ =  os.path.splitext(fname)[0]
+        img_fname = fname_ + ".png"
+        img_path = os.path.join(config['train']['train_image_folder'], img_fname)
+    
         image = cv2.imread(fname)
         boxes, probs = yolo.predict(image, float(args.threshold))
-    
+      
         # 4. save detection result
         image = draw_boxes(image, boxes, probs, model_config['labels'])
         output_path = os.path.join(write_dname, os.path.split(fname)[-1])
