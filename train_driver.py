@@ -60,7 +60,8 @@ if __name__ == '__main__':
                    config['train']['valid_times'],
                    config['train']['warmup']['nb_epoch'],
                    config['train']['valid_image_folder'],
-                   config['train']['valid_annot_folder'])
+                   config['train']['valid_annot_folder'],
+                   config['train']['is_only_detect'])
         # 4. Load the warmup trained weights
         yolo.load_weights(weight_file)
     
@@ -76,6 +77,7 @@ if __name__ == '__main__':
                config['train']['valid_times'],
                0,
                config['train']['valid_image_folder'],
-               config['train']['valid_annot_folder'])
+               config['train']['valid_annot_folder'],
+               config['train']['is_only_detect'])
     # loss: 2.1691, train batch jitter=False
 
