@@ -6,13 +6,13 @@
         "labels":               ["digit"]
     },
     "pretrained" : {
-        "feature":   			"tests//dataset//mobilenet_features.h5",
-        "full":   				""
+        "feature":   			"",
+        "full":   				"overfit//weights.h5"
     },
     "train" : {
     	"warmup":
     	{
-    		"nb_epoch" : 	2
+    		"nb_epoch" : 	0
     	},
         "train_image_folder":   "..//dataset//svhn//train_imgs//",
         "train_annot_folder":   "train_voc_anns//",
@@ -22,7 +22,7 @@
         "valid_times":          1,
         "batch_size":           2,
         "learning_rate":        1e-4,
-        "nb_epoch":             50,
+        "nb_epoch":             25,
         "object_scale":         5.0,
         "no_object_scale":      1.0,
         "coord_scale":          1.0,
