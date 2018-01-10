@@ -78,9 +78,9 @@ def nms_boxes(boxes, n_classes, nms_threshold=0.3, obj_threshold=0.3):
 def draw_boxes(image, boxes, probs, labels):
     for box, classes in zip(boxes, probs):
         x1, y1, x2, y2 = box
-        cv2.rectangle(image, (x1,y1), (x2,y2), (0,255,0), 3)
+        cv2.rectangle(image, (x1,y1), (x2,y2), (0,255,0), 1)
         cv2.putText(image, 
-                    labels[np.argmax(classes)] + ' ' + str(classes.max()), 
+                    str(classes.max()), 
                     (x1, y1 - 13), 
                     cv2.FONT_HERSHEY_SIMPLEX, 
                     1e-3 * image.shape[0], 
