@@ -32,13 +32,6 @@ argparser.add_argument(
     default="overfit//weights.h5",
     help='trained weight files')
 
-def get_write_dir(image_dir):
-    par_dname = os.path.dirname(image_dir)
-    cur_dname = os.path.split(image_dir)[-1]
-    detected_dname = os.path.join(par_dname, cur_dname + "_detected")
-    if not os.path.exists(detected_dname): os.makedirs(detected_dname)
-    return detected_dname
-
 if __name__ == '__main__':
     # 1. extract arguments
     args = argparser.parse_args()
@@ -56,7 +49,8 @@ if __name__ == '__main__':
     yolo.load_weights(args.weights)
 
     # 3. read image
-    write_dname = get_write_dir(config['train']['train_image_folder'])
+    write_dname = "detected"
+    if not os.path.exists(write_dname): os.makedirs(write_dname)
     
     # 4. 
     files = os.listdir(config['train']['train_annot_folder'])
@@ -65,13 +59,18 @@ if __name__ == '__main__':
         fname_ =  os.path.splitext(fname)[0]
         img_fname = fname_ + ".png"
         img_path = os.path.join(config['train']['train_image_folder'], img_fname)
-    
-        image = cv2.imread(fname)
+        image = cv2.imread(img_path)
+        print(image.shape)
+        
         boxes, probs = yolo.predict(image, float(args.threshold))
+        print(boxes)
+      
       
         # 4. save detection result
         image = draw_boxes(image, boxes, probs, model_config['labels'])
-        output_path = os.path.join(write_dname, os.path.split(fname)[-1])
+        output_path = os.path.join(write_dname, os.path.split(img_fname)[-1])
+        print(output_path)
+        
         cv2.imwrite(output_path, image)
         print("{}-boxes are detected. {} saved.".format(len(boxes), output_path))
 
