@@ -75,16 +75,20 @@ def nms_boxes(boxes, n_classes, nms_threshold=0.3, obj_threshold=0.3):
     return boxes
 
 
-def draw_scaled_boxes(image, boxes, probs, labels):
+def draw_scaled_boxes(image, boxes, probs, labels, desired_size=400):
     img_size = min(image.shape[:2])
-    if img_size < 224:
-        scale_factor = 224.0 / img_size
+    if img_size < desired_size:
+        scale_factor = float(desired_size) / img_size
     else:
         scale_factor = 1.0
     
     h, w = image.shape[:2]
-    img_scaled = cv2.resize(image, (h*scale_factor, w*scale_factor))
-    boxes_scaled = boxes*scale_factor
+    img_scaled = cv2.resize(image, (int(w*scale_factor), int(h*scale_factor)))
+    if boxes != []:
+        boxes_scaled = boxes*scale_factor
+        boxes_scaled = boxes_scaled.astype(np.int)
+    else:
+        boxes_scaled = boxes
     return draw_boxes(img_scaled, boxes_scaled, probs, labels)
         
 
