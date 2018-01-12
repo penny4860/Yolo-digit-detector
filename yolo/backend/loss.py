@@ -61,7 +61,7 @@ class YoloLoss(object):
             cell_grid = create_cell_grid(tf.shape(y_pred)[1], batch_size)
             true_box_xy, true_box_wh, coord_mask = warmup(true_box_xy, true_box_wh,
                                                           coord_mask, self.coord_scale,
-                                                          cell_grid, warmup_bs, self.nb_box, self.anchors)
+                                                          cell_grid, warmup_bs, self._anchors.reshape(-1, 2))
 
             """
             Finalize the loss
@@ -72,12 +72,12 @@ class YoloLoss(object):
 
     
 
-def warmup(true_box_xy, true_box_wh, coord_mask, coord_scale, cell_grid, warmup_bs, nb_box, anchors):
+def warmup(true_box_xy, true_box_wh, coord_mask, coord_scale, cell_grid, warmup_bs, anchor_boxes):
     no_boxes_mask = tf.to_float(coord_mask < coord_scale/2.)
     seen = tf.assign_add(tf.Variable(0.), 1.)
     true_box_xy, true_box_wh, coord_mask = tf.cond(tf.less(seen, warmup_bs), 
                           lambda: [true_box_xy + (0.5 + cell_grid) * no_boxes_mask, 
-                                   true_box_wh + tf.ones_like(true_box_wh) * np.reshape(anchors, [1,1,1,nb_box,2]) * no_boxes_mask, 
+                                   true_box_wh + tf.ones_like(true_box_wh) * anchor_boxes * no_boxes_mask, 
                                    tf.ones_like(coord_mask)],
                           lambda: [true_box_xy, 
                                    true_box_wh,
