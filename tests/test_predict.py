@@ -10,16 +10,28 @@ import yolo
 TEST_SAMPLE_DIR = os.path.join(yolo.PROJECT_ROOT, "tests", "dataset", "svhn")
 
 @pytest.fixture(scope='function')
-def setup_outputs(request):
+def setup_config():
+    model_config = {"architecture":         "MobileNet",
+                    "input_size":           288,
+                    "anchors":              [0.57273, 0.677385,
+                                             1.87446, 2.06253,
+                                             3.33843, 5.47434,
+                                             7.88282, 3.52778,
+                                             9.77052, 9.16828],
+                    "labels":               ["digit"]}
+    return model_config
+
+@pytest.fixture(scope='function')
+def setup_outputs():
     desired_boxes = np.array([[104, 86, 546, 402]])
     desired_probs = np.array([[ 0.57606441]])
     return desired_boxes, desired_probs
 
-def test_predict(setup_image_and_its_boxes, setup_outputs, setup_model_config):
+def test_predict(setup_image_and_its_boxes, setup_outputs, setup_config):
 
     # 1. Given 
     image, true_boxes = setup_image_and_its_boxes
-    model_config = setup_model_config
+    model_config = setup_config
 
     desired_boxes, desired_probs = setup_outputs
     
@@ -37,7 +49,6 @@ def test_predict(setup_image_and_its_boxes, setup_outputs, setup_model_config):
 
     assert len(boxes) == 2
     assert len(probs) == 2
-    assert np.allclose(np.argmax(probs, axis=1), [0, 3])
     for box, true_box in zip(boxes, true_boxes):
         iou = centroid_box_iou(box, true_box)
         assert iou > 0.5
