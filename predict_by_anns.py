@@ -1,5 +1,5 @@
-#! /usr/bin/env python
-# Todo : sample driver file => ipython notebook description
+# -*- coding: utf-8 -*-
+# This driver stores the prediction results of the images specified by annotation.
 import argparse
 import json
 import cv2
@@ -10,9 +10,11 @@ import yolo
 
 
 DEFAULT_CONFIG_FILE = "config.json"
+DEFAULT_WEIGHT_FILE = os.path.join(yolo.PROJECT_ROOT, "tests", "dataset", "svhn", "mobile_288_weights.h5")
+DEFAULT_THRESHOLD = 0.4
 
 argparser = argparse.ArgumentParser(
-    description='Train and validate YOLO_v2 model on any dataset')
+    description='Predict digits driver')
 
 argparser.add_argument(
     '-c',
@@ -23,13 +25,13 @@ argparser.add_argument(
 argparser.add_argument(
     '-t',
     '--threshold',
-    default=0.4,
+    default=DEFAULT_THRESHOLD,
     help='detection threshold')
 
 argparser.add_argument(
     '-w',
     '--weights',
-    default="overfit//weights.h5",
+    default=DEFAULT_WEIGHT_FILE,
     help='trained weight files')
 
 if __name__ == '__main__':
@@ -53,12 +55,12 @@ if __name__ == '__main__':
     if not os.path.exists(write_dname): os.makedirs(write_dname)
     
     # 4. 
-    files = os.listdir(config['train']['train_annot_folder'])
+    files = os.listdir(config['train']['valid_annot_folder'])
     
     for fname in files:
         fname_ =  os.path.splitext(fname)[0]
         img_fname = fname_ + ".png"
-        img_path = os.path.join(config['train']['train_image_folder'], img_fname)
+        img_path = os.path.join(config['train']['valid_image_folder'], img_fname)
         image = cv2.imread(img_path)
         
         boxes, probs = yolo.predict(image, float(args.threshold))
