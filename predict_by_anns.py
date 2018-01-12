@@ -1,5 +1,4 @@
-#! /usr/bin/env python
-# Todo : sample driver file => ipython notebook description
+# -*- coding: utf-8 -*-
 import argparse
 import json
 import cv2
