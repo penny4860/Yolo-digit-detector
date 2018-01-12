@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# This driver stores the prediction results of the images specified by annotation.
 import argparse
 import json
 import cv2
@@ -54,12 +55,12 @@ if __name__ == '__main__':
     if not os.path.exists(write_dname): os.makedirs(write_dname)
     
     # 4. 
-    files = os.listdir(config['train']['train_annot_folder'])
+    files = os.listdir(config['train']['valid_annot_folder'])
     
     for fname in files:
         fname_ =  os.path.splitext(fname)[0]
         img_fname = fname_ + ".png"
-        img_path = os.path.join(config['train']['train_image_folder'], img_fname)
+        img_path = os.path.join(config['train']['valid_image_folder'], img_fname)
         image = cv2.imread(img_path)
         
         boxes, probs = yolo.predict(image, float(args.threshold))
