@@ -14,10 +14,10 @@
     	{
     		"nb_epoch" : 	0
     	},
-        "train_image_folder":   "..//train//",
+        "train_image_folder":   "..//dataset//svhn//train_imgs//",
         "train_annot_folder":   "train_voc_anns//",
-        "train_times":          1,
-        "valid_image_folder":   "..//train//",
+        "train_times":          10,
+        "valid_image_folder":   "..//dataset//svhn//train_imgs//",
         "valid_annot_folder":   "train_voc_anns//",
         "valid_times":          1,
         "batch_size":           12,
