@@ -10,9 +10,11 @@ import yolo
 
 
 DEFAULT_CONFIG_FILE = "config.json"
+DEFAULT_WEIGHT_FILE = os.path.join(yolo.PROJECT_ROOT, "tests", "dataset", "svhn")
+
 
 argparser = argparse.ArgumentParser(
-    description='Train and validate YOLO_v2 model on any dataset')
+    description='Predict digits driver')
 
 argparser.add_argument(
     '-c',
@@ -29,7 +31,7 @@ argparser.add_argument(
 argparser.add_argument(
     '-w',
     '--weights',
-    default="overfit//weights.h5",
+    default=DEFAULT_WEIGHT_FILE,
     help='trained weight files')
 
 if __name__ == '__main__':
