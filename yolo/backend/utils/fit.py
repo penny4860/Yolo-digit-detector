@@ -57,7 +57,7 @@ def _create_callbacks(saved_weights_name):
     # Make a few callbacks
     early_stop = EarlyStopping(monitor='val_loss', 
                        min_delta=0.001, 
-                       patience=5, 
+                       patience=3, 
                        mode='min', 
                        verbose=1)
     checkpoint = ModelCheckpoint(saved_weights_name, 
