@@ -4,7 +4,7 @@
 
 I have implemented a digit detector that applies yolo-v2 to svhn dataset. This is an ongoing project.
 
-<img src="images/svhn.png" height="300">
+<img src="images/svhn.png" height="600">
 
 
 ## Design Principle and Source Code Structure
