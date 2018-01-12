@@ -23,7 +23,7 @@ A description will be added....
 * imgaug
 * Etc.
 
-I recommend that you create and use an anaconda env that is independent of your project. You can create anaconda env for this project by following these simple steps.
+I recommend that you create and use an anaconda env that is independent of your project. You can create anaconda env for this project by following these simple steps. This process has been verified on Windows 10 and ubuntu 16.04.
 
 ```
 $ conda create -n yolo python=3.5 anaconda=4.4.0
@@ -38,10 +38,8 @@ $ activate yolo # in linux "source activate yolo"
 ```
 
 ### 1. Data preparation
-Download the SVHN dataset from http://ufldl.stanford.edu/housenumbers/.
 
-Chnage annotation format to VOC format.
-(Todo : format change script added)
+Download the [SVHN dataset](http://ufldl.stanford.edu/housenumbers/) and [svhn-voc-annotation-format](https://github.com/penny4860/svhn-voc-annotation-format).
 
 Organize the dataset into 4 folders:
 
