@@ -4,7 +4,7 @@ import argparse
 import json
 import cv2
 from yolo.frontend import create_yolo
-from yolo.backend.utils.box import draw_boxes
+from yolo.backend.utils.box import draw_scaled_boxes
 import os
 import yolo
 
@@ -64,7 +64,7 @@ if __name__ == '__main__':
         boxes, probs = yolo.predict(image, float(args.threshold))
       
         # 4. save detection result
-        image = draw_boxes(image, boxes, probs, model_config['labels'])
+        image = draw_scaled_boxes(image, boxes, probs, model_config['labels'])
         output_path = os.path.join(write_dname, os.path.split(img_fname)[-1])
         
         cv2.imwrite(output_path, image)
