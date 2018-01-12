@@ -10,8 +10,8 @@ import yolo
 
 
 DEFAULT_CONFIG_FILE = "config.json"
-DEFAULT_WEIGHT_FILE = os.path.join(yolo.PROJECT_ROOT, "tests", "dataset", "svhn")
-
+DEFAULT_WEIGHT_FILE = os.path.join(yolo.PROJECT_ROOT, "tests", "dataset", "svhn", "mobile_288_weights.h5")
+DEFAULT_THRESHOLD = 0.4
 
 argparser = argparse.ArgumentParser(
     description='Predict digits driver')
@@ -25,7 +25,7 @@ argparser.add_argument(
 argparser.add_argument(
     '-t',
     '--threshold',
-    default=0.4,
+    default=DEFAULT_THRESHOLD,
     help='detection threshold')
 
 argparser.add_argument(
