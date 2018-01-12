@@ -9,7 +9,8 @@ def get_train_annotations(labels,
                           img_folder,
                           ann_folder,
                           valid_img_folder = "",
-                          valid_ann_folder = ""):
+                          valid_ann_folder = "",
+                          is_only_detect=False):
     """
     # Args
         labels : list of strings
@@ -26,13 +27,15 @@ def get_train_annotations(labels,
     # parse annotations of the training set
     train_anns = parse_annotation(ann_folder,
                                      img_folder,
-                                     labels)
+                                     labels,
+                                     is_only_detect)
 
     # parse annotations of the validation set, if any, otherwise split the training set
     if os.path.exists(valid_ann_folder):
         valid_anns = parse_annotation(valid_ann_folder,
                                          valid_img_folder,
-                                         labels)
+                                         labels,
+                                         is_only_detect)
     else:
         train_valid_split = int(0.8*len(train_anns))
         train_anns.shuffle()
@@ -141,7 +144,7 @@ class PascalVocXmlParser(object):
         tree = parse(fname)
         return tree
 
-def parse_annotation(ann_dir, img_dir, labels_naming=[]):
+def parse_annotation(ann_dir, img_dir, labels_naming=[], is_only_detect=False):
     """
     # Args
         ann_dir : str
@@ -163,12 +166,12 @@ def parse_annotation(ann_dir, img_dir, labels_naming=[]):
         labels = parser.get_labels(annotation_file)
         boxes = parser.get_boxes(annotation_file)
         
-        objects = []
         for label, box in zip(labels, boxes):
             x1, y1, x2, y2 = box
-            objects.append({'name': label, 'xmin': x1, 'ymin': y1, 'xmax': x2, 'ymax': y2})
-            annotation.add_object(x1, y1, x2, y2, name=label)
-
+            if is_only_detect:
+                annotation.add_object(x1, y1, x2, y2, name=labels_naming[0])
+            else:
+                annotation.add_object(x1, y1, x2, y2, name=label)
         annotations.add(annotation)
                         
     return annotations
