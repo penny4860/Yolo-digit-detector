@@ -44,7 +44,7 @@ class YoloNetwork(object):
         # make the object detection layer
         output_tensor = Conv2D(nb_box * (4 + 1 + nb_classes), (1,1), strides=(1,1),
                                padding='same', 
-                               name='detection_layer_{}'.format(input_size), 
+                               name='detection_layer', 
                                kernel_initializer='lecun_normal')(features)
         output_tensor = Reshape((grid_size, grid_size, nb_box, 4 + 1 + nb_classes))(output_tensor)
     
@@ -64,7 +64,7 @@ class YoloNetwork(object):
         layer.set_weights([new_kernel, new_bias])
 
     def load_weights(self, weight_path):
-        self._model.load_weights(weight_path, by_name=True)
+        self._model.load_weights(weight_path)
         
     def forward(self, image):
         def _get_input_size():
