@@ -2,7 +2,7 @@
 import os
 import time
 
-from keras.optimizers import Adam, SGD
+from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard
 
 
@@ -26,8 +26,7 @@ def train(model,
         saved_weights_name : str
     """
     # 1. create optimizer
-    # optimizer = Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
-    optimizer = SGD(lr=learning_rate, decay=0.0005, momentum=0.9, nesterov=True)
+    optimizer = Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
     
     # 2. create loss function
     model.compile(loss=loss_func,
