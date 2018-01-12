@@ -53,7 +53,7 @@ if __name__ == '__main__':
                    config['train']['train_annot_folder'],
                    config['train']['warmup']['nb_epoch'],
                    weight_file,
-                   config['train']['warmup']['batch_size'],
+                   config["train"]["batch_size"],
                    config["train"]["jitter"],
                    config['train']['learning_rate'], 
                    config['train']['train_times'],
