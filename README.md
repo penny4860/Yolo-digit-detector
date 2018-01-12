@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/penny4860/YOLO-detector.svg?branch=master)](https://travis-ci.org/penny4860/YOLO-detector) [![codecov](https://codecov.io/gh/penny4860/YOLO-detector/branch/master/graph/badge.svg)](https://codecov.io/gh/penny4860/YOLO-detector)
+[![Build Status](https://travis-ci.org/penny4860/Yolo-digit-detector.svg?branch=master)](https://travis-ci.org/penny4860/Yolo-digit-detector) [![codecov](https://codecov.io/gh/penny4860/Yolo-digit-detector/branch/master/graph/badge.svg)](https://codecov.io/gh/penny4860/Yolo-digit-detector)
 
 # SVHN yolo-v2 digit detector
 
