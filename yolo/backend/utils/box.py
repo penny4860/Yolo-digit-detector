@@ -73,6 +73,19 @@ def nms_boxes(boxes, n_classes, nms_threshold=0.3, obj_threshold=0.3):
     # remove the boxes which are less likely than a obj_threshold
     boxes = [box for box in boxes if box.get_score() > obj_threshold]
     return boxes
+
+
+def draw_scaled_boxes(image, boxes, probs, labels):
+    img_size = min(image.shape[:2])
+    if img_size < 224:
+        scale_factor = 224.0 / img_size
+    else:
+        scale_factor = 1.0
+    
+    h, w = image.shape[:2]
+    img_scaled = cv2.resize(image, (h*scale_factor, w*scale_factor))
+    boxes_scaled = boxes*scale_factor
+    return draw_boxes(img_scaled, boxes_scaled, probs, labels)
         
 
 def draw_boxes(image, boxes, probs, labels):
