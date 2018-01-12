@@ -186,10 +186,18 @@ class _Activator(object):
 
 
 def create_cell_grid(grid_size, batch_size):
-    cell_x = tf.to_float(tf.reshape(tf.tile(tf.range(grid_size), [grid_size]), (1, grid_size, grid_size, 1, 1)))
-    cell_y = tf.transpose(cell_x, (0,2,1,3,4))
-    cell_grid = tf.tile(tf.concat([cell_x, cell_y], -1), [batch_size, 1, 1, 5, 1])
-    return cell_grid
+    x_pos = tf.to_float(tf.range(grid_size))
+    y_pos = tf.to_float(tf.range(grid_size))
+    xx, yy = tf.meshgrid(x_pos, y_pos)
+    xx = tf.expand_dims(xx, -1)
+    yy = tf.expand_dims(yy, -1)
+    
+    grid = tf.concat([xx, yy], axis=-1)         # (7, 7, 2)
+    grid = tf.expand_dims(grid, -2)             # (7, 7, 1, 2)
+    grid = tf.tile(grid, (1,1,5,1))             # (7, 7, 5, 2)
+    grid = tf.expand_dims(grid, 0)              # (1, 7, 7, 1, 2)
+    grid = tf.tile(grid, (batch_size,1,1,1,1))  # (N, 7, 7, 1, 2)
+    return grid
 
 
 class _Mask(object):
