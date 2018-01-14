@@ -37,25 +37,25 @@ $ activate yolo # in linux "source activate yolo"
 (yolo) $ pip install -e .
 ```
 
-### 1. Data preparation
+### 1. Digit Detection using pretrained weighted
 
-Download the [SVHN dataset](http://ufldl.stanford.edu/housenumbers/) and [svhn-voc-annotation-format](https://github.com/penny4860/svhn-voc-annotation-format).
+See [detection_example.ipynb](https://github.com/penny4860/Yolo-digit-detector/blob/master/detection_example.ipynb)
 
-Organize the dataset into 4 folders:
+### 2. Training from scratch
+
+
+
+#### 1) Data preparation
+
+Download the [SVHN images](http://ufldl.stanford.edu/housenumbers/) and its [annotations in VOC format](https://github.com/penny4860/svhn-voc-annotation-format).
+
+Organize the dataset into 2 folders:
 
 * train_image_folder
-	* the folder that contains the train images.
+	* the folder that contains the [SVHN images](http://ufldl.stanford.edu/housenumbers/).
 
 * train_annot_folder
-	* the folder that contains the train annotations in VOC format.
-
-* valid_image_folder
-	* the folder that contains the validation images.
-
-* valid_annot_folder
-	* the folder that contains the validation annotations in VOC format.
-    
-There is a one-to-one correspondence by file name between images and annotations. If the validation set is empty, the training set will be automatically splitted into the training set and validation set using the ratio of 0.8.
+	* the folder that contains the [annotations in VOC format](https://github.com/penny4860/svhn-voc-annotation-format).
 
 ### 2. Edit the configuration file
 
