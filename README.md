@@ -37,13 +37,13 @@ $ activate yolo # in linux "source activate yolo"
 (yolo) $ pip install -e .
 ```
 
-### 1. Digit Detection using pretrained weighted
+### 1. Digit Detection using pretrained weight file
 
-See [detection_example.ipynb](https://github.com/penny4860/Yolo-digit-detector/blob/master/detection_example.ipynb)
+In this project, the pretrained weight file is stored in [mobile_288_weights.h5] (https://github.com/penny4860/Yolo-digit-detector/blob/master/tests/dataset/svhn/mobile_288_weights.h5).
+
+Example code for predicting a digit region in a natural image is described in [detection_example.ipynb] (https://github.com/penny4860/Yolo-digit-detector/blob/master/detection_example.ipynb).
 
 ### 2. Training from scratch
-
-
 
 #### 1) Data preparation
 
@@ -57,11 +57,11 @@ Organize the dataset into 2 folders:
 * train_annot_folder
 	* the folder that contains the [annotations in VOC format](https://github.com/penny4860/svhn-voc-annotation-format).
 
-### 2. Edit the configuration file
+#### 2) Edit the configuration file
 
 A description will be added....
 
-### 3. Start the training process
+#### 3) Start the training process
 
 A description will be added....
 
