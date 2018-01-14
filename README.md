@@ -72,5 +72,5 @@ A description will be added....
 ## Copyright
 
 * See [LICENSE](LICENSE) for details.
-* This project started at [basic-yolo-keras] (https://github.com/experiencor/basic-yolo-keras). I refactored the source code structure of [basic-yolo-keras] (https://github.com/experiencor/basic-yolo-keras) and added the CI test. I also applied the SVHN dataset to implement the digit detector. Thanks to the [Huynh Ngoc Anh](https://github.com/experiencor) for providing a good project as open source.
+* This project started at [basic-yolo-keras](https://github.com/experiencor/basic-yolo-keras). I refactored the source code structure of [basic-yolo-keras](https://github.com/experiencor/basic-yolo-keras) and added the CI test. I also applied the SVHN dataset to implement the digit detector. Thanks to the [Huynh Ngoc Anh](https://github.com/experiencor) for providing a good project as open source.
 
