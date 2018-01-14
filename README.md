@@ -39,9 +39,9 @@ $ activate yolo # in linux "source activate yolo"
 
 ### 1. Digit Detection using pretrained weight file
 
-In this project, the pretrained weight file is stored in [mobile_288_weights.h5] (https://github.com/penny4860/Yolo-digit-detector/blob/master/tests/dataset/svhn/mobile_288_weights.h5).
+In this project, the pretrained weight file is stored in [mobile_288_weights.h5](https://github.com/penny4860/Yolo-digit-detector/blob/master/tests/dataset/svhn/mobile_288_weights.h5).
 
-Example code for predicting a digit region in a natural image is described in [detection_example.ipynb] (https://github.com/penny4860/Yolo-digit-detector/blob/master/detection_example.ipynb).
+Example code for predicting a digit region in a natural image is described in [detection_example.ipynb](https://github.com/penny4860/Yolo-digit-detector/blob/master/detection_example.ipynb).
 
 ### 2. Training from scratch
 
