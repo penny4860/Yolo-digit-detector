@@ -10,10 +10,8 @@
         "full":   				"overfit//weights.h5"
     },
     "train" : {
-    	"warmup":
-    	{
-    		"nb_epoch" : 	0
-    	},
+    	"warmup_epoch": 		0,
+        "actual_epoch":         25,
         "train_image_folder":   "..//dataset//svhn//train_imgs//",
         "train_annot_folder":   "train_voc_anns//",
         "train_times":          10,
@@ -22,13 +20,8 @@
         "valid_times":          1,
         "batch_size":           10,
         "learning_rate":        1e-4,
-        "nb_epoch":             25,
-        "object_scale":         5.0,
-        "no_object_scale":      1.0,
-        "coord_scale":          1.0,
-        "class_scale":          1.0,
-        "saved_folder":   	"overfit",
-        "jitter":	false,
-        "is_only_detect" : true
+        "saved_folder":   		"overfit",
+        "jitter":				false,
+        "is_only_detect" : 		true
     }
 }

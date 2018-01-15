@@ -10,7 +10,7 @@ import yolo
 
 
 DEFAULT_CONFIG_FILE = "config.json"
-DEFAULT_WEIGHT_FILE = os.path.join(yolo.PROJECT_ROOT, "tests", "dataset", "svhn", "mobile_288_weights.h5")
+DEFAULT_WEIGHT_FILE = os.path.join(yolo.PROJECT_ROOT, "test_svhn_recognizer", "weights.h5")
 DEFAULT_THRESHOLD = 0.4
 
 argparser = argparse.ArgumentParser(
