@@ -50,10 +50,10 @@ This project provides a way to train digit detector from scratch. If you follow 
   * `` project/root> python predict_by_anns.py -c configs/from_scratch.json -w svhn_recognizer/weights.h5 ``
 * The prediction result images are saved in the ``project/detected`` directory.
 
-<img src="images/1.png" height="300">
-<img src="images/2.png" height="300">
+<img src="images/1.png" height="150">
+<img src="images/2.png" height="150">
 
-Now you can add a dataset to train a digitizer with good generalization performance.
+Now you can add more images to train a digit detector with good generalization performance.
 
 ## Evaluation of the current implementation:
 
