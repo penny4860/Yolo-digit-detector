@@ -3,7 +3,6 @@
         "architecture":         "MobileNet",
         "input_size":           288,
         "anchors":              [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828],
-        "max_box_per_image":    10,        
         "labels":               ["1", "2", "3", "9"]
     },
     "pretrained" : {
@@ -11,11 +10,8 @@
         "full":   				""
     },
     "train" : {
-    	"warmup":
-    	{
-    		"nb_epoch" : 	2,
-        	"batch_size":	2
-    	},
+    	"warmup_epoch": 		2,
+        "actual_epoch":         25,
         "train_image_folder":   "tests//dataset//svhn//imgs/",
         "train_annot_folder":   "tests//dataset//svhn//anns/",
         "train_times":          10,
@@ -24,13 +20,8 @@
         "valid_times":          1,
         "batch_size":           2,
         "learning_rate":        1e-4,
-        "nb_epoch":             25,
-        "object_scale":         5.0,
-        "no_object_scale":      1.0,
-        "coord_scale":          1.0,
-        "class_scale":          1.0,
-        "saved_folder":   	"test_svhn_recognizer",
-        "jitter":	false,
-        "is_only_detect" : false
+        "saved_folder":   		"svhn_recognizer",
+        "jitter":				false,
+        "is_only_detect" : 		false
     }
 }
