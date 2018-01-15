@@ -24,12 +24,13 @@
         "valid_times":          1,
         "batch_size":           2,
         "learning_rate":        1e-4,
-        "nb_epoch":             15,
+        "nb_epoch":             25,
         "object_scale":         5.0,
         "no_object_scale":      1.0,
         "coord_scale":          1.0,
         "class_scale":          1.0,
         "saved_folder":   	"test_svhn_recognizer",
-        "jitter":	false
+        "jitter":	false,
+        "is_only_detect" : false
     }
 }
