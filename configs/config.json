@@ -1,0 +1,27 @@
+{
+    "model" : {
+        "architecture":         "MobileNet",
+        "input_size":           288,
+        "anchors":              [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828],
+        "labels":               ["digit"]
+    },
+    "pretrained" : {
+        "feature":   			"",
+        "full":   				"overfit//weights.h5"
+    },
+    "train" : {
+    	"warmup_epoch": 		0,
+        "actual_epoch":         25,
+        "train_image_folder":   "..//dataset//svhn//train_imgs//",
+        "train_annot_folder":   "train_voc_anns//",
+        "train_times":          10,
+        "valid_image_folder":   "..//dataset//svhn//train_imgs//",
+        "valid_annot_folder":   "train_voc_anns//",
+        "valid_times":          1,
+        "batch_size":           10,
+        "learning_rate":        1e-4,
+        "saved_folder":   		"overfit",
+        "jitter":				false,
+        "is_only_detect" : 		true
+    }
+}
