@@ -16,7 +16,7 @@ argparser = argparse.ArgumentParser(
 argparser.add_argument(
     '-c',
     '--conf',
-    default="config.json",
+    default="configs//2_samples_overfit.json",
     help='path to configuration file')
 
 def setup_training(config_file):
@@ -47,18 +47,18 @@ if __name__ == '__main__':
     
     # 2. Load the pretrained weights (if any) 
     yolo.load_weights(config['pretrained']['full'])
-    if config['train']['warmup']['nb_epoch'] > 0:
+    if config['train']['warmup_epoch'] > 0:
         # 3. warmup training
         yolo.train(config['train']['train_image_folder'],
                    config['train']['train_annot_folder'],
-                   config['train']['warmup']['nb_epoch'],
+                   config['train']['warmup_epoch'],
                    weight_file,
                    config["train"]["batch_size"],
                    config["train"]["jitter"],
                    config['train']['learning_rate'], 
                    config['train']['train_times'],
                    config['train']['valid_times'],
-                   config['train']['warmup']['nb_epoch'],
+                   config['train']['warmup_epoch'],
                    config['train']['valid_image_folder'],
                    config['train']['valid_annot_folder'],
                    config['train']['is_only_detect'])
@@ -68,7 +68,7 @@ if __name__ == '__main__':
     # 5. actual training 
     yolo.train(config['train']['train_image_folder'],
                config['train']['train_annot_folder'],
-               config['train']['nb_epoch'],
+               config['train']['actual_epoch'],
                weight_file,
                config["train"]["batch_size"],
                config["train"]["jitter"],
