@@ -7,10 +7,6 @@ I have implemented a digit detector that applies yolo-v2 to svhn dataset. This i
 <img src="images/svhn.png" height="600">
 
 
-## Design Principle and Source Code Structure
-
-A description will be added....
-
 ## Usage for python code
 
 ### 0. Requirement
@@ -45,27 +41,25 @@ Example code for predicting a digit region in a natural image is described in [d
 
 ### 2. Training from scratch
 
-#### 1) Data preparation
+This project provides a way to train digit detector from scratch. If you follow the command below, you can build a digit detector with just two images.
 
-Download the [SVHN images](http://ufldl.stanford.edu/housenumbers/) and its [annotations in VOC format](https://github.com/penny4860/svhn-voc-annotation-format).
+* First, train the digit detector through the following command. 
+  * `` project/root> python train_driver.py -c configs/from_scratch.json ``
+  * It takes about 10 minutes from the cpu computer.
+* Next, the trained detector predicts the digit region and its label.
+  * `` project/root> python predict_by_anns.py -c configs/from_scratch.json -w svhn_recognizer/weights.h5 ``
+* The prediction result images are saved in the ``project/detected`` directory.
 
-Organize the dataset into 2 folders:
+<img src="images/1.png" height="300">
+<img src="images/2.png" height="300">
 
-* train_image_folder
-	* the folder that contains the [SVHN images](http://ufldl.stanford.edu/housenumbers/).
-
-* train_annot_folder
-	* the folder that contains the [annotations in VOC format](https://github.com/penny4860/svhn-voc-annotation-format).
-
-#### 2) Edit the configuration file
-
-A description will be added....
-
-#### 3) Start the training process
-
-A description will be added....
+Now you can add a dataset to train a digitizer with good generalization performance.
 
 ## Evaluation of the current implementation:
+
+A description will be added....
+
+## Design Principle and Source Code Structure
 
 A description will be added....
 
