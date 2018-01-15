@@ -97,7 +97,7 @@ def draw_boxes(image, boxes, probs, labels):
         x1, y1, x2, y2 = box
         cv2.rectangle(image, (x1,y1), (x2,y2), (0,255,0), 3)
         cv2.putText(image, 
-                    labels[np.argmax(classes)] + ' ' + str(classes.max()), 
+                    '{}:  {:.2f}'.format(labels[np.argmax(classes)], classes.max()), 
                     (x1, y1 - 13), 
                     cv2.FONT_HERSHEY_SIMPLEX, 
                     1e-3 * image.shape[0], 
