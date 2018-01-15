@@ -3,32 +3,33 @@
         "architecture":         "MobileNet",
         "input_size":           288,
         "anchors":              [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828],
-        "labels":               ["digit"]
+        "max_box_per_image":    10,        
+        "labels":               ["1", "2", "3", "9"]
     },
     "pretrained" : {
-        "feature":   			"",
-        "full":   				"overfit//weights.h5"
+        "feature":   			"tests//dataset//mobilenet_features.h5",
+        "full":   				""
     },
     "train" : {
     	"warmup":
     	{
-    		"nb_epoch" : 	0
+    		"nb_epoch" : 	2,
+        	"batch_size":	2
     	},
-        "train_image_folder":   "..//dataset//svhn//train_imgs//",
-        "train_annot_folder":   "train_voc_anns//",
+        "train_image_folder":   "tests//dataset//svhn//imgs/",
+        "train_annot_folder":   "tests//dataset//svhn//anns/",
         "train_times":          10,
-        "valid_image_folder":   "..//dataset//svhn//train_imgs//",
-        "valid_annot_folder":   "train_voc_anns//",
+        "valid_image_folder":   "tests//dataset//svhn//imgs/",
+        "valid_annot_folder":   "tests//dataset//svhn//anns/",
         "valid_times":          1,
-        "batch_size":           10,
+        "batch_size":           2,
         "learning_rate":        1e-4,
-        "nb_epoch":             25,
+        "nb_epoch":             15,
         "object_scale":         5.0,
         "no_object_scale":      1.0,
         "coord_scale":          1.0,
         "class_scale":          1.0,
-        "saved_folder":   	"overfit",
-        "jitter":	false,
-        "is_only_detect" : true
+        "saved_folder":   	"test_svhn_recognizer",
+        "jitter":	false
     }
 }
