@@ -16,7 +16,7 @@ argparser = argparse.ArgumentParser(
 argparser.add_argument(
     '-c',
     '--conf',
-    default="configs//2_samples_overfit.json",
+    default="configs//config.json",
     help='path to configuration file')
 
 def setup_training(config_file):
