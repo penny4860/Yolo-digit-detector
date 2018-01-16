@@ -7,30 +7,30 @@ import yolo
 
 TEST_SAMPLE_DIR = os.path.join(yolo.PROJECT_ROOT, "tests", "dataset")
 
-@pytest.fixture(scope='function')
-def setup():
-    import json
-    from yolo.backend.utils.annotation import parse_annotation
-    with open(os.path.join(TEST_SAMPLE_DIR, "config.json")) as config_buffer:    
-        config = json.loads(config_buffer.read())
-        
-    input_size = config["model"]["input_size"]
-    grid_size = int(input_size/32)
-    batch_size = 8
-    max_box_per_image = config["model"]["max_box_per_image"]
-    anchors = config["model"]["anchors"]
-
-    train_annotations = parse_annotation(config['train']['train_annot_folder'], 
-                                                       config['train']['train_image_folder'], 
-                                                       config['model']['labels'])
-    return train_annotations, input_size, grid_size, batch_size, max_box_per_image, anchors
-
-@pytest.fixture(scope='function')
-def expected():
-    x_batch_gt = np.load(os.path.join(TEST_SAMPLE_DIR, "x_batch_gt.npy"))
-    b_batch_gt = np.load(os.path.join(TEST_SAMPLE_DIR, "b_batch_gt.npy"))
-    y_batch_gt = np.load(os.path.join(TEST_SAMPLE_DIR, "y_batch_gt.npy"))
-    return x_batch_gt, b_batch_gt, y_batch_gt
+# @pytest.fixture(scope='function')
+# def setup():
+#     import json
+#     from yolo.backend.utils.annotation import parse_annotation
+#     with open(os.path.join(TEST_SAMPLE_DIR, "config.json")) as config_buffer:    
+#         config = json.loads(config_buffer.read())
+#         
+#     input_size = config["model"]["input_size"]
+#     grid_size = int(input_size/32)
+#     batch_size = 8
+#     max_box_per_image = config["model"]["max_box_per_image"]
+#     anchors = config["model"]["anchors"]
+# 
+#     train_annotations = parse_annotation(config['train']['train_annot_folder'], 
+#                                                        config['train']['train_image_folder'], 
+#                                                        config['model']['labels'])
+#     return train_annotations, input_size, grid_size, batch_size, max_box_per_image, anchors
+# 
+# @pytest.fixture(scope='function')
+# def expected():
+#     x_batch_gt = np.load(os.path.join(TEST_SAMPLE_DIR, "x_batch_gt.npy"))
+#     b_batch_gt = np.load(os.path.join(TEST_SAMPLE_DIR, "b_batch_gt.npy"))
+#     y_batch_gt = np.load(os.path.join(TEST_SAMPLE_DIR, "y_batch_gt.npy"))
+#     return x_batch_gt, b_batch_gt, y_batch_gt
 
 # def test_generate_batch(setup, expected):
 #     train_annotations, input_size, grid_size, batch_size, max_box_per_image, anchors = setup
