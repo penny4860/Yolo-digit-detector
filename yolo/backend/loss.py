@@ -15,7 +15,11 @@ class YoloLoss(object):
     def __init__(self,
                  grid_size=13,
                  nb_class=1,
-                 anchors=[0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828]):
+                 anchors=[0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828],
+                 coord_scale=1.0,
+                 class_scale=1.0,
+                 object_scale=5.0,
+                 no_object_scale=1.0):
         """
         # Args
             grid_size : int
@@ -30,11 +34,11 @@ class YoloLoss(object):
         self.nb_box = int(len(anchors)/2)
         self.nb_class = nb_class
 
-        self.coord_scale = 1.0
+        self.coord_scale = coord_scale
 
         # Todo : create method를 따로 만들어서 주입받자.
         self._activator = _Activator(self.anchors)
-        self._mask = _Mask(nb_class)
+        self._mask = _Mask(nb_class, coord_scale, class_scale, object_scale, no_object_scale)
 
 
     def custom_loss(self, batch_size, warmup_bs):

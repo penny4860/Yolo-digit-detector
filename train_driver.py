@@ -43,6 +43,10 @@ if __name__ == '__main__':
                        config['model']['labels'],
                        config['model']['input_size'],
                        config['model']['anchors'],
+                       config['model']['coord_scale'],
+                       config['model']['class_scale'],
+                       config['model']['object_scale'],
+                       config['model']['no_object_scale'],
                        config['pretrained']['feature'])
     
     # 2. Load the pretrained weights (if any) 
