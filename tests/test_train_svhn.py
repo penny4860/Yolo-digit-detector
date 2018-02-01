@@ -55,7 +55,7 @@ def test_train_yolo_framework(setup_model_config,
                        model_config['labels'],
                        model_config['input_size'],
                        model_config['anchors'],
-                       pretrained_feature_file)
+                       feature_weights_path=pretrained_feature_file)
     
     # 2. warmup training
     yolo.train(img_folder, ann_folder,
