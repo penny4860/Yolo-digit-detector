@@ -54,7 +54,7 @@ if __name__ == '__main__':
     
     for layer in yolo._yolo_network._model.layers:
         layer.trainable = False
-        if layer.name == "activation_49":
+        if layer.name == "activation_40":
             break
 
     if config['train']['warmup_epoch'] > 0:
@@ -77,7 +77,7 @@ if __name__ == '__main__':
 
     for layer in yolo._yolo_network._model.layers:
         layer.trainable = False
-        if layer.name == "activation_49":
+        if layer.name == "activation_40":
             break
 
     # 5. actual training 
