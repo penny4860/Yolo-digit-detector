@@ -59,7 +59,7 @@ if __name__ == '__main__':
     
     for fname in files:
         fname_ =  os.path.splitext(fname)[0]
-        img_fname = fname_ + ".png"
+        img_fname = fname_ + ".jpg"
         img_path = os.path.join(config['train']['valid_image_folder'], img_fname)
         image = cv2.imread(img_path)
         
