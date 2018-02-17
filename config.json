@@ -1,7 +1,7 @@
 {
     "model" : {
         "architecture":         "ResNet50",
-        "input_size":           288,
+        "input_size":           416,
         "anchors":              [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828],
         "labels":               ["raccoon"],
         "coord_scale" : 		1.0,
@@ -18,7 +18,7 @@
         "actual_epoch":         25,
         "train_image_folder":   "..//dataset//raccoon_dataset//images//",
         "train_annot_folder":   "train_voc_anns//",
-        "train_times":          1,
+        "train_times":          10,
         "valid_image_folder":   "..//dataset//raccoon_dataset//images//",
         "valid_annot_folder":   "train_voc_anns//",
         "valid_times":          1,
