@@ -52,10 +52,10 @@ if __name__ == '__main__':
     # 2. Load the pretrained weights (if any) 
     yolo.load_weights(config['pretrained']['full'])
     
-    for layer in yolo._yolo_network._model.layers:
-        layer.trainable = False
-        if layer.name == "activation_40":
-            break
+#     for layer in yolo._yolo_network._model.layers:
+#         layer.trainable = False
+#         if layer.name == "activation_22":
+#             break
 
     if config['train']['warmup_epoch'] > 0:
         # 3. warmup training
