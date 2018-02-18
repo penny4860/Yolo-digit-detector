@@ -3,7 +3,7 @@
         "architecture":         "ResNet50",
         "input_size":           416,
         "anchors":              [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828],
-        "labels":               ["digit"],
+        "labels":               ["raccoon"],
         "coord_scale" : 		1.0,
         "class_scale" : 		1.0,
         "object_scale" : 		5.0,
@@ -16,16 +16,16 @@
     "train" : {
     	"warmup_epoch": 		3,
         "actual_epoch":         25,
-        "train_image_folder":   "..//dataset//svhn//train_imgs//",
+        "train_image_folder":   "..//dataset//raccoon_dataset//images//",
         "train_annot_folder":   "train_voc_anns//",
-        "train_times":          10,
-        "valid_image_folder":   "..//dataset//svhn//train_imgs//",
-        "valid_annot_folder":   "train_voc_anns//",
+        "train_times":          1,
+        "valid_image_folder":   "..//dataset//raccoon_dataset//images//",
+        "valid_annot_folder":   "valid_anns//",
         "valid_times":          1,
-        "batch_size":           8,
+        "batch_size":           4,
         "learning_rate":        1e-4,
-        "saved_folder":   		"svhn",
+        "saved_folder":   		"raccoon",
         "jitter":				false,
-        "is_only_detect" : 		true
+        "is_only_detect" : 		false
     }
 }
