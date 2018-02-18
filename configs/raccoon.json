@@ -10,7 +10,6 @@
         "no_object_scale" : 	1.0
     },
     "pretrained" : {
-        "feature":   			"",
         "full":   				""
     },
     "train" : {
