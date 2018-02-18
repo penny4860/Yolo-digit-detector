@@ -37,9 +37,7 @@ $ activate yolo # in linux "source activate yolo"
 
 <img src="images/raccoon-12.jpg">
 
-* pretrained weight file:
-	* [raccoon.h5](https://drive.google.com/drive/folders/17Co0b5YDNVlWVfuTqygRY_U2qg8FwGmy/raccoon.h5)
-	* [raccoon.json](https://drive.google.com/drive/folders/17Co0b5YDNVlWVfuTqygRY_U2qg8FwGmy/raccoon.json)
+* pretrained weight file is stored at [raccoon](https://drive.google.com/drive/folders/17Co0b5YDNVlWVfuTqygRY_U2qg8FwGmy)
 * training set evaluation
 	* fscore / precision / recall: 0.937, 0.963, 0.913
 * validataion set evaluation
