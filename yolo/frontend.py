@@ -22,14 +22,11 @@ def create_yolo(architecture,
                 coord_scale=1.0,
                 class_scale=1.0,
                 object_scale=5.0,
-                no_object_scale=1.0,
-                first_trainable_layer=None):
+                no_object_scale=1.0):
 
     n_classes = len(labels)
     n_boxes = int(len(anchors)/2)
     yolo_network = create_yolo_network(architecture, input_size, n_classes, n_boxes)
-    yolo_network.set_fixed_layer(first_trainable_layer)
-    
     yolo_loss = YoloLoss(yolo_network.get_grid_size(),
                          n_classes,
                          anchors,
@@ -109,6 +106,7 @@ class YOLO(object):
               warmup_epochs=None,
               valid_img_folder="",
               valid_ann_folder="",
+              first_trainable_layer=None,
               is_only_detect=False):
 
         # 1. get annotations        
@@ -124,7 +122,7 @@ class YOLO(object):
         valid_batch_generator = self._get_batch_generator(valid_annotations, batch_size, valid_times, jitter=False)
         
         # 2. To train model get keras model instance & loss fucntion
-        model = self._yolo_network.get_model()
+        model = self._yolo_network.get_model(first_trainable_layer)
         loss = self._get_loss_func(batch_size,
                                   warmup_epochs,
                                   train_times,

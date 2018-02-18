@@ -46,8 +46,7 @@ if __name__ == '__main__':
                        config['model']['coord_scale'],
                        config['model']['class_scale'],
                        config['model']['object_scale'],
-                       config['model']['no_object_scale'],
-                       "activation_40")
+                       config['model']['no_object_scale'])
     
     # 2. Load the pretrained weights (if any) 
     yolo.load_weights(config['pretrained']['full'])
@@ -60,12 +59,13 @@ if __name__ == '__main__':
                    weight_file,
                    config["train"]["batch_size"],
                    config["train"]["jitter"],
-                   config['train']['learning_rate'], 
+                   config['train']['learning_rate'],
                    config['train']['train_times'],
                    config['train']['valid_times'],
                    config['train']['warmup_epoch'],
                    config['train']['valid_image_folder'],
                    config['train']['valid_annot_folder'],
+                   config['train']['first_trainable_layer'],
                    config['train']['is_only_detect'])
         # 4. Load the warmup trained weights
         yolo.load_weights(weight_file)
