@@ -3,9 +3,12 @@
 import argparse
 import json
 import cv2
+import numpy as np
 from yolo.frontend import create_yolo
 from yolo.backend.utils.box import draw_scaled_boxes
 from yolo.backend.utils.annotation import parse_annotation
+from yolo.backend.utils.eval.fscore import count_true_positives, calc_score
+
 import os
 import yolo
 
@@ -55,12 +58,19 @@ if __name__ == '__main__':
                                    config['train']['valid_image_folder'],
                                    config['model']['labels'],
                                    is_only_detect=config['train']['is_only_detect'])
+
+    n_true_positives = 0
+    n_truth = 0
+    n_pred = 0
     for i in range(len(annotations)):
         img_path = annotations.fname(i)
         img_fname = os.path.basename(img_path)
         image = cv2.imread(img_path)
+        true_boxes = annotations.boxes(i)
+        true_labels = annotations.code_labels(i)
         
         boxes, probs = yolo.predict(image, float(args.threshold))
+        labels = np.argmax(probs, axis=1) if len(probs) > 0 else [] 
       
         # 4. save detection result
         image = draw_scaled_boxes(image, boxes, probs, config['model']['labels'])
@@ -69,4 +79,8 @@ if __name__ == '__main__':
         cv2.imwrite(output_path, image)
         print("{}-boxes are detected. {} saved.".format(len(boxes), output_path))
 
-    
+        n_true_positives += count_true_positives(boxes, true_boxes, labels, true_labels)
+        n_truth += len(true_boxes)
+        n_pred += len(boxes)
+    print(calc_score(n_true_positives, n_truth, n_pred))
+
