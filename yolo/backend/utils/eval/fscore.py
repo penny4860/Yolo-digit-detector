@@ -15,7 +15,7 @@ def count_true_positives(detect_boxes, true_boxes, detect_labels=None, true_labe
     matcher = BoxMatcher(detect_boxes, true_boxes, detect_labels, true_labels)
     for i in range(len(detect_boxes)):
         matching_idx, iou = matcher.match_idx_of_box1_idx(i)
-        print("detect_idx: {}, true_idx: {}, matching-score: {}".format(i, matching_idx, iou))
+        # print("detect_idx: {}, true_idx: {}, matching-score: {}".format(i, matching_idx, iou))
         if matching_idx is not None and iou > 0.5:
             n_true_positives += 1
     return n_true_positives
@@ -38,7 +38,6 @@ def test_count_true_positives_in_case_of_only_matching_box_coord():
     detect_boxes = np.array([(100, 100, 200, 200), (105, 105, 210, 210), (120, 120, 290, 290)])
     true_boxes = np.array([(90, 90, 200, 200), (140, 140, 300, 300)])
     n_true_positives = count_true_positives(detect_boxes, true_boxes)
-    print(n_true_positives)
     assert n_true_positives == 2
 
 def test_count_true_positives_in_case_of_existing_labels():
@@ -50,9 +49,7 @@ def test_count_true_positives_in_case_of_existing_labels():
     n_true_positives = count_true_positives(detect_boxes, true_boxes, detect_labels, true_labels)
     assert n_true_positives == 0
 
-
-if __name__ == "__main__":
-    
-    test_count_true_positives_in_case_of_only_matching_box_coord()
-    test_count_true_positives_in_case_of_existing_labels()
+import pytest
+if __name__ == '__main__':
+    pytest.main([__file__, "-v", "-s"])
     
