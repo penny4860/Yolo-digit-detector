@@ -85,3 +85,16 @@ class YoloNetwork(object):
     def get_normalize_func(self):
         return self._norm
 
+    def set_fixed_layer(self, first_trainable_layer, verbose=True):
+        layer_names = [layer.name for layer in self._model.layers]
+        fixed_layers = []
+        if first_trainable_layer in layer_names:
+            for layer in self._model.layers:
+                layer.trainable = False
+                fixed_layers.append(layer.name)
+                if layer.name == first_trainable_layer:
+                    break
+        if verbose:
+            print("The following layers do not update weights!!!")
+            print("    ", fixed_layers)
+ 
