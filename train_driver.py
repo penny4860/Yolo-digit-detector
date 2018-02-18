@@ -50,11 +50,6 @@ if __name__ == '__main__':
     
     # 2. Load the pretrained weights (if any) 
     yolo.load_weights(config['pretrained']['full'])
-    
-    for layer in yolo._yolo_network._model.layers:
-        layer.trainable = False
-        if layer.name == "activation_40":
-            break
 
     if config['train']['warmup_epoch'] > 0:
         # 3. warmup training
@@ -64,20 +59,16 @@ if __name__ == '__main__':
                    weight_file,
                    config["train"]["batch_size"],
                    config["train"]["jitter"],
-                   config['train']['learning_rate'], 
+                   config['train']['learning_rate'],
                    config['train']['train_times'],
                    config['train']['valid_times'],
                    config['train']['warmup_epoch'],
                    config['train']['valid_image_folder'],
                    config['train']['valid_annot_folder'],
+                   config['train']['first_trainable_layer'],
                    config['train']['is_only_detect'])
         # 4. Load the warmup trained weights
         yolo.load_weights(weight_file)
-
-    for layer in yolo._yolo_network._model.layers:
-        layer.trainable = False
-        if layer.name == "activation_40":
-            break
 
     # 5. actual training 
     yolo.train(config['train']['train_image_folder'],

@@ -106,6 +106,7 @@ class YOLO(object):
               warmup_epochs=None,
               valid_img_folder="",
               valid_ann_folder="",
+              first_trainable_layer=None,
               is_only_detect=False):
 
         # 1. get annotations        
@@ -121,7 +122,7 @@ class YOLO(object):
         valid_batch_generator = self._get_batch_generator(valid_annotations, batch_size, valid_times, jitter=False)
         
         # 2. To train model get keras model instance & loss fucntion
-        model = self._yolo_network.get_model()
+        model = self._yolo_network.get_model(first_trainable_layer)
         loss = self._get_loss_func(batch_size,
                                   warmup_epochs,
                                   train_times,
