@@ -5,6 +5,7 @@ import json
 import cv2
 from yolo.frontend import create_yolo
 from yolo.backend.utils.box import draw_scaled_boxes
+from yolo.backend.utils.annotation import parse_annotation
 import os
 import yolo
 
@@ -41,7 +42,6 @@ if __name__ == '__main__':
         config = json.loads(config_buffer.read())
     model_config = config['model']
 
-    # Todo : pretrained feature message
     # 2. create yolo instance & predict
     yolo = create_yolo(model_config['architecture'],
                        model_config['labels'],
@@ -52,14 +52,13 @@ if __name__ == '__main__':
     # 3. read image
     write_dname = "detected"
     if not os.path.exists(write_dname): os.makedirs(write_dname)
-    
-    # 4. 
-    files = os.listdir(config['train']['valid_annot_folder'])
-    
-    for fname in files:
-        fname_ =  os.path.splitext(fname)[0]
-        img_fname = fname_ + ".jpg"
-        img_path = os.path.join(config['train']['valid_image_folder'], img_fname)
+    annotations = parse_annotation(config['train']['valid_annot_folder'],
+                                   config['train']['valid_image_folder'],
+                                   config['model']['labels'],
+                                   is_only_detect=config['train']['is_only_detect'])
+    for i in range(len(annotations)):
+        img_path = annotations.fname(i)
+        img_fname = os.path.basename(img_path)
         image = cv2.imread(img_path)
         
         boxes, probs = yolo.predict(image, float(args.threshold))
