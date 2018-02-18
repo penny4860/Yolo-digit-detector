@@ -46,8 +46,7 @@ if __name__ == '__main__':
                        config['model']['coord_scale'],
                        config['model']['class_scale'],
                        config['model']['object_scale'],
-                       config['model']['no_object_scale'],
-                       config['pretrained']['feature'])
+                       config['model']['no_object_scale'])
     
     # 2. Load the pretrained weights (if any) 
     yolo.load_weights(config['pretrained']['full'])
