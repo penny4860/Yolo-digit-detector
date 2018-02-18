@@ -9,7 +9,7 @@ from keras.applications.vgg16 import VGG16
 from keras.applications.resnet50 import ResNet50
 
 
-def create_feature_extractor(architecture, input_size, weights=None):
+def create_feature_extractor(architecture, input_size):
     """
     # Args
         architecture : str
@@ -18,6 +18,7 @@ def create_feature_extractor(architecture, input_size, weights=None):
     # Returns
         feature_extractor : BaseFeatureExtractor instance
     """
+    weights = None
     if architecture == 'Inception3':
         feature_extractor = Inception3Feature(input_size, weights)
     elif architecture == 'SqueezeNet':

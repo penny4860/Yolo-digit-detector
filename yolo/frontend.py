@@ -22,12 +22,11 @@ def create_yolo(architecture,
                 coord_scale=1.0,
                 class_scale=1.0,
                 object_scale=5.0,
-                no_object_scale=1.0,
-                feature_weights_path=None):
+                no_object_scale=1.0):
 
     n_classes = len(labels)
     n_boxes = int(len(anchors)/2)
-    yolo_network = create_yolo_network(architecture, input_size, n_classes, n_boxes, feature_weights_path)
+    yolo_network = create_yolo_network(architecture, input_size, n_classes, n_boxes)
     yolo_loss = YoloLoss(yolo_network.get_grid_size(),
                          n_classes,
                          anchors,
