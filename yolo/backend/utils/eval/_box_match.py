@@ -12,14 +12,21 @@ class BoxMatcher(object):
             (x1, y1, x2, y2) ordered
     """
     
-    def __init__(self, boxes1, boxes2):
+    def __init__(self, boxes1, boxes2, labels1=None, labels2=None):
         self._boxes1 = boxes1
         self._boxes2 = boxes2
 
         if len(boxes1) == 0 or len(boxes2) == 0:
             pass
         else:
-            self._iou_matrix = self._calc(boxes1, boxes2)
+            
+            if labels1 is None or labels2 is None:
+                self._iou_matrix = self._calc(boxes1,
+                                              boxes2,
+                                              np.ones((len(boxes1),)),
+                                              np.ones((len(boxes2),)))
+            else:
+                self._iou_matrix = self._calc(boxes1, boxes2, labels1, labels2)
             self._match_pairs = linear_assignment(-1*self._iou_matrix)
     
     def match_idx_of_box1_idx(self, box1_idx):
@@ -83,10 +90,11 @@ class BoxMatcher(object):
         ious = np.max(ious_for_each_gt, axis=0)
         return ious
     
-    def _calc(self, boxes, true_boxes):
+    def _calc(self, boxes, true_boxes, labels, true_labels):
         ious_for_each_gt = []
         
-        for truth_box in true_boxes:
+        for truth_box, truth_label in zip(true_boxes, true_labels):
+            
             x1 = boxes[:, 0]
             y1 = boxes[:, 1]
             x2 = boxes[:, 2]
@@ -109,7 +117,9 @@ class BoxMatcher(object):
             As = (x2 - x1 + 1) * (y2 - y1 + 1)
             B = (x2_gt - x1_gt + 1) * (y2_gt - y1_gt + 1)
             
-            ious = intersections.astype(float) / (As + B -intersections)
+            label_score = (labels == truth_label).astype(np.float)
+            
+            ious = label_score * intersections.astype(float) / (As + B -intersections)
             ious_for_each_gt.append(ious)
         
         # (n_truth, n_boxes)
@@ -118,6 +128,17 @@ class BoxMatcher(object):
 
 
 if __name__ == "__main__":
-    pass
+    labels = np.array([1,2,3,4])
+    label = np.array([4])
+    expected = np.array([0, 0, 0, 1])
+    label_score = (labels == label).astype(np.float)
+    print(label_score)
+    
+    
+    labels = np.array(["a","bb","a","cc"])
+    label = np.array(["cc"])
+    label_score = (labels == label).astype(np.float)
+    print(label_score)
+    
     
     
