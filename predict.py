@@ -40,13 +40,12 @@ if __name__ == '__main__':
     args = argparser.parse_args()
     with open(args.conf) as config_buffer:
         config = json.loads(config_buffer.read())
-    model_config = config['model']
 
     # 2. create yolo instance & predict
-    yolo = create_yolo(model_config['architecture'],
-                       model_config['labels'],
-                       model_config['input_size'],
-                       model_config['anchors'])
+    yolo = create_yolo(config['model']['architecture'],
+                       config['model']['labels'],
+                       config['model']['input_size'],
+                       config['model']['anchors'])
     yolo.load_weights(args.weights)
 
     # 3. read image
