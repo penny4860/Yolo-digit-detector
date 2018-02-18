@@ -19,10 +19,10 @@ install:
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
   - conda info -a
-  - conda create -q -n test-env python=3.5 anaconda=4.4.0
-  - source activate test-env
+  - conda create -q -n yolo python=3.5 anaconda=4.4.0
+  - source activate yolo
   - pip install tensorflow==1.2.1
-  - pip install keras==2.0.8
+  - pip install keras==2.1.1
   - pip install opencv-python
   - pip install imgaug
   - pip install pytest-cov

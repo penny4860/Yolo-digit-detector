@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-setup(name='yolo',
+setup(name='resnet-yolo',
       version=open("yolo/_version.py").readlines()[-1].split()[-1].strip("\"'"),
       description='object detection algorithm',
       author='jeongjoonsup',
