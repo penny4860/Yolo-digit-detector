@@ -42,18 +42,25 @@ def eval_imgs(list_detect_boxes, list_true_boxes):
     return score
     
 
-if __name__ == "__main__":
+def test_count_true_positives_in_case_of_only_matching_box_coord():
     detect_boxes = np.array([(100, 100, 200, 200), (105, 105, 210, 210), (120, 120, 290, 290)])
     true_boxes = np.array([(90, 90, 200, 200), (140, 140, 300, 300)])
-    detect_labels = np.array(["raccoon", "raccoon", "raccoon"])
-    true_labels = np.array(["raccoon", "raccoon"])
- 
-    count_true_positives(detect_boxes, true_boxes, detect_labels, true_labels)
- 
- 
-# detect_idx: 0, true_idx: 0, matching-score: 0.8279360441522604
-# detect_idx: 1, true_idx: None, matching-score: 0
-# detect_idx: 2, true_idx: 1, matching-score: 0.7045826766787182
- 
+    n_true_positives = count_true_positives(detect_boxes, true_boxes)
+    print(n_true_positives)
+    assert n_true_positives == 2
+
+def test_count_true_positives_in_case_of_existing_labels():
+    detect_boxes = np.array([(100, 100, 200, 200), (105, 105, 210, 210), (120, 120, 290, 290)])
+    true_boxes = np.array([(90, 90, 200, 200), (140, 140, 300, 300)])
+    detect_labels = np.array(["raccoon", "raccoon", "human"])
+    true_labels = np.array(["human", "raccoon"])
     
+    n_true_positives = count_true_positives(detect_boxes, true_boxes, detect_labels, true_labels)
+    assert n_true_positives == 0
+
+
+if __name__ == "__main__":
+    
+    test_count_true_positives_in_case_of_only_matching_box_coord()
+    test_count_true_positives_in_case_of_existing_labels()
     
