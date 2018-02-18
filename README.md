@@ -37,6 +37,12 @@ $ activate yolo # in linux "source activate yolo"
 
 <img src="images/raccoon-12.jpg">
 
+* pretrained weight file: 
+* training set evaluation
+	* fscore / precision / recall: 0.937, 0.963, 0.913
+* validataion set evaluation
+	* fscore / precision / recall: 0.631, 0.75, 0.545
+
 
 ## Copyright
 
