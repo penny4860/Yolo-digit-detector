@@ -9,8 +9,8 @@ import os
 import yolo
 
 
-DEFAULT_CONFIG_FILE = "config.json"
-DEFAULT_WEIGHT_FILE = os.path.join(yolo.PROJECT_ROOT, "raccoon", "weights.h5")
+DEFAULT_CONFIG_FILE = os.path.join(yolo.PROJECT_ROOT, "configs", "raccoon.json")
+DEFAULT_WEIGHT_FILE = os.path.join(yolo.PROJECT_ROOT, "weights", "raccoon.h5")
 DEFAULT_THRESHOLD = 0.4
 
 argparser = argparse.ArgumentParser(
