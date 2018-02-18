@@ -21,22 +21,14 @@ def count_true_positives(detect_boxes, true_boxes, detect_labels=None, true_labe
     return n_true_positives
 
 
-def eval_imgs(list_detect_boxes, list_true_boxes):
+def calc_score(n_true_positives, n_truth, n_pred):
     """
     # Args
         detect_boxes : list of box-arrays
         true_boxes : list of box-arrays
     """
-    n_true_positives = 0
-    n_true_boxes = 0
-    n_pred_boxes = 0
-    for detect_boxes, true_boxes in zip(list_detect_boxes, list_true_boxes):
-        n_true_positives += count_true_positives(detect_boxes, true_boxes)
-        n_true_boxes += len(true_boxes)
-        n_pred_boxes += len(detect_boxes)
-
-    precision = n_true_positives / n_pred_boxes
-    recall = n_true_positives / n_true_boxes
+    precision = n_true_positives / n_pred
+    recall = n_true_positives / n_truth
     fscore = 2* precision * recall / (precision + recall)
     score = {"fscore": fscore, "precision": precision, "recall": recall}
     return score
