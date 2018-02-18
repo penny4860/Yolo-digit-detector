@@ -25,6 +25,7 @@
         "learning_rate":        1e-4,
         "saved_folder":   		"raccoon",
         "jitter":				false,
+        "first_trainable_layer": "activation_40",
         "is_only_detect" : 		false
     }
 }
