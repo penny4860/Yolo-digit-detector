@@ -94,7 +94,7 @@ class YoloNetwork(object):
                 fixed_layers.append(layer.name)
                 if layer.name == first_trainable_layer:
                     break
-        if verbose:
+        if verbose and fixed_layers != []:
             print("The following layers do not update weights!!!")
             print("    ", fixed_layers)
  
