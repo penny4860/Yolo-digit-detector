@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/penny4860/resnet-yolo.svg?branch=master)](https://travis-ci.org/penny4860/resnet-yolo) [![codecov](https://codecov.io/gh/penny4860/resnet-yolo/branch/master/graph/badge.svg)](https://codecov.io/gh/resnet-yolo)
 
 # resnet-yolo detector
 
