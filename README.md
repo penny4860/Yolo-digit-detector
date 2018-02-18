@@ -3,7 +3,7 @@
 
 ## Usage for python code
 
-### 0. Requirement
+#### 0. Requirement
 
 * python 3.5
 * anaconda 4.4.0
@@ -27,13 +27,13 @@ $ activate yolo # in linux "source activate yolo"
 (yolo) $ pip install -e .
 ```
 
-### 1. Detection using pretrained weight file
+#### 1. Detection using pretrained weight file
 
-### 2. Training from scratch
+#### 2. Training from scratch
 
 ## Results
 
-### 1. raccoon dataset
+#### 1. raccoon dataset
 
 <img src="images/raccoon-12.jpg">
 
