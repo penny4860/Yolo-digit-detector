@@ -46,8 +46,7 @@ if __name__ == '__main__':
     yolo = create_yolo(model_config['architecture'],
                        model_config['labels'],
                        model_config['input_size'],
-                       model_config['anchors'],
-                       feature_weights_path=None)
+                       model_config['anchors'])
     yolo.load_weights(args.weights)
 
     # 3. read image
