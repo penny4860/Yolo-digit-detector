@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
-# This driver stores the prediction results of the images specified by annotation.
+
+# This driver performs 2-functions for the validation images specified in configuration file:
+#     1) evaluate fscore of validation images.
+#     2) stores the prediction results of the validation images.
+
 import argparse
 import json
 import cv2
