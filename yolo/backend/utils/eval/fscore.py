@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import numpy as np
 from yolo.backend.utils.eval._box_match import BoxMatcher
 
 def count_true_positives(detect_boxes, true_boxes, detect_labels=None, true_labels=None):
@@ -34,22 +33,5 @@ def calc_score(n_true_positives, n_truth, n_pred):
     return score
     
 
-def test_count_true_positives_in_case_of_only_matching_box_coord():
-    detect_boxes = np.array([(100, 100, 200, 200), (105, 105, 210, 210), (120, 120, 290, 290)])
-    true_boxes = np.array([(90, 90, 200, 200), (140, 140, 300, 300)])
-    n_true_positives = count_true_positives(detect_boxes, true_boxes)
-    assert n_true_positives == 2
-
-def test_count_true_positives_in_case_of_existing_labels():
-    detect_boxes = np.array([(100, 100, 200, 200), (105, 105, 210, 210), (120, 120, 290, 290)])
-    true_boxes = np.array([(90, 90, 200, 200), (140, 140, 300, 300)])
-    detect_labels = np.array(["raccoon", "raccoon", "human"])
-    true_labels = np.array(["human", "raccoon"])
-    
-    n_true_positives = count_true_positives(detect_boxes, true_boxes, detect_labels, true_labels)
-    assert n_true_positives == 0
-
-import pytest
 if __name__ == '__main__':
-    pytest.main([__file__, "-v", "-s"])
-    
+    pass
