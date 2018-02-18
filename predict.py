@@ -63,7 +63,7 @@ if __name__ == '__main__':
         boxes, probs = yolo.predict(image, float(args.threshold))
       
         # 4. save detection result
-        image = draw_scaled_boxes(image, boxes, probs, model_config['labels'])
+        image = draw_scaled_boxes(image, boxes, probs, config['model']['labels'])
         output_path = os.path.join(write_dname, os.path.split(img_fname)[-1])
         
         cv2.imwrite(output_path, image)
