@@ -34,13 +34,17 @@ def setup_training(config_file):
     shutil.copyfile(config_file, os.path.join(dirname, "config.json"))
     return config, os.path.join(dirname, "weights.h5")
 
+from yolo.backend.utils.annotation import get_object_labels
+
 if __name__ == '__main__':
     args = argparser.parse_args()
     config, weight_file = setup_training(args.conf)
+    labels = get_object_labels(config['train']['train_annot_folder'])
+    print(labels)
 
     # 1. Construct the model 
     yolo = create_yolo(config['model']['architecture'],
-                       config['model']['labels'],
+                       labels,
                        config['model']['input_size'],
                        config['model']['anchors'],
                        config['model']['coord_scale'],
