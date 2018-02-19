@@ -5,7 +5,7 @@ np.random.seed(111)
 import argparse
 import os
 import json
-from yolo.frontend import create_yolo
+from yolo.frontend import create_yolo, get_object_labels
 
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
@@ -34,13 +34,16 @@ def setup_training(config_file):
     shutil.copyfile(config_file, os.path.join(dirname, "config.json"))
     return config, os.path.join(dirname, "weights.h5")
 
+
 if __name__ == '__main__':
     args = argparser.parse_args()
     config, weight_file = setup_training(args.conf)
+    labels = get_object_labels(config['train']['train_annot_folder'])
+    print(labels)
 
     # 1. Construct the model 
     yolo = create_yolo(config['model']['architecture'],
-                       config['model']['labels'],
+                       labels,
                        config['model']['input_size'],
                        config['model']['anchors'],
                        config['model']['coord_scale'],

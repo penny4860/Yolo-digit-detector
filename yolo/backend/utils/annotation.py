@@ -5,6 +5,16 @@ import numpy as np
 from xml.etree.ElementTree import parse
 
 
+def get_unique_labels(files):
+    parser = PascalVocXmlParser()
+    labels = []
+    for fname in files:
+        labels += parser.get_labels(fname)
+        labels = list(set(labels))
+    labels.sort()
+    return labels
+
+
 def get_train_annotations(labels,
                           img_folder,
                           ann_folder,

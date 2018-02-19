@@ -11,8 +11,14 @@ from yolo.backend.network import create_yolo_network
 from yolo.backend.batch_gen import create_batch_generator
 
 from yolo.backend.utils.fit import train
-from yolo.backend.utils.annotation import get_train_annotations
+from yolo.backend.utils.annotation import get_train_annotations, get_unique_labels
 from yolo.backend.utils.box import to_minmax
+
+
+def get_object_labels(ann_directory):
+    files = os.listdir(ann_directory)
+    files = [os.path.join(ann_directory, fname) for fname in files]
+    return get_unique_labels(files)
 
 
 def create_yolo(architecture,
