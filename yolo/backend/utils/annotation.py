@@ -5,9 +5,7 @@ import numpy as np
 from xml.etree.ElementTree import parse
 
 
-def get_object_labels(ann_directory):
-    files = os.listdir(ann_directory)
-    files = [os.path.join(ann_directory, fname) for fname in files]
+def get_unique_labels(files):
     parser = PascalVocXmlParser()
     labels = []
     for fname in files:

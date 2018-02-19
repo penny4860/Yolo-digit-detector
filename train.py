@@ -5,7 +5,7 @@ np.random.seed(111)
 import argparse
 import os
 import json
-from yolo.frontend import create_yolo
+from yolo.frontend import create_yolo, get_object_labels
 
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
@@ -34,7 +34,6 @@ def setup_training(config_file):
     shutil.copyfile(config_file, os.path.join(dirname, "config.json"))
     return config, os.path.join(dirname, "weights.h5")
 
-from yolo.backend.utils.annotation import get_object_labels
 
 if __name__ == '__main__':
     args = argparser.parse_args()
