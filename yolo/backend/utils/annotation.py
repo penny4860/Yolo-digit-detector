@@ -179,9 +179,10 @@ def parse_annotation(ann_dir, img_dir, labels_naming=[], is_only_detect=False):
         for label, box in zip(labels, boxes):
             x1, y1, x2, y2 = box
             if is_only_detect:
-                annotation.add_object(x1, y1, x2, y2, name=labels_naming[0])
+                annotation.add_object(x1, y1, x2, y2, name="object")
             else:
-                annotation.add_object(x1, y1, x2, y2, name=label)
+                if label in labels_naming:
+                    annotation.add_object(x1, y1, x2, y2, name=label)
         annotations.add(annotation)
                         
     return annotations

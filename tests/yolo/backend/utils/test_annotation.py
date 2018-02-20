@@ -29,12 +29,28 @@ def test_parse_annotation(setup_inputs, setup_expected_outputs):
     annotation_dir, image_dir = setup_inputs
     
     # When
-    annotations = parse_annotation(annotation_dir, image_dir)
+    annotations = parse_annotation(annotation_dir, image_dir, is_only_detect=True)
     
     filenames, minmax_boxes = setup_expected_outputs
     
     assert annotations.fname(0) == filenames[0]
     assert np.allclose(annotations.boxes(0), minmax_boxes[0])
+
+
+def test_parse_annotation_by_labeling_option(setup_inputs, setup_expected_outputs):
+    
+    # Given
+    annotation_dir, image_dir = setup_inputs
+    
+    # When
+    annotations = parse_annotation(annotation_dir, image_dir, labels_naming=['1'])
+    assert annotations.labels(0) == ['1']
+
+    annotations = parse_annotation(annotation_dir, image_dir, labels_naming=['1', '9'])
+    assert annotations.labels(0) == ['1', '9']
+
+    annotations = parse_annotation(annotation_dir, image_dir, is_only_detect=True)
+    assert annotations.labels(0) == ['object', 'object']
     
 
 if __name__ == '__main__':
