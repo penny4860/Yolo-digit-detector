@@ -25,7 +25,7 @@
         "learning_rate":        1e-4,
         "saved_folder":   		"kitti",
         "jitter":				false,
-        "first_trainable_layer": "activation_22",
+        "first_trainable_layer": "activation_40",
         "is_only_detect" : 		false
     }
 }
