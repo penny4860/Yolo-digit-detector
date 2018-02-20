@@ -29,7 +29,7 @@ def test_parse_annotation(setup_inputs, setup_expected_outputs):
     annotation_dir, image_dir = setup_inputs
     
     # When
-    annotations = parse_annotation(annotation_dir, image_dir)
+    annotations = parse_annotation(annotation_dir, image_dir, is_only_detect=True)
     
     filenames, minmax_boxes = setup_expected_outputs
     
