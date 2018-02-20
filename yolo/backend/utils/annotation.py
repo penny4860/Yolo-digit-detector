@@ -183,7 +183,9 @@ def parse_annotation(ann_dir, img_dir, labels_naming=[], is_only_detect=False):
             else:
                 if label in labels_naming:
                     annotation.add_object(x1, y1, x2, y2, name=label)
-        annotations.add(annotation)
+                    
+        if annotation.boxes is not None:
+            annotations.add(annotation)
                         
     return annotations
             
