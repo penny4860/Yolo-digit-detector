@@ -38,7 +38,10 @@ def setup_training(config_file):
 if __name__ == '__main__':
     args = argparser.parse_args()
     config, weight_file = setup_training(args.conf)
-    labels = get_object_labels(config['train']['train_annot_folder'])
+    if config['model']['labels']:
+        labels = config['model']['labels']
+    else:
+        labels = get_object_labels(config['train']['train_annot_folder'])
     print(labels)
 
     # 1. Construct the model 
