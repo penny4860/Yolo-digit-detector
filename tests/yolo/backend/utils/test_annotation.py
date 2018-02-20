@@ -52,6 +52,18 @@ def test_parse_annotation_by_labeling_option(setup_inputs, setup_expected_output
     annotations = parse_annotation(annotation_dir, image_dir, is_only_detect=True)
     assert annotations.labels(0) == ['object', 'object']
     
+def test_num_annotations(setup_inputs, setup_expected_outputs):
+    
+    # Given
+    annotation_dir, image_dir = setup_inputs
+    
+    # When
+    annotations = parse_annotation(annotation_dir, image_dir, labels_naming=['1'])
+    assert len(annotations) == 1
+
+    annotations = parse_annotation(annotation_dir, image_dir, labels_naming=['1', '2'])
+    assert len(annotations) == 2
+
 
 if __name__ == '__main__':
     pytest.main([__file__, "-v", "-s"])
