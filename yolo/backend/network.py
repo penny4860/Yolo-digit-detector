@@ -53,8 +53,8 @@ class YoloNetwork(object):
 
         layer.set_weights([new_kernel, new_bias])
 
-    def load_weights(self, weight_path):
-        self._model.load_weights(weight_path)
+    def load_weights(self, weight_path, by_name):
+        self._model.load_weights(weight_path, by_name=by_name)
         
     def forward(self, image):
         def _get_input_size():
