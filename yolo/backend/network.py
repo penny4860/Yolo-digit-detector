@@ -29,13 +29,12 @@ class YoloNetwork(object):
                  nb_box):
         
         # 1. create full network
-        input_tensor = Input(shape=(input_size, input_size, 3))
         grid_size = feature_extractor.get_output_size()
         
         # make the object detection layer
         output_tensor = Conv2D(nb_box * (4 + 1 + nb_classes), (1,1), strides=(1,1),
                                padding='same', 
-                               name='detection_layer', 
+                               name='detection_layer_{}'.format(nb_box * (4 + 1 + nb_classes)), 
                                kernel_initializer='lecun_normal')(feature_extractor.feature_extractor.output)
         output_tensor = Reshape((grid_size, grid_size, nb_box, 4 + 1 + nb_classes))(output_tensor)
     

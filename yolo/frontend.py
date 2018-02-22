@@ -65,10 +65,10 @@ class YOLO(object):
         # Batch를 생성할 때만 사용한다.
         self._input_size = input_size
 
-    def load_weights(self, weight_path):
+    def load_weights(self, weight_path, by_name=False):
         if os.path.exists(weight_path):
             print("Loading pre-trained weights in", weight_path)
-            self._yolo_network.load_weights(weight_path)
+            self._yolo_network.load_weights(weight_path, by_name=by_name)
         else:
             print("Fail to load pre-trained weights. Make sure weight file path.")
 
