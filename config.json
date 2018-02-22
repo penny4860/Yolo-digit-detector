@@ -15,17 +15,17 @@
     "train" : {
     	"warmup_epoch": 		0,
         "actual_epoch":         25,
-        "train_image_folder":   "..//dataset//kitti//imgs//",
+        "train_image_folder":   "train_imgs//",
         "train_annot_folder":   "train_voc_anns//",
         "train_times":          20,
-        "valid_image_folder":   "..//dataset//kitti//imgs//",
+        "valid_image_folder":   "train_imgs//",
         "valid_annot_folder":   "train_voc_anns//",
         "valid_times":          1,
         "batch_size":           4,
         "learning_rate":        1e-4,
         "saved_folder":   		"kitti",
         "jitter":				false,
-        "first_trainable_layer": "input_1",
+        "first_trainable_layer": "activation_40",
         "is_only_detect" : 		false
     }
 }
