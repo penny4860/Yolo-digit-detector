@@ -7,7 +7,7 @@
         "coord_scale" : 		1.0,
         "class_scale" : 		1.0,
         "object_scale" : 		5.0,
-        "no_object_scale" : 	1.0
+        "no_object_scale" : 	0.5
     },
     "pretrained" : {
         "full":   				"kitti//weights.h5"
