@@ -55,7 +55,7 @@ if __name__ == '__main__':
                        config['model']['no_object_scale'])
     
     # 2. Load the pretrained weights (if any) 
-    yolo.load_weights(config['pretrained']['full'])
+    yolo.load_weights(config['pretrained']['full'], by_name=True)
 
     if config['train']['warmup_epoch'] > 0:
         # 3. warmup training
