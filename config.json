@@ -10,7 +10,7 @@
         "no_object_scale" : 	0.5
     },
     "pretrained" : {
-        "full":   				""
+        "full":   				"kitti/weights.h5"
     },
     "train" : {
     	"warmup_epoch": 		0,
