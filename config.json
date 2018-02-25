@@ -22,7 +22,7 @@
         "valid_annot_folder":   "../dataset/kitti/valid_anns/",
         "valid_times":          1,
         "batch_size":           16,
-        "learning_rate":        1e-4,
+        "learning_rate":        1e-5,
         "saved_folder":   		"kitti",
         "jitter":				false,
         "first_trainable_layer": "activation_40",
