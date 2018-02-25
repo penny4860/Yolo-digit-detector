@@ -21,7 +21,7 @@
         "valid_image_folder":   "../dataset/kitti/imgs/",
         "valid_annot_folder":   "train_voc_anns/",
         "valid_times":          1,
-        "batch_size":           16,
+        "batch_size":           100,
         "learning_rate":        1e-4,
         "saved_folder":   		"kitti",
         "jitter":				false,
