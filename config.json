@@ -10,10 +10,10 @@
         "no_object_scale" : 	0.5
     },
     "pretrained" : {
-        "full":   				"kitti//weights.h5"
+        "full":   				""
     },
     "train" : {
-    	"warmup_epoch": 		0,
+    	"warmup_epoch": 		5,
         "actual_epoch":         25,
         "train_image_folder":   "../dataset/kitti/imgs/",
         "train_annot_folder":   "../dataset/kitti/anns/",
