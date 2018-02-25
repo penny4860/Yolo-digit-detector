@@ -13,11 +13,11 @@
         "full":   				""
     },
     "train" : {
-    	"warmup_epoch": 		5,
+    	"warmup_epoch": 		20,
         "actual_epoch":         25,
         "train_image_folder":   "../dataset/kitti/imgs/",
         "train_annot_folder":   "train_voc_anns/",
-        "train_times":          10,
+        "train_times":          1,
         "valid_image_folder":   "../dataset/kitti/imgs/",
         "valid_annot_folder":   "train_voc_anns/",
         "valid_times":          1,
