@@ -19,7 +19,7 @@
         "train_annot_folder":   "../dataset/kitti/anns/",
         "train_times":          1,
         "valid_image_folder":   "../dataset/kitti/imgs/",
-        "valid_annot_folder":   "../dataset/kitti/anns/",
+        "valid_annot_folder":   "../dataset/kitti/valid_anns/",
         "valid_times":          1,
         "batch_size":           32,
         "learning_rate":        1e-4,
