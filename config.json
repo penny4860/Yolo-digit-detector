@@ -13,7 +13,7 @@
         "full":   				"kitti/weights.h5"
     },
     "train" : {
-    	"warmup_epoch": 		0,
+    	"warmup_epoch": 		5,
         "actual_epoch":         25,
         "train_image_folder":   "../dataset/kitti/imgs/",
         "train_annot_folder":   "train_voc_anns/",
