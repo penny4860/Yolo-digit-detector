@@ -4,16 +4,16 @@
         "input_size":           416,
         "anchors":              [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828],
         "labels":               ["car", "Truck", "person"],
-        "coord_scale" : 		0.0,
+        "coord_scale" : 		1.0,
         "class_scale" : 		1.0,
         "object_scale" : 		5.0,
-        "no_object_scale" : 	0.5
+        "no_object_scale" : 	1.0
     },
     "pretrained" : {
         "full":   				""
     },
     "train" : {
-    	"warmup_epoch": 		0,
+    	"warmup_epoch": 		5,
         "actual_epoch":         25,
         "train_image_folder":   "../dataset/kitti/imgs/",
         "train_annot_folder":   "train_voc_anns/",
