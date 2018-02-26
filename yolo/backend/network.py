@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from keras.models import Model
-from keras.layers import Reshape, Conv2D, Input, Lambda
+from keras.layers import Reshape, Conv2D, Input, Lambda, BatchNormalization
+from keras.layers.advanced_activations import LeakyReLU
 import numpy as np
 import cv2
 import os
@@ -30,19 +31,28 @@ class YoloNetwork(object):
         
         # 1. create full network
         grid_size = feature_extractor.get_output_size()
-        
+
+        # make the object detection layer
+        output_tensor = Conv2D(1024, (3,3), strides=(1,1),
+                               padding='same', 
+                               use_bias=False,
+                               name='detection_layer_1', 
+                               kernel_initializer='lecun_normal')(feature_extractor.feature_extractor.output)
+        output_tensor = BatchNormalization()(output_tensor)
+        output_tensor = LeakyReLU(alpha=0.1)(output_tensor)
+
         # make the object detection layer
         output_tensor = Conv2D(nb_box * (4 + 1 + nb_classes), (1,1), strides=(1,1),
                                padding='same', 
-                               name='detection_layer_{}'.format(nb_box * (4 + 1 + nb_classes)), 
-                               kernel_initializer='lecun_normal')(feature_extractor.feature_extractor.output)
+                               name='detection_layer_2', 
+                               kernel_initializer='lecun_normal')(output_tensor)
         output_tensor = Reshape((grid_size, grid_size, nb_box, 4 + 1 + nb_classes))(output_tensor)
     
         model = Model(feature_extractor.feature_extractor.input, output_tensor)
         self._norm = feature_extractor.normalize
         self._model = model
         self._model.summary()
-        self._init_layer(grid_size)
+        # self._init_layer(grid_size)
 
     def _init_layer(self, grid_size):
         layer = self._model.layers[-2]
