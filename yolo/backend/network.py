@@ -32,7 +32,7 @@ class YoloNetwork(object):
         grid_size = feature_extractor.get_output_size()
         
         # make the object detection layer
-        output_tensor = Conv2D(nb_box * (4 + 1 + nb_classes), (5,5), strides=(1,1),
+        output_tensor = Conv2D(nb_box * (4 + 1 + nb_classes), (1,1), strides=(1,1),
                                padding='same', 
                                name='detection_layer_{}'.format(nb_box * (4 + 1 + nb_classes)), 
                                kernel_initializer='lecun_normal')(feature_extractor.feature_extractor.output)
