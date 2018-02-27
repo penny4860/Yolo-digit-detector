@@ -10,7 +10,7 @@
         "no_object_scale" : 	1.0
     },
     "pretrained" : {
-        "full":   				""
+        "full":   				"svhn/weights.h5"
     },
     "train" : {
     	"warmup_epoch": 		5,
@@ -24,7 +24,7 @@
         "batch_size":           16,
         "learning_rate":        1e-4,
         "saved_folder":   		"svhn",
-        "jitter":				false,
+        "jitter":				true,
         "first_trainable_layer": "activation_40",
         "is_only_detect" : 		false
     }
