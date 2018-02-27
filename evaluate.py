@@ -17,8 +17,8 @@ import os
 import yolo
 
 
-DEFAULT_CONFIG_FILE = os.path.join(yolo.PROJECT_ROOT, "kitti", "config.json")
-DEFAULT_WEIGHT_FILE = os.path.join(yolo.PROJECT_ROOT, "kitti", "weights.h5")
+DEFAULT_CONFIG_FILE = os.path.join(yolo.PROJECT_ROOT, "svhn", "config.json")
+DEFAULT_WEIGHT_FILE = os.path.join(yolo.PROJECT_ROOT, "svhn", "weights.h5")
 DEFAULT_THRESHOLD = 0.3
 
 argparser = argparse.ArgumentParser(
