@@ -19,7 +19,7 @@
         "train_annot_folder":   "train_voc_anns/",
         "train_times":          1,
         "valid_image_folder":   "../dataset/svhn/train_imgs/",
-        "valid_annot_folder":   "train_voc_anns/",
+        "valid_annot_folder":   "valid_anns/",
         "valid_times":          1,
         "batch_size":           16,
         "learning_rate":        1e-4,
