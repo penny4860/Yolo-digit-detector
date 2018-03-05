@@ -22,7 +22,7 @@
         "valid_annot_folder":   "train_voc_anns/",
         "valid_times":          1,
         "batch_size":           16,
-        "learning_rate":        1e-4,
+        "learning_rate":        1e-3,
         "saved_folder":   		"svhn",
         "jitter":				true,
         "first_trainable_layer": "activation_40",
