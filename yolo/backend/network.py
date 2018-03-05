@@ -48,8 +48,8 @@ class YoloNetwork(object):
         layer = self._model.layers[-2]
         weights = layer.get_weights()
         
-        new_kernel = np.random.normal(size=weights[0].shape)/(grid_size*grid_size)
-        new_bias   = np.random.normal(size=weights[1].shape)/(grid_size*grid_size)
+        new_kernel = np.random.normal(size=weights[0].shape)/ 2048
+        new_bias   = np.zeros_like(weights[1])
 
         layer.set_weights([new_kernel, new_bias])
 
