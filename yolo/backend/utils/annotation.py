@@ -166,7 +166,10 @@ def parse_annotation(ann_dir, img_dir, labels_naming=[], is_only_detect=False):
     """
     parser = PascalVocXmlParser()
     
-    annotations = Annotations(labels_naming)
+    if is_only_detect:
+        annotations = Annotations(["object"])
+    else:
+        annotations = Annotations(labels_naming)
     for ann in sorted(os.listdir(ann_dir)):
         annotation_file = os.path.join(ann_dir, ann)
         fname = parser.get_fname(annotation_file)
