@@ -16,16 +16,16 @@
     	"warmup_epoch": 		5,
         "actual_epoch":         25,
         "train_image_folder":   "../dataset/svhn/train_imgs/",
-        "train_annot_folder":   "train_voc_anns/",
+        "train_annot_folder":   "train_anns/",
         "train_times":          5,
         "valid_image_folder":   "../dataset/svhn/train_imgs/",
-        "valid_annot_folder":   "train_voc_anns/",
+        "valid_annot_folder":   "train_anns/",
         "valid_times":          1,
         "batch_size":           16,
         "learning_rate":        1e-4,
         "saved_folder":   		"svhn",
         "jitter":				true,
-        "first_trainable_layer": "activation_40",
+        "first_trainable_layer": "input_1",
         "is_only_detect" : 		false
     }
 }
