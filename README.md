@@ -1,6 +1,10 @@
-[![Build Status](https://travis-ci.org/penny4860/resnet-yolo.svg?branch=master)](https://travis-ci.org/penny4860/resnet-yolo) [![codecov](https://codecov.io/gh/penny4860/resnet-yolo/branch/master/graph/badge.svg)](https://codecov.io/gh/resnet-yolo)
+[![Build Status](https://travis-ci.org/penny4860/Yolo-digit-detector.svg?branch=master)](https://travis-ci.org/penny4860/Yolo-digit-detector) [![codecov](https://codecov.io/gh/penny4860/Yolo-digit-detector/branch/master/graph/badge.svg)](https://codecov.io/gh/penny4860/Yolo-digit-detector)
 
-# resnet-yolo detector
+# SVHN yolo-v2 digit detector
+
+I have implemented a digit detector that applies yolo-v2 to svhn dataset.
+
+<img src="images/svhn.png" height="600">
 
 ## Usage for python code
 
@@ -28,11 +32,28 @@ $ activate yolo # in linux "source activate yolo"
 (yolo) $ pip install -e .
 ```
 
-#### 1. Detection using pretrained weight file
+### 1. Digit Detection using pretrained weight file
 
-#### 2. Training from scratch
+In this project, the pretrained weight file is stored in [weights.h5](https://drive.google.com/drive/folders/1Lg3eAPC39G9GwVTCH3XzF73Eok-N-dER).
 
-## Results
+
+### 2. Training from scratch
+
+This project provides a way to train digit detector from scratch. If you follow the command below, you can build a digit detector with just two images.
+
+* First, train the digit detector through the following command. 
+  * `` project/root> python train_driver.py -c configs/from_scratch.json ``
+  * It takes about 10 minutes from the cpu computer.
+* Next, the trained detector predicts the digit region and its label.
+  * `` project/root> python predict_by_anns.py -c configs/from_scratch.json -w svhn_recognizer/weights.h5 ``
+* The prediction result images are saved in the ``project/detected`` directory.
+
+<img src="images/1.png" height="150">
+<img src="images/2.png" height="150">
+
+Now you can add more images to train a digit detector with good generalization performance.
+
+## Other Results
 
 #### 1. Raccoon dataset : https://github.com/experiencor/raccoon_dataset
 
