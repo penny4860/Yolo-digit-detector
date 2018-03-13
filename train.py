@@ -93,5 +93,6 @@ if __name__ == '__main__':
                0,
                config['train']['valid_image_folder'],
                config['train']['valid_annot_folder'],
+               config['train']['first_trainable_layer'],
                config['train']['is_only_detect'])
     # loss: 2.1691, train batch jitter=False
