@@ -36,6 +36,10 @@ $ activate yolo # in linux "source activate yolo"
 
 In this project, the pretrained weight file is stored in [weights.h5](https://drive.google.com/drive/folders/1Lg3eAPC39G9GwVTCH3XzF73Eok-N-dER).
 
+* Example code for predicting a digit region in a natural image is described in [detection_example.ipynb](https://github.com/penny4860/Yolo-digit-detector/blob/master/detection_example.ipynb).
+* Training set evaluation (1000-images) is as follows:
+  * fscore / precision / recall: 0.799, 0.791, 0.807
+
 
 ### 2. Training from scratch
 
@@ -44,18 +48,21 @@ This project provides a way to train digit detector from scratch. If you follow 
 * First, train the digit detector through the following command. 
   * `` project/root> python train_driver.py -c configs/from_scratch.json ``
   * It takes about 10 minutes from the cpu computer.
-* Next, the trained detector predicts the digit region and its label.
-  * `` project/root> python predict_by_anns.py -c configs/from_scratch.json -w svhn_recognizer/weights.h5 ``
-* The prediction result images are saved in the ``project/detected`` directory.
+* Next, evaluate trained digit detector.
+  * `` project/root> python evaluate.py -c configs/from_scratch.json -w svhn/weights.h5 ``
+  * The evaluation results are output in the following manner.
+  	* ``{'fscore': 1.0, 'precision': 1.0, 'recall': 1.0}``
+  * The prediction result images are saved in the ``project/detected`` directory.
 
 <img src="images/1.png" height="150">
 <img src="images/2.png" height="150">
 
 Now you can add more images to train a digit detector with good generalization performance.
 
+
 ## Other Results
 
-#### 1. Raccoon dataset : https://github.com/experiencor/raccoon_dataset
+### 1. Raccoon dataset : https://github.com/experiencor/raccoon_dataset
 
 <img src="images/raccoon-12.jpg">
 
