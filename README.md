@@ -46,7 +46,7 @@ In this project, the pretrained weight file is stored in [weights.h5](https://dr
 This project provides a way to train digit detector from scratch. If you follow the command below, you can build a digit detector with just two images.
 
 * First, train the digit detector through the following command. 
-  * `` project/root> python train_driver.py -c configs/from_scratch.json ``
+  * `` project/root> python train.py -c configs/from_scratch.json ``
   * It takes about 10 minutes from the cpu computer.
 * Next, evaluate trained digit detector.
   * `` project/root> python evaluate.py -c configs/from_scratch.json -w svhn/weights.h5 ``
