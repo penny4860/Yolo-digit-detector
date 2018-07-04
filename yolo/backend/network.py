@@ -42,6 +42,16 @@ class YoloNetwork(object):
         self._norm = feature_extractor.normalize
         self._model = model
         self._model.summary()
+        self._init_layer(grid_size)
+
+    def _init_layer(self, grid_size):
+        layer = self._model.layers[-2]
+        weights = layer.get_weights()
+        
+        new_kernel = np.random.normal(size=weights[0].shape)/ 2048
+        new_bias   = np.zeros_like(weights[1])
+
+        layer.set_weights([new_kernel, new_bias])
 
     def load_weights(self, weight_path, by_name):
         self._model.load_weights(weight_path, by_name=by_name)
