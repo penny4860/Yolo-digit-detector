@@ -10,11 +10,11 @@
         "no_object_scale" : 	1.0
     },
     "pretrained" : {
-        "full":   				"svhn/weights.h5"
+        "full":   				""
     },
     "train" : {
     	"warmup_epoch": 		0,
-        "actual_epoch":         15,
+        "actual_epoch":         20,
         "train_image_folder":   "tests/dataset/svhn/imgs/",
         "train_annot_folder":   "tests/dataset/svhn/anns/",
         "train_times":          5,
@@ -25,7 +25,7 @@
         "learning_rate":        1e-4,
         "saved_folder":   		"svhn",
         "jitter":				false,
-        "first_trainable_layer": "activation_49",
-        "is_only_detect" : 		false
+        "first_trainable_layer": "input_1",
+        "is_only_detect" : 		true
     }
 }
