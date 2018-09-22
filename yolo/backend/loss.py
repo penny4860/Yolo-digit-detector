@@ -41,7 +41,7 @@ class YoloLoss(object):
         self._mask = _Mask(nb_class, coord_scale, class_scale, object_scale, no_object_scale)
 
 
-    def custom_loss(self, batch_size, warmup_bs):
+    def custom_loss(self, batch_size):
         """
         # Args
             y_true : (N, 13, 13, 5, 6)
