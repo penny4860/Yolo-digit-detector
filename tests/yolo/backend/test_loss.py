@@ -128,30 +128,6 @@ def test_loss_op(setup_y_true_tensor, setup_y_pred_tensor, setup_true_boxes_tens
 
     assert np.allclose(loss_value, 5.47542)
 
-def test_loss_op_for_warmup(setup_y_true_tensor, setup_y_pred_tensor):
-    # 1. build loss function
-    batch_size = 1
-    warmup_bs = 100
-    yolo_loss = YoloLoss(grid_size=9, nb_class=4)
-    custom_loss = yolo_loss.custom_loss(batch_size, warmup_bs)
-  
-    # 2. placeholder : (y_true, y_pred)
-    y_true, y_true_value = setup_y_true_tensor
-    y_pred, y_pred_value = setup_y_pred_tensor
-  
-    # 3. loss operation
-    loss_op = custom_loss(y_true, y_pred)
-      
-    # 4. setup feed values for each placeholders (true_boxes, y_true, y_pred
-    true_boxes_value = np.zeros((1,1,1,1,10,4))
-    true_boxes_value[0,0,0,0,0,:] = [3.46875, 4.78125, 1, 5.625]
-    true_boxes_value[0,0,0,0,1,:] = [4.484375, 4.875, 1.15625, 5.625]
-      
-    # 5. run loss_op in session
-    # y_true, y_pred�� ���� value�� insert
-    loss_value = run_op(loss_op, feed_dict={y_true: y_true_value,
-                                            y_pred: y_pred_value})
-    assert np.allclose(loss_value, 3.1930623)
 
 def test_y_tensor_activation(setup_y_true_tensor):
     y_pred = tf.placeholder(tf.float32, [None, 9, 9, 5, 9], name='y_pred')
