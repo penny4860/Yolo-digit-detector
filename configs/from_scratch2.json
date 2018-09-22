@@ -13,7 +13,6 @@
         "full":   				"svhn/weights.h5"
     },
     "train" : {
-    	"warmup_epoch": 		0,
         "actual_epoch":         100,
         "train_image_folder":   "tests/dataset/svhn/imgs/",
         "train_annot_folder":   "tests/dataset/svhn/anns/",
