@@ -71,7 +71,6 @@ if __name__ == '__main__':
                config['train']['learning_rate'], 
                config['train']['train_times'],
                config['train']['valid_times'],
-               0,
                config['train']['valid_image_folder'],
                config['train']['valid_annot_folder'],
                config['train']['first_trainable_layer'],
