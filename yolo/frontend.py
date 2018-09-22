@@ -148,8 +148,7 @@ class YOLO(object):
                       warmup_epochs,
                       train_times = 1,
                       valid_times = 1):
-        warmup_bs  = warmup_epochs * (train_times*(batch_size+1) + valid_times*(batch_size+1))
-        return self._yolo_loss.custom_loss(batch_size, warmup_bs)
+        return self._yolo_loss.custom_loss(batch_size)
 
     def _get_batch_generator(self, annotations, batch_size, repeat_times=1, jitter=True):
         """

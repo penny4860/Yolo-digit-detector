@@ -107,9 +107,8 @@ def test_yolo_conf_masking(setup_y_true_tensor, setup_true_boxes_tensor, setup_y
 def test_loss_op(setup_y_true_tensor, setup_y_pred_tensor, setup_true_boxes_tensor):
     # 1. build loss function
     batch_size = 1
-    warmup_bs = 0
     yolo_loss = YoloLoss(grid_size=9, nb_class=4)
-    custom_loss = yolo_loss.custom_loss(batch_size, warmup_bs)
+    custom_loss = yolo_loss.custom_loss(batch_size)
 
     # 2. placeholder : (y_true, y_pred)
     y_true, y_true_value = setup_y_true_tensor
