@@ -85,3 +85,13 @@ An annotation file of this format can be downloaded from [svhn-voc-annotation-fo
 * See [LICENSE](LICENSE) for details.
 * This project started at [basic-yolo-keras](https://github.com/experiencor/basic-yolo-keras). I refactored the source code structure of [basic-yolo-keras](https://github.com/experiencor/basic-yolo-keras) and added the CI test. I also applied the SVHN dataset to implement the digit detector. Thanks to the [Huynh Ngoc Anh](https://github.com/experiencor) for providing a good project as open source.
 
+## See Also
+
+If you are interested in advanced digit detection algorithm, please refer to the following projects. The following projects can be more stable training than the algorithm of this project.
+
+* https://github.com/penny4860/tf2-eager-yolo3
+	* yolo3 detector including digit detection.
+
+* https://github.com/penny4860/retinanet-digit-detector
+	* retinanet digit detector.
+
