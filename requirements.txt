@@ -1,0 +1,12 @@
+numpy==1.11.3
+tensorflow==1.2.0
+keras==2.1.1
+imgaug==0.2.6
+opencv-python
+Pillow
+requests
+tqdm
+sklearn
+pytest-cov
+codecov
+matplotlib
