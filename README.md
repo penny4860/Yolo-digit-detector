@@ -10,12 +10,10 @@ I have implemented a digit detector that applies yolo-v2 to svhn dataset.
 
 #### 0. Requirement
 
-* python 3.5
-* anaconda 4.4.0
-* tensorflow 1.2.1
+* python 3.6
+* tensorflow 1.12.3
 * keras 2.1.1
 * opencv 3.3.0
-* imgaug
 * Etc.
 
 I recommend that you create and use an anaconda env that is independent of your project. You can create anaconda env for this project by following these simple steps. This process has been verified on Windows 10 and ubuntu 16.04.
