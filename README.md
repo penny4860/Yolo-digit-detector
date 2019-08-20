@@ -21,7 +21,7 @@ I have implemented a digit detector that applies yolo-v2 to svhn dataset.
 I recommend that you create and use an anaconda env that is independent of your project. You can create anaconda env for this project by following these simple steps. This process has been verified on Windows 10 and ubuntu 16.04.
 
 ```
-$ conda create -n yolo python=3.5 anaconda=4.4.0
+$ conda create -n yolo python=3.6 anaconda=5.1.0
 $ activate yolo # in linux "source activate yolo"
 (yolo) $ pip install tensorflow==1.2.1
 (yolo) $ pip install keras==2.1.1
