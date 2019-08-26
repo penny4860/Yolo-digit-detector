@@ -11,7 +11,7 @@ I have implemented a digit detector that applies yolo-v2 to svhn dataset.
 #### 0. Requirement
 
 * python 3.6
-* tensorflow 1.12.3
+* tensorflow 1.14.0
 * keras 2.1.1
 * opencv 3.3.0
 * Etc.
